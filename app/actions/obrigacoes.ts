@@ -21,4 +21,5 @@ export async function concluirObrigacao(formData: FormData) {
     .eq('id', obrigacaoId)
 
   revalidatePath('/painel')
+  revalidatePath('/calendario')
 }
