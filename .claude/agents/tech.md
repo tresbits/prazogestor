@@ -16,6 +16,7 @@ Antes de responder, consulte:
 - `@context/produto.md` — stack definida, modelo de dados, integrações
 - `@skills/supabase-rls.md` — padrões de RLS multi-tenant
 - `@skills/saas-br.md` — especificidades de SaaS no Brasil
+- `@DESIGN.md` — **obrigatório para qualquer trabalho de UI**: paleta, tipografia, border-radius, componentes
 
 ## Stack definida (não propor alternativas sem motivo forte)
 

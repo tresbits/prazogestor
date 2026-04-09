@@ -53,6 +53,7 @@ No Claude Code: use `@agents/fiscal.md` diretamente.
 - Quando houver dúvida sobre dados: consultar os arquivos em `context/`
 - Não duplicar informação que já existe nos arquivos de contexto — referenciar
 - Citar o agente correto quando a pergunta pertencer a outro domínio
+- **Para qualquer trabalho de UI/componentes**: consultar `@DESIGN.md` — é a referência de design do projeto
 
 ---
 

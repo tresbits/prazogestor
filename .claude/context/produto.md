@@ -128,27 +128,33 @@ envia alertas antecipados e mantém histórico de entregas.
 
 ```
 escritorios
-  id, nome, email, plano, created_at
+  id, user_id, nome, estado, plano, alertas_email_ativo, created_at
 
 clientes
-  id, escritorio_id, cnpj, nome, regime, tem_empregados
+  id, escritorio_id, cnpj, nome, regime [simples|mei], tem_empregados
 
 obrigacoes_template
-  id, nome, sigla, regimes[], frequencia, dia_vencimento, mes_vencimento
+  id, nome, sigla, regimes[], frequencia, requer_empregados,
+  dia_vencimento, mes_vencimento, regra_ajuste [prorroga|antecipa], dependencia
 
 obrigacoes_cliente
-  id, cliente_id, template_id, data_vencimento, status,
+  id, cliente_id, template_id, data_vencimento, status [pendente|concluido|atrasado],
   concluido_por, concluido_em, nota
 
 alertas_log
-  id, obrigacao_id, tipo [7d|3d|1d], enviado_em
+  id, obrigacao_id, tipo [7d|3d|1d], enviado_em, email_enviado_em
 
 feriados
-  id, data, descricao, tipo [nacional|estadual|municipal]
+  id, data, descricao, tipo [nacional|estadual|municipal], estado, municipio_ibge
 
 cnpj_rate_limit
-  id, escritorio_id, data, contagem
+  escritorio_id, data, contagem  ← PK composta
 ```
+
+### Notas do modelo
+- `escritorios.regime` aceita apenas `simples` e `mei` no MVP — lucro_presumido/real na fase 2
+- `alertas_log.email_enviado_em` é null até o webhook confirmar envio pelo Resend
+- `escritorios.alertas_email_ativo` controla descadastro de e-mails (LGPD)
 
 ---
 
