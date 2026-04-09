@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState, useRef } from 'react'
+import { useActionState, useEffect, useState, useRef, isValidElement } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { criarCliente } from '@/app/actions/clientes'
@@ -48,7 +48,10 @@ export function ModalNovoCliente({
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger render={trigger as React.ReactElement} nativeButton={false} />
+      <Dialog.Trigger
+        render={trigger as React.ReactElement}
+        nativeButton={isValidElement(trigger) && trigger.type === 'button'}
+      />
 
       <Dialog.Portal>
         <Dialog.Backdrop

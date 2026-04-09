@@ -12,8 +12,18 @@ const REGIME_OPTIONS = [
   { value: 'mei', label: 'MEI' },
 ]
 
-export function ModalEditarCliente({ cliente }: { cliente: Cliente }) {
-  const [open, setOpen] = useState(false)
+export function ModalEditarCliente({
+  cliente,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+}: {
+  cliente: Cliente
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = externalOpen !== undefined ? externalOpen : internalOpen
+  const setOpen = externalOnOpenChange ?? setInternalOpen
   const [state, action, pending] = useActionState(atualizarCliente, null)
 
   useEffect(() => {
@@ -24,12 +34,14 @@ export function ModalEditarCliente({ cliente }: { cliente: Cliente }) {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger
-        className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-        title="Editar cliente"
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </Dialog.Trigger>
+      {externalOpen === undefined && (
+        <Dialog.Trigger
+          className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          title="Editar cliente"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Dialog.Trigger>
+      )}
 
       <Dialog.Portal>
         <Dialog.Backdrop

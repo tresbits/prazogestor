@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { CardCliente, CardNovoCliente } from './_components/card-cliente'
+import { CardCliente } from './_components/card-cliente'
 import { StatsFooter } from './_components/stats-footer'
 
 function getDiasRestantes(dataVencimento: string): number {
@@ -180,12 +180,7 @@ export default async function PainelPage() {
         </div>
       </div>
 
-      {/* Estado vazio — sem clientes */}
-      {!(clientes?.length) ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <CardNovoCliente />
-        </div>
-      ) : (
+      {!!(clientes?.length) && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {clientesComObs.map(c => (
             <CardCliente
@@ -227,7 +222,6 @@ export default async function PainelPage() {
             </div>
           ))}
 
-          <CardNovoCliente />
         </div>
       )}
 

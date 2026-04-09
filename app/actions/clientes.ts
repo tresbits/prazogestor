@@ -88,6 +88,34 @@ export async function criarCliente(_: unknown, formData: FormData) {
   return { success: true }
 }
 
+export async function deletarCliente(_: unknown, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: escritorio } = await supabase
+    .from('escritorios')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!escritorio) return { error: 'Escritório não encontrado.' }
+
+  const clienteId = formData.get('cliente_id') as string
+
+  const { error } = await supabase
+    .from('clientes')
+    .delete()
+    .eq('id', clienteId)
+    .eq('escritorio_id', escritorio.id)
+
+  if (error) return { error: 'Erro ao excluir. Tente novamente.' }
+
+  revalidatePath('/clientes')
+  revalidatePath('/painel')
+  return { success: true }
+}
+
 export async function atualizarCliente(_: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

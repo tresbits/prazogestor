@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils'
 import { ModalConcluir } from './modal-concluir'
 import { ModalAtrasados } from './modal-atrasados'
 import { ModalProximos } from './modal-proximos'
-import { ModalNovoCliente } from '../../clientes/_components/modal-novo-cliente'
 
 type ObrigacaoItem = {
   id: string
@@ -172,22 +171,5 @@ export function CardCliente({
         </div>
       )}
     </div>
-  )
-}
-
-/** Card placeholder para adicionar novo cliente */
-export function CardNovoCliente() {
-  return (
-    <ModalNovoCliente
-      trigger={
-        <div className="group bg-card rounded-[16px] p-6 flex flex-col items-center justify-center gap-2
-          border-2 border-dashed border-border hover:border-foreground/30
-          text-muted-foreground hover:text-foreground
-          transition-all duration-200 min-h-[140px]">
-          <span className="text-3xl font-light group-hover:scale-110 transition-transform duration-200">+</span>
-          <p className="text-sm font-medium">Adicionar Novo Cliente</p>
-        </div>
-      }
-    />
   )
 }
