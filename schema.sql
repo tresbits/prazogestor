@@ -14,8 +14,9 @@ CREATE TABLE escritorios (
   user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   nome        text NOT NULL,
   estado      char(2) NOT NULL,
-  plano       text NOT NULL DEFAULT 'trial' CHECK (plano IN ('trial', 'essencial', 'profissional', 'agencia', 'beta')),
-  created_at  timestamptz NOT NULL DEFAULT now()
+  plano                text NOT NULL DEFAULT 'trial' CHECK (plano IN ('trial', 'essencial', 'profissional', 'agencia', 'beta')),
+  alertas_email_ativo  boolean NOT NULL DEFAULT true,
+  created_at           timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE clientes (
@@ -60,10 +61,11 @@ CREATE TABLE obrigacoes_cliente (
 );
 
 CREATE TABLE alertas_log (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  obrigacao_id    uuid NOT NULL REFERENCES obrigacoes_cliente(id) ON DELETE CASCADE,
-  tipo            text NOT NULL CHECK (tipo IN ('7d', '3d', '1d')),
-  enviado_em      timestamptz NOT NULL DEFAULT now()
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  obrigacao_id      uuid NOT NULL REFERENCES obrigacoes_cliente(id) ON DELETE CASCADE,
+  tipo              text NOT NULL CHECK (tipo IN ('7d', '3d', '1d')),
+  enviado_em        timestamptz NOT NULL DEFAULT now(),
+  email_enviado_em  timestamptz  -- null até o webhook confirmar envio pelo Resend
 );
 
 -- Catálogo global de feriados — sem RLS, leitura pública
