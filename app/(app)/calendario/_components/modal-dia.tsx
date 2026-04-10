@@ -132,7 +132,7 @@ export function ModalDia({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end px-6 py-4 border-t border-border/40 shrink-0">
+          {/* <div className="flex items-center justify-end px-6 py-4 border-t border-border/40 shrink-0">
             <Dialog.Close
               className={cn(
                 'px-4 py-2 rounded-full text-sm font-medium',
@@ -142,7 +142,7 @@ export function ModalDia({
             >
               Fechar
             </Dialog.Close>
-          </div>
+          </div> */}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

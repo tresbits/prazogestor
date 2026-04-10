@@ -107,7 +107,7 @@ export function ModalAtrasados({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end px-6 py-4 border-t border-border/40">
+          {/* <div className="flex items-center justify-end px-6 py-4 border-t border-border/40">
             <Dialog.Close
               className={cn(
                 'px-4 py-2 rounded-full text-sm font-medium',
@@ -117,7 +117,7 @@ export function ModalAtrasados({
             >
               Fechar
             </Dialog.Close>
-          </div>
+          </div> */}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

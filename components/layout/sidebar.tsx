@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, CalendarDays, Settings, LogOut, Sun, Moon } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { LayoutDashboard, Users, CalendarDays, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { logout } from '@/app/actions/auth'
 
@@ -13,21 +12,6 @@ const navItems = [
   { href: '/calendario', label: 'Calendário', icon: CalendarDays },
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  return (
-    <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="flex w-full items-center gap-2.5 px-3 py-2 rounded-full text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-    >
-      <Sun className="h-[15px] w-[15px] dark:hidden" />
-      <Moon className="h-[15px] w-[15px] hidden dark:block" />
-      <span className="dark:hidden">Modo escuro</span>
-      <span className="hidden dark:block">Modo claro</span>
-    </button>
-  )
-}
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -62,7 +46,6 @@ export function Sidebar() {
       <div className="h-px bg-border" />
 
       <div className="p-3 space-y-0.5">
-        <ThemeToggle />
         <form action={logout}>
           <button
             type="submit"
