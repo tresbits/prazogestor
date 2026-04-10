@@ -49,7 +49,12 @@ const OB_SELECT = `
   clientes!inner ( id, nome, cnpj, regime, escritorio_id )
 `
 
-export default async function PainelPage() {
+export default async function PainelPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -156,6 +161,15 @@ export default async function PainelPage() {
   const clientesSemObs = (clientes ?? [])
     .filter(c => !porCliente.has(c.id) && !porClienteAtrasado.has(c.id))
 
+  // Filtro de busca
+  const filtro = q?.trim().toLowerCase()
+  const clientesComObsFiltrados = filtro
+    ? clientesComObs.filter(c => c.nome.toLowerCase().includes(filtro))
+    : clientesComObs
+  const clientesSemObsFiltrados = filtro
+    ? clientesSemObs.filter(c => c.nome.toLowerCase().includes(filtro))
+    : clientesSemObs
+
   const agora = new Date()
   const horaAtualStr = agora.toLocaleDateString('pt-BR') + ' ' +
     agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -164,11 +178,11 @@ export default async function PainelPage() {
     <div className="pb-36">
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
-        <div>
+        <div className='p-2'>
           <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">
             Próximos Vencimentos
           </h1>
-          <p className="text-muted-foreground mt-2 font-medium text-sm">
+          <p className="text-muted-foreground text-sm flex items-center gap-2 py-3">
             Obrigações fiscais para os próximos 30 dias.
           </p>
         </div>
@@ -180,9 +194,15 @@ export default async function PainelPage() {
         </div>
       </div>
 
+      {filtro && clientesComObsFiltrados.length === 0 && clientesSemObsFiltrados.length === 0 && (
+        <p className="text-sm text-muted-foreground py-8">
+          Nenhum cliente encontrado para <span className="font-semibold text-foreground">"{q}"</span>.
+        </p>
+      )}
+
       {!!(clientes?.length) && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {clientesComObs.map(c => (
+          {clientesComObsFiltrados.map(c => (
             <CardCliente
               key={c.id}
               clienteId={c.id}
@@ -208,8 +228,8 @@ export default async function PainelPage() {
           ))}
 
           {/* Clientes sem vencimentos no período */}
-          {clientesSemObs.slice(0, 2).map(c => (
-            <div key={c.id} className="bg-card rounded-[16px] p-6 opacity-40">
+          {clientesSemObsFiltrados.slice(0, 2).map(c => (
+            <div key={c.id} className="bg-card rounded-[16px] shadow-card p-6 opacity-40">
               <h3 className="font-heading text-[15px] font-semibold text-foreground">
                 {c.nome}
               </h3>

@@ -8,10 +8,12 @@ export function CalendarioNav({
   ano,
   mes,
   mesLabel,
+  filtro,
 }: {
   ano: number
   mes: number
   mesLabel: string
+  filtro?: string
 }) {
   const router = useRouter()
 
@@ -20,7 +22,9 @@ export function CalendarioNav({
     let novoAno = ano
     if (novoMes > 12) { novoMes = 1; novoAno++ }
     if (novoMes < 1) { novoMes = 12; novoAno-- }
-    router.push(`/calendario?mes=${novoAno}-${String(novoMes).padStart(2, '0')}`)
+    const mesStr = `${novoAno}-${String(novoMes).padStart(2, '0')}`
+    const q = filtro ? `&q=${encodeURIComponent(filtro)}` : ''
+    router.push(`/calendario?mes=${mesStr}${q}`)
   }
 
   const hoje = new Date()
@@ -50,7 +54,7 @@ export function CalendarioNav({
 
       {!eMesAtual && (
         <button
-          onClick={() => router.push('/calendario')}
+          onClick={() => router.push(filtro ? `/calendario?q=${encodeURIComponent(filtro)}` : '/calendario')}
           className={cn(
             'ml-2 px-3 py-1.5 rounded-full text-xs font-medium',
             'text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'

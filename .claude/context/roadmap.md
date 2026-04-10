@@ -131,6 +131,7 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 | Deploy | Vercel | Free tier, zero config, CI/CD automático |
 | Consulta CNPJ | BrasilAPI — só no save, com rate limit | Evita abuso sem degradar UX |
 | Rate limit CNPJ | 30 consultas/dia por escritório | Suficiente para uso legítimo (80 clientes/mês) |
+| Rate limit busca (Spotlight) | Não implementado — adiar pós-validação | Busca já exige auth + filtro por escritório + debounce 300ms + mín. 3 chars + limit 8; abuso real improvável no estágio atual. Quando implementar: Upstash Ratelimit (Redis) na server action `buscarClientes`, ~10 req/min por usuário. Cache React (`cache()`) para deduplica auth+escritório no mesmo ciclo de render. |
 
 ### Empresariais
 

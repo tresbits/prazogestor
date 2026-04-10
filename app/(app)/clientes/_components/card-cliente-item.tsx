@@ -39,7 +39,7 @@ export function CardClienteItem({ cliente }: { cliente: Cliente }) {
 
   return (
     <>
-      <div className="bg-card rounded-[16px] flex flex-col">
+      <div className="bg-card rounded-[16px] shadow-card flex flex-col">
         {/* Header tonal */}
         <div className="px-5 py-4 rounded-t-[16px] bg-muted/50 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-card flex items-center justify-center shrink-0">

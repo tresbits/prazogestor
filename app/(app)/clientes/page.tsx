@@ -4,7 +4,12 @@ import { ModalNovoCliente } from './_components/modal-novo-cliente'
 import { CardClienteItem } from './_components/card-cliente-item'
 import type { Cliente } from '@/types'
 
-export default async function ClientesPage() {
+export default async function ClientesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -17,23 +22,29 @@ export default async function ClientesPage() {
 
   if (!escritorio) redirect('/onboarding')
 
-  const { data: clientes } = await supabase
+  const query = supabase
     .from('clientes')
     .select('*')
     .eq('escritorio_id', escritorio.id)
     .order('nome', { ascending: true })
 
+  if (q?.trim()) query.ilike('nome', `%${q.trim()}%`)
+
+  const { data: clientes } = await query
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-xl font-medium text-foreground">Clientes</h1>
-        <p className="text-sm text-muted-foreground">{clientes?.length ?? 0} cadastrado(s)</p>
+      <div className='p-2'>
+        <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">Clientes</h1>
+        <p className="text-sm text-muted-foreground flex items-center gap-2 py-3">
+          Gerencie sua base de clientes. {`${clientes?.length ?? 0} ${q?.trim() ? `resultado(s)` : `cadastrado(s)`}`}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <ModalNovoCliente
           trigger={
-            <div className="group bg-card rounded-[16px] p-6 flex flex-col items-center justify-center gap-2
+            <div className="group bg-card rounded-[16px] shadow-card p-6 flex flex-col items-center justify-center gap-2
               border-2 border-dashed border-border hover:border-foreground/30
               text-muted-foreground hover:text-foreground
               transition-all duration-200 min-h-[120px] cursor-pointer">

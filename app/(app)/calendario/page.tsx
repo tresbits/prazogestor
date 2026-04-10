@@ -35,7 +35,7 @@ const OB_SELECT = `id, data_vencimento, status, obrigacoes_template ( sigla, nom
 export default async function CalendarioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>
+  searchParams: Promise<{ mes?: string; q?: string }>
 }) {
   const params = await searchParams
 
@@ -100,12 +100,11 @@ export default async function CalendarioPage({
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="font-heading text-xl font-medium text-foreground">Calendário</h1>
-        <p className="text-sm text-muted-foreground">{mesLabel}</p>
+      <div className='p-2'>
+        <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">Calendário</h1>
+        {/* <p className="text-sm text-muted-foreground">{mesLabel}</p> */}
       </div>
-      <CalendarioControls diasMap={diasMap} ano={ano} mes={mes} mesLabel={mesLabel} />
-
+      <CalendarioControls diasMap={diasMap} ano={ano} mes={mes} mesLabel={mesLabel} filtro={params.q?.trim()} />
     </div>
   )
 }

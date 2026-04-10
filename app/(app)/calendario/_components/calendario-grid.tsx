@@ -119,7 +119,7 @@ export function CalendarioGrid({
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-px bg-border/40 rounded-xl overflow-hidden border border-border/40">
+          <div className="grid grid-cols-7 gap-1.5">
             {cells.map(cell => {
               const items = diasMap[cell.date] ?? []
               const isHoje = cell.date === hojeStr
@@ -132,10 +132,11 @@ export function CalendarioGrid({
                   key={cell.date}
                   onClick={() => handleClick(cell.date)}
                   className={cn(
-                    'bg-card min-h-[100px] p-2 flex flex-col gap-1',
-                    !cell.currentMonth && 'opacity-30',
-                    hasItems && 'cursor-pointer hover:bg-muted/30 transition-colors',
-                    isHoje && 'ring-1 ring-inset ring-foreground/25'
+                    'rounded-xl min-h-[100px] p-2 flex flex-col gap-1 shadow-card',
+                    cell.currentMonth ? 'bg-card' : 'bg-muted/30 dark:bg-muted/10',
+                    !cell.currentMonth && 'opacity-50',
+                    hasItems && 'cursor-pointer hover:brightness-95 dark:hover:brightness-110 transition-all',
+                    isHoje && 'ring-2 ring-foreground/30'
                   )}
                 >
                   <span className={cn(
@@ -184,7 +185,7 @@ export function CalendarioGrid({
             const mesLabel = MESES_CURTOS[d.getMonth()]
 
             return (
-              <div key={cell.date} className="bg-card rounded-[16px] overflow-hidden">
+              <div key={cell.date} className="bg-card rounded-[16px] shadow-card overflow-hidden">
                 {/* Header do dia */}
                 <div className={cn(
                   'px-5 py-3 flex items-center gap-2',

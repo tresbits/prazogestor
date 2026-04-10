@@ -118,7 +118,7 @@ export function CardCliente({
   const extras  = totalPendente - preview.length
 
   return (
-    <div className="bg-card rounded-[16px] p-6 flex flex-col gap-0">
+    <div className="bg-card rounded-[16px] shadow-card p-6 flex flex-col gap-0">
       {/* Header — tonal edge-to-edge + avatar */}
       <div className="-mx-6 -mt-6 px-6 py-4 rounded-t-[16px] bg-muted/50 flex items-center gap-3 mb-4">
         <div className="w-9 h-9 rounded-full bg-card flex items-center justify-center shrink-0">
