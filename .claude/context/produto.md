@@ -52,18 +52,25 @@ envia alertas antecipados e mantém histórico de entregas.
 
 ### Entra no MVP
 
-- [ ] Cadastro de escritório (multi-tenant, 1 conta por escritório)
-- [ ] Cadastro de clientes: CNPJ, nome, regime tributário, tem empregados
+- [x] Cadastro de escritório (multi-tenant, 1 conta por escritório)
+- [x] Cadastro de clientes: CNPJ, nome, regime tributário, tem empregados
 - [ ] Enriquecimento automático de razão social via BrasilAPI no save do formulário (ver regras de uso abaixo)
 - [ ] Geração automática de calendário por regime do cliente
-- [ ] Painel de vencimentos: lista dos próximos 30 dias de todos os clientes
-- [ ] Filtros: hoje / esta semana / este mês / **por cliente**
-- [ ] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
+- [x] Painel de vencimentos: lista dos próximos 30 dias de todos os clientes
+- [x] Filtros por cliente — busca global Spotlight (⌘K), filtra painel, clientes e calendário
+- [x] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
 - [ ] Estado vazio no painel com CTA para cadastrar primeiro cliente
-- [ ] Marcar como concluído: checklist + responsável + data/hora
+- [x] Marcar como concluído: checklist + responsável + data/hora
 - [ ] Alertas por e-mail: 7 dias, 3 dias e 1 dia antes do vencimento (com link de descadastro — LGPD)
 - [ ] Ajuste automático de datas por feriados nacionais (tabela `feriados` sincronizada via BrasilAPI)
-- [ ] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
+- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
+
+### Implementado além do MVP original
+
+- [x] Tela de calendário com visualizações grade e lista, navegação por mês
+- [x] Tela de configurações: escritório, conta, aparência (dark/light/sistema), notificações (LGPD), plano, exclusão de conta
+- [x] Loading skeletons (painel e clientes)
+- [x] Busca global tipo Spotlight com debounce, navegação por teclado e SearchBanner contextual
 
 ### Fica fora do MVP
 

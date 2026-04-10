@@ -30,9 +30,9 @@
 
 ### Semana 3 · Auth + cadastro
 
-- [ ] Auth com Supabase: criar conta, confirmar e-mail, login, recuperar senha
-- [ ] Tela de cadastro de escritório (nome, estado — campos mínimos)
-- [ ] Formulário de cadastro de cliente: CNPJ, nome, regime, tem empregados
+- [x] Auth com Supabase: criar conta, confirmar e-mail, login, recuperar senha
+- [x] Tela de cadastro de escritório (nome, estado — campos mínimos)
+- [x] Formulário de cadastro de cliente: CNPJ, nome, regime, tem empregados
 - [ ] **Consulta BrasilAPI no save do formulário** — enriquece razão social se encontrar, silencioso se não encontrar (ver `@skills/saas-br.md`)
 - [ ] **Rate limit de CNPJ** — 30 consultas/dia por escritório via `cnpj_rate_limit`; retorna 429 silencioso se exceder
 - [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente — única ação explícita que dispara nova consulta à BrasilAPI
@@ -41,11 +41,10 @@
 
 - [ ] Função `gerarVencimentos(clienteId, regime, temEmpregados, ano)` — gera `obrigacoes_cliente` ao cadastrar cliente (ver `@commands/gerar-vencimentos.md`)
 - [ ] Ajuste automático de datas por feriados nacionais usando tabela `feriados` já populada
-- [ ] Painel: lista de vencimentos ordenada por data, próximos 30 dias de todos os clientes
-- [ ] Filtros: hoje / esta semana / este mês
-- [ ] **Filtro por cliente** — essencial a partir de 15+ clientes no painel
-- [ ] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
-- [ ] Botão "Concluir" — registra responsável, data/hora, muda status
+- [x] Painel: lista de vencimentos ordenada por data, próximos 30 dias de todos os clientes
+- [x] **Filtro por cliente** — busca Spotlight global (⌘K) filtra painel, clientes e calendário
+- [x] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
+- [x] Botão "Concluir" — registra responsável, data/hora, muda status
 
 ### Semana 5 · Alertas por e-mail
 
@@ -56,9 +55,9 @@
 
 ### Semana 6 · Onboarding + polish
 
-- [ ] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
+- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
 - [ ] **Estado vazio no painel** — guia o contador a cadastrar o primeiro cliente se a lista estiver vazia
-- [ ] Loading states em todas as ações assíncronas (salvar cliente, gerar obrigações, concluir)
+- [x] Loading states em todas as ações assíncronas (painel e clientes com skeletons)
 - [ ] Mensagens de erro claras — sem "something went wrong"
 - [ ] Convidar 10 escritórios da lista de espera
 - [ ] Onboarding manual: cadastrar os clientes deles por videochamada + tela compartilhada
@@ -114,7 +113,7 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 | Onboarding beta | Manual (você cadastra) | Acelera adoção, aprende o que falta |
 | Trial | 14 dias, sem cartão | Reduz atrito na conversão |
 | Beta | 90 dias grátis (não vitalício) | Valida sem comprometer receita futura |
-| Filtro por cliente no painel | Sim — MVP | Sem ele o painel quebra na prática a partir de ~15 clientes |
+| Filtro por cliente no painel | Spotlight global (⌘K) — implementado | Busca server-side via `buscarClientes`, filtra painel/clientes/calendário por nome. Sem ele o painel quebra a partir de ~15 clientes |
 | Export .ics | Fase 2 | Raramente usado, não resolve a dor core |
 | Notas por obrigação | Fase 2 | Baixa prioridade vs filtro por cliente e onboarding |
 

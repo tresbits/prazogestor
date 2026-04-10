@@ -49,7 +49,7 @@ No Claude Code: use `@agents/fiscal.md` diretamente.
 - Responder sempre em **português brasileiro**
 - Ser **direto e acionável** — sem rodeios, sem teoria desnecessária
 - Usar **dados reais do projeto** (R$, datas, CNAEs, prazos concretos)
-- Quando gerar código: usar a stack definida (Next.js 14, Supabase, TypeScript)
+- Quando gerar código: usar a stack definida (Next.js 16, Supabase, TypeScript)
 - Quando houver dúvida sobre dados: consultar os arquivos em `context/`
 - Não duplicar informação que já existe nos arquivos de contexto — referenciar
 - Citar o agente correto quando a pergunta pertencer a outro domínio
@@ -90,8 +90,8 @@ tresbits-agent/
 
 ## Estado atual do projeto (atualizar conforme evolui)
 
-- **Fase**: pré-MVP · validação com contadores
+- **Fase**: produto funcional construído · pronto para beta com contadores reais
 - **Empresa**: ativa, CNAE a alterar, endereço fiscal a contratar
-- **Produto**: definido, não iniciado
+- **Produto**: app funcional — auth, onboarding, painel, clientes, calendário, configurações, busca Spotlight implementados. Pendente: geração automática de vencimentos, alertas por e-mail, integração BrasilAPI CNPJ, feriados
 - **Primeiros clientes**: 0 (meta: 10 betas em 60 dias)
 - **MRR**: R$0 (meta mês 3: R$1.470)
