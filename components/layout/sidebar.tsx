@@ -13,17 +13,46 @@ const navItems = [
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
-export function Sidebar() {
+function getInitials(nome: string): string {
+  return nome
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join('')
+}
+
+export function Sidebar({
+  escritorioNome,
+  escritorioEstado,
+  userEmail,
+}: {
+  escritorioNome: string
+  escritorioEstado: string
+  userEmail: string
+}) {
   const pathname = usePathname()
+  const initials = escritorioNome ? getInitials(escritorioNome) : '?'
 
   return (
     <aside className="w-52 flex flex-col border-r border-border bg-sidebar h-screen sticky top-0">
-      <div className="px-5 py-6">
-        <p className="font-heading font-medium text-[15px] text-foreground">PrazoGestor</p>
-        <p className="text-xs text-muted-foreground mt-0.5">by Tresbits</p>
+
+      {/* Workspace identity */}
+      <div className="px-4 py-5 flex items-center gap-3">
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center text-[11px] font-bold tracking-wide">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold text-foreground leading-tight truncate">
+            {escritorioNome || 'Meu Escritório'}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {escritorioEstado ? `${escritorioEstado} · PrazoGestor` : 'PrazoGestor'}
+          </p>
+        </div>
       </div>
 
-      <div className="h-px bg-border mx-0" />
+      <div className="h-px bg-border" />
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map(({ href, label, icon: Icon }) => (
@@ -45,7 +74,18 @@ export function Sidebar() {
 
       <div className="h-px bg-border" />
 
+      {/* User footer */}
       <div className="p-3 space-y-0.5">
+        <Link
+          href="/configuracoes"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-full text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors w-full"
+        >
+          <div className="shrink-0 w-5 h-5 rounded-full bg-muted-foreground/20 flex items-center justify-center text-[9px] font-bold text-muted-foreground">
+            {userEmail ? userEmail[0].toUpperCase() : '?'}
+          </div>
+          <span className="truncate text-[12px]">{userEmail}</span>
+        </Link>
+
         <form action={logout}>
           <button
             type="submit"
