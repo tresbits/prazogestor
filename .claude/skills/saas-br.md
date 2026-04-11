@@ -85,7 +85,7 @@ async function enviarAlertaWhatsApp(telefone: string, mensagem: string) {
 
 ```
 ⚠️ [Escritório]: DAS do cliente [Nome] vence em 3 dias (dia 20/01).
-Acesse o painel: https://prazogestor.tresbits.com.br/painel
+Acesse o painel: https://prazogestor.tresbits.com/painel
 ```
 
 ## Consulta de CNPJ via BrasilAPI

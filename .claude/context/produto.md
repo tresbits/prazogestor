@@ -4,7 +4,7 @@
 
 **Nome do produto**: PrazoGestor
 **Empresa**: Tresbits Serviços de Informática LTDA
-**URL MVP**: prazogestor.tresbits.com.br
+**URL MVP**: prazogestor.tresbits.com
 **Domínio definitivo**: prazogestor.com.br (registrar ao atingir primeiros pagantes)
 
 **O que é**: SaaS B2B de gestão de prazos e obrigações fiscais para escritórios contábeis brasileiros.

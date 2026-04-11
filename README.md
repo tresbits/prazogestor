@@ -1,7 +1,7 @@
 # PrazoGestor
 
 Calendário de obrigações fiscais para escritórios contábeis brasileiros.
-Desenvolvido pela [Tresbits](https://tresbits.com.br).
+Desenvolvido pela [Tresbits](https://tresbits.com).
 
 ## Stack
 
@@ -35,7 +35,7 @@ cp .env.example .env.local
 | `RESEND_API_KEY` | Chave da API Resend para e-mails |
 | `WEBHOOK_SECRET` | Secret para autenticar o webhook de alertas |
 | `CRON_SECRET` | Secret para autenticar o endpoint de cron |
-| `NEXT_PUBLIC_SITE_URL` | URL pública do app (ex: https://prazogestor.tresbits.com.br) |
+| `NEXT_PUBLIC_SITE_URL` | URL pública do app (ex: https://prazogestor.tresbits.com) |
 
 ### 3. Aplicar o schema no Supabase
 

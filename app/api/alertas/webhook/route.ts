@@ -79,7 +79,7 @@ export async function POST(request: Request) {
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://prazogestor.tresbits.com.br'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://prazogestor.tresbits.com'
 
   const html = await render(
     AlertaVencimento({
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   )
 
   const { error: resendError } = await resend.emails.send({
-    from: 'PrazoGestor <alertas@prazogestor.tresbits.com.br>',
+    from: 'PrazoGestor <alertas@prazogestor.tresbits.com>',
     to: email,
     subject: `⚠ ${template.sigla} · ${cliente.nome} vence em ${formatarData(obrigacao.data_vencimento)}`,
     html,

@@ -17,7 +17,7 @@
 ### Semanas 1–2 · Fundação
 
 - [ ] Repositório Next.js 14 criado, Supabase configurado
-- [ ] Subdomínio configurado no Vercel: `prazogestor.tresbits.com.br` (DNS via tresbits.com.br existente — sem custo)
+- [ ] Subdomínio configurado no Vercel: `prazogestor.tresbits.com` (DNS via tresbits.com existente — sem custo)
 - [ ] Domínio `prazogestor.com.br` registrar apenas ao atingir os primeiros pagantes (~R$40/ano)
 - [ ] Schema SQL completo: `escritorios`, `clientes`, `obrigacoes_template`, `obrigacoes_cliente`, `alertas_log`
 - [ ] RLS habilitado em todas as tabelas com políticas de isolamento por escritório
