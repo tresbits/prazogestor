@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -24,12 +24,11 @@ export function ModalAtrasados({
   extrasCount: number
 }) {
   const [open, setOpen] = useState(false)
+  const popupRef = useRef<HTMLDivElement>(null)
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger
-        className="mt-1 text-[11px] text-destructive/60 hover:text-destructive transition-colors font-medium"
-      >
+      <Dialog.Trigger className="mt-1 text-[11px] text-destructive/60 hover:text-destructive transition-colors font-medium">
         + {extrasCount} mais vencidos → ver todos
       </Dialog.Trigger>
 
@@ -43,10 +42,11 @@ export function ModalAtrasados({
           )}
         />
         <Dialog.Popup
+          ref={popupRef}
+          initialFocus={popupRef}
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-full max-w-md max-h-[85vh]',
-            'flex flex-col',
+            'w-full max-w-md max-h-[85vh] flex flex-col',
             'bg-background/90 backdrop-blur-3xl',
             'border-[0.5px] border-white/20 dark:border-white/10',
             'rounded-[20px]',
@@ -57,7 +57,7 @@ export function ModalAtrasados({
           )}
         >
           {/* Header */}
-          <div className="flex items-start justify-between px-6 pt-6 pb-4">
+          <div className="flex items-start justify-between px-6 pt-6 pb-5 shrink-0 border-b border-border">
             <div>
               <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
                 Obrigações Vencidas
@@ -66,58 +66,49 @@ export function ModalAtrasados({
                 {clienteNome}
               </Dialog.Description>
             </div>
-            <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
               <X className="h-4 w-4" />
             </Dialog.Close>
           </div>
 
           {/* List */}
-          <div className="px-6 pb-2 flex-1 overflow-y-auto min-h-0 no-scrollbar">
-            {obrigacoes.map((o, i) => {
-              const venc = new Date(o.data_vencimento + 'T00:00:00')
-              const vencFormatado = venc.toLocaleDateString('pt-BR', {
-                day: '2-digit', month: 'short', year: 'numeric',
-              })
-              return (
-                <div
-                  key={o.id}
-                  className={cn(
-                    'group flex items-center justify-between py-3',
-                    i > 0 && 'border-t border-border/40'
-                  )}
-                >
-                  <div className="min-w-0">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide mb-1 bg-destructive/10 text-destructive">
-                      {o.sigla || '—'}
-                    </span>
-                    <p className="text-sm font-semibold text-foreground truncate">{o.nome}</p>
-                    <p className="text-[11px] text-muted-foreground">{vencFormatado}</p>
+          <div className="px-6 py-4 flex-1 overflow-y-auto min-h-0 no-scrollbar">
+            <div className="rounded-xl overflow-hidden border border-border bg-muted">
+              {obrigacoes.map((o, i) => {
+                const venc = new Date(o.data_vencimento + 'T00:00:00')
+                const vencFormatado = venc.toLocaleDateString('pt-BR', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                })
+                return (
+                  <div
+                    key={o.id}
+                    className={cn(
+                      'group flex items-center justify-between px-4 py-3',
+                      i > 0 && 'border-t border-border'
+                    )}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-destructive text-white">
+                        {o.sigla || '—'}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm text-foreground truncate">{o.nome}</p>
+                        <p className="text-[11px] text-muted-foreground">{vencFormatado}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 ml-4">
+                      <ModalConcluir
+                        obrigacaoId={o.id}
+                        nomeObrigacao={o.nome}
+                        clienteNome={clienteNome}
+                        dataVencimento={o.data_vencimento}
+                      />
+                    </div>
                   </div>
-                  <div className="shrink-0 ml-4">
-                    <ModalConcluir
-                      obrigacaoId={o.id}
-                      nomeObrigacao={o.nome}
-                      clienteNome={clienteNome}
-                      dataVencimento={o.data_vencimento}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-
-          {/* Footer */}
-          {/* <div className="flex items-center justify-end px-6 py-4 border-t border-border/40">
-            <Dialog.Close
-              className={cn(
-                'px-4 py-2 rounded-full text-sm font-medium',
-                'text-muted-foreground hover:text-foreground hover:bg-muted',
-                'transition-colors'
-              )}
-            >
-              Fechar
-            </Dialog.Close>
-          </div> */}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

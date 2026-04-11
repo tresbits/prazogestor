@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -18,16 +19,32 @@ function getDias(dataVencimento: string): number {
   return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-function UrgenciaLabel({ dias, status }: { dias: number; status: string }) {
-  const isAtrasado = status === 'atrasado' || dias < 0
-  const isHoje = dias === 0
-  const isUrgente = !isAtrasado && !isHoje && dias <= 3
-  const isProximo = !isAtrasado && !isHoje && !isUrgente && dias <= 7
-  if (isAtrasado) return <span className="text-[11px] font-bold text-destructive tracking-wide">VENCIDO</span>
-  if (isHoje)     return <span className="text-[11px] font-bold text-destructive tracking-wide">HOJE</span>
-  if (isUrgente)  return <span className="text-[11px] font-bold text-amber-500 tracking-wide">EM {dias} {dias === 1 ? 'DIA' : 'DIAS'}</span>
-  if (isProximo)  return <span className="text-[11px] font-bold text-yellow-500 dark:text-yellow-400 tracking-wide">EM {dias} DIAS</span>
-  return <span className="text-[11px] font-bold text-muted-foreground tracking-wide">EM {dias} DIAS</span>
+function urgenciaPrioridade(item: ObrigacaoCalendario): number {
+  const dias = getDias(item.data_vencimento)
+  if (item.status === 'atrasado' || dias < 0) return 0
+  if (dias === 0) return 1
+  if (dias <= 3) return 2
+  if (dias <= 7) return 3
+  return 4
+}
+
+function siglaPillClass(prioridade: number) {
+  if (prioridade <= 1) return 'bg-destructive text-white'
+  if (prioridade === 2) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+  if (prioridade === 3) return 'bg-yellow-400/15 text-yellow-600 dark:text-yellow-400'
+  return 'bg-muted text-muted-foreground'
+}
+
+function UrgenciaLabel({ prioridade, dias }: { prioridade: number; dias: number }) {
+  if (prioridade === 0) return <span className="text-[11px] font-bold text-destructive tracking-wide">VENCIDO</span>
+  if (prioridade === 1) return <span className="text-[11px] font-bold text-destructive tracking-wide">HOJE</span>
+  if (prioridade === 2) return <span className="text-[11px] font-bold text-amber-500 tracking-wide">EM {dias} {dias === 1 ? 'DIA' : 'DIAS'}</span>
+  if (prioridade === 3) return <span className="text-[11px] font-bold text-yellow-500 dark:text-yellow-400 tracking-wide">EM {dias} DIAS</span>
+  return <span className="text-[11px] font-bold text-muted-foreground/50 tracking-wide">EM {dias} DIAS</span>
+}
+
+function formatCNPJ(cnpj: string): string {
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
 }
 
 export function ModalDia({
@@ -48,6 +65,25 @@ export function ModalDia({
       })()
     : ''
 
+  // Agrupar por cliente
+  const porCliente = new Map<string, { nome: string; cnpj: string; obs: ObrigacaoCalendario[] }>()
+  for (const item of items) {
+    if (!porCliente.has(item.clienteId)) {
+      porCliente.set(item.clienteId, { nome: item.clienteNome, cnpj: item.clienteCnpj, obs: [] })
+    }
+    porCliente.get(item.clienteId)!.obs.push(item)
+  }
+
+  // Ordenar clientes pela pior urgência
+  const grupos = Array.from(porCliente.values()).sort((a, b) => {
+    const piorA = Math.min(...a.obs.map(urgenciaPrioridade))
+    const piorB = Math.min(...b.obs.map(urgenciaPrioridade))
+    return piorA - piorB
+  })
+
+  const totalClientes = grupos.length
+  const popupRef = useRef<HTMLDivElement>(null)
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -60,9 +96,11 @@ export function ModalDia({
           )}
         />
         <Dialog.Popup
+          ref={popupRef}
+          initialFocus={popupRef}
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-full max-w-md max-h-[85vh] flex flex-col',
+            'w-full max-w-lg max-h-[85vh] flex flex-col',
             'bg-background/90 backdrop-blur-3xl',
             'border-[0.5px] border-white/20 dark:border-white/10',
             'rounded-[20px]',
@@ -73,76 +111,97 @@ export function ModalDia({
           )}
         >
           {/* Header */}
-          <div className="flex items-start justify-between px-6 pt-6 pb-4 shrink-0">
+          <div className="flex items-start justify-between px-6 pt-6 pb-5 shrink-0 border-b border-border">
             <div>
               <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
                 Vencimentos
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5">
+              <Dialog.Description className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 {dateLabel}
+                {items.length > 0 && (
+                  <>
+                    <span className="opacity-40">·</span>
+                    <span>{items.length} {items.length === 1 ? 'obrigação' : 'obrigações'}</span>
+                    {totalClientes > 1 && (
+                      <>
+                        <span className="opacity-40">·</span>
+                        <span>{totalClientes} clientes</span>
+                      </>
+                    )}
+                  </>
+                )}
               </Dialog.Description>
             </div>
-            <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
               <X className="h-4 w-4" />
             </Dialog.Close>
           </div>
 
-          {/* List */}
-          <div className="px-6 pb-2 flex-1 overflow-y-auto min-h-0 no-scrollbar">
-            {items.map((item, i) => {
-              const dias = getDias(item.data_vencimento)
-              const isAtrasado = item.status === 'atrasado' || dias < 0
-              const isHoje     = dias === 0
-              const isUrgente  = !isAtrasado && !isHoje && dias <= 3
-              const isProximo  = !isAtrasado && !isHoje && !isUrgente && dias <= 7
+          {/* Grupos por cliente */}
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar py-2">
+            {grupos.map((grupo, gi) => {
+              const piorPrioridade = Math.min(...grupo.obs.map(urgenciaPrioridade))
+              const piorItem = grupo.obs.find(o => urgenciaPrioridade(o) === piorPrioridade)!
+              const piorDias = getDias(piorItem.data_vencimento)
 
               return (
-                <div
-                  key={item.id}
-                  className={cn(
-                    'group flex items-center justify-between py-3',
-                    i > 0 && 'border-t border-border/40'
-                  )}
-                >
-                  <div className="min-w-0">
-                    <span className={cn(
-                      'inline-block px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide mb-1',
-                      isAtrasado || isHoje ? 'bg-destructive/10 text-destructive'
-                        : isUrgente        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        : isProximo        ? 'bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
-                        :                    'bg-muted text-muted-foreground'
-                    )}>
-                      {item.sigla || '—'}
-                    </span>
-                    <p className="text-sm font-semibold text-foreground truncate">{item.nome}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{item.clienteNome}</p>
+                <div key={grupo.nome} className={cn('px-6 py-4', gi > 0 && 'border-t border-border')}>
+                  {/* Header do cliente */}
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="min-w-0">
+                      <p className="font-heading text-[15px] font-semibold text-foreground truncate">
+                        {grupo.nome}
+                      </p>
+                      {grupo.cnpj && (
+                        <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                          {formatCNPJ(grupo.cnpj)}
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 mt-0.5">
+                      <UrgenciaLabel prioridade={piorPrioridade} dias={piorDias} />
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0 ml-4">
-                    <UrgenciaLabel dias={dias} status={item.status} />
-                    <ModalConcluir
-                      obrigacaoId={item.id}
-                      nomeObrigacao={item.nome}
-                      clienteNome={item.clienteNome}
-                      dataVencimento={item.data_vencimento}
-                    />
+
+                  {/* Obrigações */}
+                  <div className="rounded-xl overflow-hidden border border-border bg-muted">
+                    {grupo.obs.map((item, oi) => {
+                      const prioridade = urgenciaPrioridade(item)
+                      return (
+                        <div
+                          key={item.id}
+                          className={cn(
+                            'group flex items-center justify-between px-4 py-3',
+                            oi > 0 && 'border-t border-border'
+                          )}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={cn(
+                              'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
+                              siglaPillClass(prioridade)
+                            )}>
+                              {item.sigla || '—'}
+                            </span>
+                            <span className="text-sm text-muted-foreground truncate">
+                              {item.nome}
+                            </span>
+                          </div>
+                          <div className="shrink-0 ml-4">
+                            <ModalConcluir
+                              obrigacaoId={item.id}
+                              nomeObrigacao={item.nome}
+                              clienteNome={item.clienteNome}
+                              dataVencimento={item.data_vencimento}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )
             })}
           </div>
-
-          {/* Footer */}
-          {/* <div className="flex items-center justify-end px-6 py-4 border-t border-border/40 shrink-0">
-            <Dialog.Close
-              className={cn(
-                'px-4 py-2 rounded-full text-sm font-medium',
-                'text-muted-foreground hover:text-foreground hover:bg-muted',
-                'transition-colors'
-              )}
-            >
-              Fechar
-            </Dialog.Close>
-          </div> */}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

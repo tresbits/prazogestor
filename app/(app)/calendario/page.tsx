@@ -7,7 +7,7 @@ type ObRow = {
   data_vencimento: string
   status: string
   obrigacoes_template: { sigla: string; nome: string }[] | { sigla: string; nome: string } | null
-  clientes: { id: string; nome: string }[] | { id: string; nome: string } | null
+  clientes: { id: string; nome: string; cnpj: string }[] | { id: string; nome: string; cnpj: string } | null
 }
 
 function unwrap<T>(val: T[] | T | null): T | null {
@@ -23,6 +23,7 @@ export type ObrigacaoCalendario = {
   nome: string
   clienteId: string
   clienteNome: string
+  clienteCnpj: string
 }
 
 const MESES_PT = [
@@ -30,7 +31,7 @@ const MESES_PT = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-const OB_SELECT = `id, data_vencimento, status, obrigacoes_template ( sigla, nome ), clientes!inner ( id, nome, escritorio_id )`
+const OB_SELECT = `id, data_vencimento, status, obrigacoes_template ( sigla, nome ), clientes!inner ( id, nome, cnpj, escritorio_id )`
 
 export default async function CalendarioPage({
   searchParams,
@@ -91,6 +92,7 @@ export default async function CalendarioPage({
       nome: t?.nome ?? '',
       clienteId: c.id,
       clienteNome: c.nome,
+      clienteCnpj: c.cnpj ?? '',
     }
     if (!diasMap[row.data_vencimento]) diasMap[row.data_vencimento] = []
     diasMap[row.data_vencimento].push(item)
