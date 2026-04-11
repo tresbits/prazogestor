@@ -1,40 +1,72 @@
+import { Check, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = [
-  { n: 1, label: 'Seu escritório' },
-  { n: 2, label: 'Primeiro cliente' },
-  { n: 3, label: 'Calendário' },
+  { n: 1, label: 'Escritório' },
+  { n: 2, label: 'Cliente' },
+  { n: 3, label: 'Concluído' },
 ]
 
-export function ProgressSteps({ current }: { current: 1 | 2 | 3 }) {
+export function ProgressSteps({
+  current,
+  skipped = [],
+  completed = false,
+}: {
+  current: 1 | 2 | 3
+  skipped?: number[]
+  completed?: boolean
+}) {
   return (
-    <div className="flex items-center gap-0 w-full max-w-sm mx-auto mb-8">
-      {STEPS.map((step, i) => (
-        <div key={step.n} className="flex items-center flex-1">
-          <div className="flex flex-col items-center gap-1 flex-1">
+    <div className="relative flex justify-between items-start w-full max-w-xs mx-auto mb-10">
+
+      {/* Linhas conectoras */}
+      <div className="absolute top-[18px] left-0 right-0 flex px-[18px] pointer-events-none">
+        {STEPS.slice(0, -1).map((step) => (
+          <div
+            key={step.n}
+            className={cn(
+              'flex-1 h-px transition-colors',
+              step.n < current && !skipped.includes(step.n)
+                ? 'bg-foreground/40'
+                : 'bg-border'
+            )}
+          />
+        ))}
+      </div>
+
+      {/* Steps */}
+      {STEPS.map((step) => {
+        const isSkipped = skipped.includes(step.n)
+        const done      = (step.n < current || (completed && step.n === current)) && !isSkipped
+        const active    = step.n === current && !completed
+
+        return (
+          <div key={step.n} className="relative flex flex-col items-center gap-2 z-10">
             <div className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors',
-              step.n < current  && 'bg-foreground border-foreground text-background',
-              step.n === current && 'bg-background border-foreground text-foreground',
-              step.n > current  && 'bg-background border-border text-muted-foreground',
+              'w-9 h-9 rounded-full flex items-center justify-center transition-all',
+              done   && 'bg-foreground text-background',
+              active && 'bg-foreground text-background ring-[3px] ring-offset-2 ring-offset-background ring-foreground/20',
+              isSkipped && 'bg-muted text-muted-foreground border border-border',
+              !done && !active && !isSkipped && 'bg-muted text-muted-foreground',
             )}>
-              {step.n < current ? '✓' : step.n}
+              {done
+                ? <Check className="h-4 w-4" strokeWidth={2.5} />
+                : isSkipped
+                  ? <Clock className="h-4 w-4" strokeWidth={2} />
+                  : <span className="text-sm font-bold">{step.n}</span>
+              }
             </div>
             <span className={cn(
-              'text-xs whitespace-nowrap',
-              step.n === current ? 'text-foreground font-medium' : 'text-muted-foreground'
+              'text-[11px] font-medium whitespace-nowrap',
+              active    ? 'text-foreground'        : 'text-muted-foreground',
+              isSkipped && 'text-muted-foreground/60',
             )}>
               {step.label}
             </span>
           </div>
-          {i < STEPS.length - 1 && (
-            <div className={cn(
-              'h-0.5 flex-1 -mt-5 mx-1 transition-colors',
-              step.n < current ? 'bg-foreground' : 'bg-border'
-            )} />
-          )}
-        </div>
-      ))}
+        )
+      })}
+
     </div>
   )
 }

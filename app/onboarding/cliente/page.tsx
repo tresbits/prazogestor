@@ -1,88 +1,20 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { ClienteForm } from '@/components/onboarding/cliente-form'
 
-import { useActionState } from 'react'
-import { onboardingCriarCliente } from '@/app/actions/onboarding'
-import { ProgressSteps } from '@/components/onboarding/progress-steps'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+export default async function OnboardingClientePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-export default function OnboardingClientePage() {
-  const [state, action, pending] = useActionState(onboardingCriarCliente, null)
+  const { data: escritorio } = await supabase
+    .from('escritorios')
+    .select('id, onboarding_concluido')
+    .eq('user_id', user.id)
+    .single()
 
-  return (
-    <>
-      <ProgressSteps current={2} />
-      <Card>
-        <CardHeader>
-          <CardTitle>Cadastre um cliente</CardTitle>
-          <CardDescription>
-            Vamos gerar o calendário fiscal dele automaticamente.
-            A razão social será buscada pelo CNPJ ao salvar.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={action} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
-              <Input
-                id="cnpj"
-                name="cnpj"
-                placeholder="00.000.000/0001-00"
-                required
-                maxLength={18}
-                autoFocus
-              />
-            </div>
+  if (!escritorio) redirect('/onboarding/escritorio')
+  if (escritorio.onboarding_concluido) redirect('/painel')
 
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome (caso não encontre pelo CNPJ)</Label>
-              <Input
-                id="nome"
-                name="nome"
-                placeholder="Razão social ou nome fantasia"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="regime">Regime tributário</Label>
-              <Select name="regime" required>
-                <SelectTrigger id="regime">
-                  <SelectValue placeholder="Selecione o regime" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="simples">Simples Nacional</SelectItem>
-                  <SelectItem value="mei">MEI</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tem_empregados">Tem empregados?</Label>
-              <Select name="tem_empregados" required>
-                <SelectTrigger id="tem_empregados">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">Não</SelectItem>
-                  <SelectItem value="true">Sim</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {state?.error && (
-              <p className="text-sm text-red-600">{state.error}</p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? 'Gerando calendário...' : 'Gerar calendário →'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </>
-  )
+  return <ClienteForm />
 }
