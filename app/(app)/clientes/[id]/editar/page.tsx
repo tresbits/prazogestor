@@ -18,7 +18,7 @@ export default async function EditarClientePage({
     .select('id')
     .eq('user_id', user.id)
     .single()
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   const { data: cliente } = await supabase
     .from('clientes')

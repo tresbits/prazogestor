@@ -18,7 +18,7 @@ export default async function ConfiguracoesPage() {
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   return (
     <div className="p-2 space-y-8 max-w-5xl">

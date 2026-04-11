@@ -63,7 +63,7 @@ export default async function CalendarioPage({
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   const primeiroDia = `${ano}-${String(mes).padStart(2, '0')}-01`
   const ultimoDiaNum = new Date(ano, mes, 0).getDate()

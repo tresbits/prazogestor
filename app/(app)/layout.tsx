@@ -14,9 +14,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: escritorio } = await supabase
     .from('escritorios')
-    .select('nome, estado')
+    .select('nome, estado, onboarding_concluido')
     .eq('user_id', user.id)
     .single()
+
+  if (!escritorio) redirect('/onboarding/escritorio')
+  if (!escritorio.onboarding_concluido) redirect('/onboarding/cliente')
 
   return (
     <div className="flex min-h-screen bg-background">

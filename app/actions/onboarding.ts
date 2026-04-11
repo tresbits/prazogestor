@@ -99,5 +99,23 @@ export async function onboardingCriarCliente(_: unknown, formData: FormData) {
     await gerarVencimentos(supabase, novoCliente.id, regime, temEmpregados, ano + 1)
   }
 
+  await supabase
+    .from('escritorios')
+    .update({ onboarding_concluido: true })
+    .eq('id', escritorio.id)
+
+  redirect('/onboarding/pronto')
+}
+
+export async function onboardingPularCliente() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  await supabase
+    .from('escritorios')
+    .update({ onboarding_pulou_cliente: true, onboarding_concluido: true })
+    .eq('user_id', user.id)
+
   redirect('/onboarding/pronto')
 }

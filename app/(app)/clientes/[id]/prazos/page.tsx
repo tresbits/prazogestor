@@ -43,7 +43,7 @@ export default async function PrazosClientePage({
     .select('id')
     .eq('user_id', user.id)
     .single()
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   const { data: cliente } = await supabase
     .from('clientes')
@@ -127,7 +127,9 @@ export default async function PrazosClientePage({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="font-heading text-xl font-medium text-foreground">{cliente.nome}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{cliente.cnpj}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+            </p>
           </div>
           <Badge variant="secondary" className="rounded-full shrink-0">
             {REGIME_LABEL[cliente.regime] ?? cliente.regime}
