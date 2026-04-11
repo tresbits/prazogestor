@@ -1,15 +1,17 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { criarCliente } from '@/app/actions/clientes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { formatCNPJ } from '@/lib/format'
 
 export default function NovoClientePage() {
   const [state, action, pending] = useActionState(criarCliente, null)
+  const [cnpj, setCnpj] = useState('')
 
   return (
     <div className="max-w-md mx-auto mt-8">
@@ -27,9 +29,11 @@ export default function NovoClientePage() {
               <Input
                 id="cnpj"
                 name="cnpj"
+                value={cnpj}
+                onChange={e => setCnpj(formatCNPJ(e.target.value))}
                 placeholder="00.000.000/0001-00"
                 required
-                maxLength={18}
+                inputMode="numeric"
               />
             </div>
 
@@ -60,7 +64,7 @@ export default function NovoClientePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tem_empregados">Tem empregados?</Label>
+              <Label htmlFor="tem_empregados">Tem funcionários?</Label>
               <Select name="tem_empregados" required>
                 <SelectTrigger id="tem_empregados">
                   <SelectValue placeholder="Selecione" />

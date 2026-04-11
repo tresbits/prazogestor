@@ -70,7 +70,7 @@ export function EditarClienteForm({ cliente }: { cliente: Cliente }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tem_empregados">Tem empregados?</Label>
+              <Label htmlFor="tem_empregados">Tem funcionários?</Label>
               <Select name="tem_empregados" defaultValue={String(cliente.tem_empregados)}>
                 <SelectTrigger id="tem_empregados">
                   <SelectValue placeholder="Selecione" />
