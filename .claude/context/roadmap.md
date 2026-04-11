@@ -55,21 +55,35 @@
 
 ### Semana 6 · Onboarding + polish
 
-- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
-- [ ] **Estado vazio no painel** — guia o contador a cadastrar o primeiro cliente se a lista estiver vazia
+- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado (flows com/sem cliente)
+- [x] Guards de onboarding centralizados no layout — `onboarding_concluido` como gate de todas as rotas do app
+- [x] Empty state no painel com ModalNovoCliente
 - [x] Loading states em todas as ações assíncronas (painel e clientes com skeletons)
 - [ ] Mensagens de erro claras — sem "something went wrong"
 - [ ] Convidar 10 escritórios da lista de espera
 - [ ] Onboarding manual: cadastrar os clientes deles por videochamada + tela compartilhada
 
-### Semanas 7–8 · Iteração com betas
+### Semana 7 · Qualidade e padronização (antes do beta)
+
+- [ ] **Migração PT→EN no código e schema** — renomear tabelas, colunas e variáveis para inglês; UI permanece em português. Fazer agora, antes de betas com dados reais e antes de crescer o schema com Lucro Presumido/Real. Estimativa: 1 dia
+- [ ] **Mensagens de erro claras** — sem "something went wrong"; tratar casos concretos nos formulários e actions
+- [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
+- [ ] **Link de descadastro de e-mail** no template de alerta (LGPD — obrigatório antes de beta)
+- [ ] **Responsividade mobile básica** — sidebar colapsável (drawer), modais e cards ajustados para telas < 430px. ICP é desktop mas acesso mobile a alertas é caso real. Estimativa: 3–5 dias
+
+### Semanas 8–9 · Expansão de regimes + prazos
+
+- [ ] **Lucro Presumido / Lucro Real** — seed de obrigações + suporte em `gerarVencimentos`. Sem isso, parcela relevante de escritórios não pode usar o produto
+- [ ] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
+
+### Semanas 9–10 · Iteração com betas
 
 - [ ] Ligação semanal de 30 min com cada beta: "o que usou? o que travou?"
 - [ ] Implementar top 3 melhorias pedidas
 - [ ] Priorizar bugs e problemas de usabilidade antes de novas features
 - [ ] Coletar sinais: uso espontâneo, linguagem de posse ("meu sistema"), indicações
 
-### Semanas 9–10 · Pagamentos
+### Semanas 11–12 · Pagamentos
 
 - [ ] Integrar Pagar.me (Pix) ou Stripe
 - [ ] Planos configurados no painel
@@ -130,6 +144,9 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 | Deploy | Vercel | Free tier, zero config, CI/CD automático |
 | Consulta CNPJ | BrasilAPI — só no save, com rate limit | Evita abuso sem degradar UX |
 | Rate limit CNPJ | 30 consultas/dia por escritório | Suficiente para uso legítimo (80 clientes/mês) |
+| Idioma do código/schema | Migrar PT→EN na semana 7 | Padrão da indústria, facilita tooling e futuras contratações; UI permanece em PT |
+| Idioma da UI | Português permanentemente | Produto 100% Brasil, termos fiscais sem tradução natural (DAS, eSocial, Simples Nacional) |
+| Responsividade mobile | Versão básica antes do beta (semana 7) | ICP é desktop, mas acesso mobile a alertas é caso real |
 | Rate limit busca (Spotlight) | Não implementado — adiar pós-validação | Busca já exige auth + filtro por escritório + debounce 300ms + mín. 3 chars + limit 8; abuso real improvável no estágio atual. Quando implementar: Upstash Ratelimit (Redis) na server action `buscarClientes`, ~10 req/min por usuário. Cache React (`cache()`) para deduplica auth+escritório no mesmo ciclo de render. |
 
 ### Empresariais
