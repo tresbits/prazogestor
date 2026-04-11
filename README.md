@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrazoGestor
 
-## Getting Started
+Calendário de obrigações fiscais para escritórios contábeis brasileiros.
+Desenvolvido pela [Tresbits](https://tresbits.com.br).
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Server Components, Server Actions)
+- **Supabase** (Postgres, Auth, RLS, pg_cron, pg_net)
+- **Tailwind CSS v4** + Base UI
+- **Resend** para alertas por e-mail
+- **Vercel** para deploy e cron jobs
+
+## Desenvolvimento local
+
+### 1. Instalar dependências
+
+```bash
+npm install
+```
+
+### 2. Configurar variáveis de ambiente
+
+Copie `.env.example` para `.env.local` e preencha:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variável | Descrição |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave anon do Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave service role (bypass RLS) |
+| `RESEND_API_KEY` | Chave da API Resend para e-mails |
+| `WEBHOOK_SECRET` | Secret para autenticar o webhook de alertas |
+| `CRON_SECRET` | Secret para autenticar o endpoint de cron |
+| `NEXT_PUBLIC_SITE_URL` | URL pública do app (ex: https://prazogestor.tresbits.com.br) |
+
+### 3. Aplicar o schema no Supabase
+
+Execute `schema.sql` no SQL Editor do Supabase. O arquivo contém:
+- Tabelas, RLS e índices
+- Seed de obrigações (Simples Nacional e MEI)
+- Funções auxiliares
+- Jobs pg_cron (marcar-atrasados, alertas-diarios, purge)
+
+### 4. Popular feriados
+
+```bash
+npx tsx --env-file=.env.local scripts/sync-feriados.ts 2026 2027
+```
+
+### 5. Rodar o servidor
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Cron jobs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Vercel Cron — geração de vencimentos
 
-## Learn More
+Configurado em `vercel.json`. Roda no dia 1 de cada mês às 9h UTC.
+Gera vencimentos para o mês 12 meses à frente de todos os clientes.
 
-To learn more about Next.js, take a look at the following resources:
+Para testar localmente:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+curl -H "Authorization: Bearer <CRON_SECRET>" http://localhost:3000/api/cron/gerar-vencimentos
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### pg_cron (Supabase) — jobs diários
 
-## Deploy on Vercel
+| Job | Horário (UTC) | Ação |
+|---|---|---|
+| `prazogestor-marcar-atrasados` | 11:05 todo dia | Marca como `atrasado` obrigações vencidas |
+| `prazogestor-alertas-diarios` | 11:00 todo dia | Insere em `alertas_log` para 7d, 3d, 1d antes do vencimento |
+| `prazogestor-purge-cnpj-rate-limit` | 3:00 toda segunda | Remove entradas antigas da tabela de rate limit |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Alertas por e-mail
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O fluxo completo:
+
+1. pg_cron insere em `alertas_log`
+2. Supabase Database Webhook chama `POST /api/alertas/webhook`
+3. Route handler busca dados da obrigação e envia e-mail via Resend
+
+O webhook requer o header `x-webhook-secret: <WEBHOOK_SECRET>`.
+
+## Deploy
+
+```bash
+git push origin main
+```
+
+O Vercel detecta o push e faz o deploy automaticamente.
+Certifique-se de que todas as variáveis de ambiente estão configuradas no painel do Vercel, incluindo `CRON_SECRET`.

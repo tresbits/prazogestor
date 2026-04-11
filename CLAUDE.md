@@ -90,8 +90,8 @@ tresbits-agent/
 
 ## Estado atual do projeto (atualizar conforme evolui)
 
-- **Fase**: produto funcional construído · pronto para beta com contadores reais
+- **Fase**: produto funcional completo · pronto para deploy e beta com contadores reais
 - **Empresa**: ativa, CNAE a alterar, endereço fiscal a contratar
-- **Produto**: app funcional — auth, onboarding, painel, clientes, calendário, configurações, busca Spotlight, sidebar com identidade do escritório implementados. Infraestrutura de vencimentos: geração ao criar cliente, Vercel Cron mensal (gerar-vencimentos), script de sync de feriados, alertas por e-mail via Resend+webhook prontos. Pendente (Supabase SQL Editor): aplicar pg_cron `marcar-atrasados` e `disparar-alertas`
+- **Produto**: app completo — auth, onboarding, painel, clientes, calendário, configurações, busca Spotlight, sidebar com identidade do escritório. Infraestrutura de vencimentos completa: geração ao criar/editar cliente, Vercel Cron mensal, pg_cron marcar-atrasados e alertas-diarios ativos, feriados 2026/2027 populados, alertas por e-mail via Resend+webhook implementados
 - **Primeiros clientes**: 0 (meta: 10 betas em 60 dias)
 - **MRR**: R$0 (meta mês 3: R$1.470)
