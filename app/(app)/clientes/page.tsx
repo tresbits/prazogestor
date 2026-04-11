@@ -20,7 +20,7 @@ export default async function ClientesPage({
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   const query = supabase
     .from('clientes')
@@ -44,7 +44,7 @@ export default async function ClientesPage({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <ModalNovoCliente
           trigger={
-            <div className="group bg-card rounded-[16px] shadow-card p-6 flex flex-col items-center justify-center gap-2
+            <div className="group bg-background rounded-[16px] p-6 flex flex-col items-center justify-center gap-2
               border-2 border-dashed border-border hover:border-foreground/30
               text-muted-foreground hover:text-foreground
               transition-all duration-200 min-h-[120px] cursor-pointer">

@@ -52,6 +52,19 @@ export async function enviarResetSenha() {
   return { success: true }
 }
 
+export async function dispensarChecklist() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  await supabase
+    .from('escritorios')
+    .update({ onboarding_dispensado: true })
+    .eq('user_id', user.id)
+
+  revalidatePath('/painel')
+}
+
 export async function excluirConta() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

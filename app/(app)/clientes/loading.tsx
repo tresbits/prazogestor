@@ -10,7 +10,7 @@ export default function Loading() {
       {/* Cards skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Add card skeleton */}
-        <div className="bg-card rounded-[16px] shadow-card min-h-[120px] border-2 border-dashed border-border animate-pulse" />
+        <div className="bg-background rounded-[16px] shadow-card min-h-[120px] border-2 border-dashed border-border animate-pulse" />
 
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="bg-card rounded-[16px] shadow-card flex flex-col animate-pulse">

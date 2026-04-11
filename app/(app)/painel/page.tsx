@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { CalendarDays, ShieldCheck, Bell } from 'lucide-react'
 import { CardCliente } from './_components/card-cliente'
 import { StatsFooter } from './_components/stats-footer'
+import { ChecklistOnboarding } from './_components/checklist-onboarding'
+import { ModalNovoCliente } from '@/components/clientes/modal-novo-cliente'
 
 function getDiasRestantes(dataVencimento: string): number {
   const hoje = new Date()
@@ -61,11 +64,11 @@ export default async function PainelPage({
 
   const { data: escritorio } = await supabase
     .from('escritorios')
-    .select('id, nome')
+    .select('id, nome, alertas_email_ativo, onboarding_dispensado')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding')
+  if (!escritorio) return null
 
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
@@ -103,9 +106,9 @@ export default async function PainelPage({
     .gte('concluido_em', `${toISO(hoje)}T00:00:00`)
 
   // Todos os clientes
-  const { data: clientes } = await supabase
+  const { data: clientes, count: totalClientes } = await supabase
     .from('clientes')
-    .select('id, nome, cnpj, regime')
+    .select('id, nome, cnpj, regime', { count: 'exact' })
     .eq('escritorio_id', escritorio.id)
     .order('nome')
 
@@ -174,8 +177,19 @@ export default async function PainelPage({
   const horaAtualStr = agora.toLocaleDateString('pt-BR') + ' ' +
     agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
+  const mostrarChecklist = !escritorio.onboarding_dispensado && (
+    (totalClientes ?? 0) < 3 || !escritorio.alertas_email_ativo
+  )
+
   return (
     <div className="pb-36">
+      {mostrarChecklist && (
+        <ChecklistOnboarding
+          totalClientes={totalClientes ?? 0}
+          alertasAtivo={escritorio.alertas_email_ativo}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div className='p-2'>
@@ -198,6 +212,48 @@ export default async function PainelPage({
         <p className="text-sm text-muted-foreground py-8">
           Nenhum cliente encontrado para <span className="font-semibold text-foreground">"{q}"</span>.
         </p>
+      )}
+
+      {!clientes?.length && (
+        <div className="flex flex-col items-center py-16 text-center">
+          <h2 className="font-heading text-2xl font-extrabold tracking-tight text-foreground mb-2">
+            Nenhum cliente cadastrado
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-10">
+            Cadastre o primeiro cliente e o calendário fiscal será gerado automaticamente.
+          </p>
+
+          {/* Benefícios */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-10 w-full max-w-md">
+            {[
+              { icon: CalendarDays, label: 'Calendário gerado automaticamente' },
+              { icon: ShieldCheck,  label: 'Obrigações por regime tributário' },
+              { icon: Bell,         label: 'Alertas 7, 3 e 1 dia antes' },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex-1 flex flex-col items-center gap-2 bg-muted/50 border border-border rounded-2xl px-4 py-5"
+              >
+                <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
+                <span className="text-[11px] font-medium text-muted-foreground text-center leading-snug">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <ModalNovoCliente
+            trigger={
+              <div className="group w-full max-w-md bg-background rounded-[16px] px-10 py-6 flex flex-col items-center justify-center gap-2
+                border-2 border-dashed border-border hover:border-foreground/30
+                text-muted-foreground hover:text-foreground
+                transition-all duration-200 cursor-pointer">
+                <span className="text-3xl font-light group-hover:scale-110 transition-transform duration-200">+</span>
+                <p className="text-sm font-medium">Novo cliente</p>
+              </div>
+            }
+          />
+        </div>
       )}
 
       {!!(clientes?.length) && (
