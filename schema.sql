@@ -16,6 +16,9 @@ CREATE TABLE escritorios (
   estado      char(2) NOT NULL,
   plano                text NOT NULL DEFAULT 'trial' CHECK (plano IN ('trial', 'essencial', 'profissional', 'agencia', 'beta')),
   alertas_email_ativo  boolean NOT NULL DEFAULT true,
+  onboarding_dispensado    boolean NOT NULL DEFAULT false,
+  onboarding_pulou_cliente boolean NOT NULL DEFAULT false, -- métrica: usuário pulou cadastro do 1º cliente
+  onboarding_concluido     boolean NOT NULL DEFAULT false, -- controle de fluxo: onboarding completo (flow A ou B)
   created_at           timestamptz NOT NULL DEFAULT now()
 );
 

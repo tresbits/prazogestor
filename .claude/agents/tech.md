@@ -34,11 +34,15 @@ Antes de responder, consulte:
 ## Modelo de dados definido
 
 ```sql
-escritorios (id, nome, email, plano, created_at)
-clientes (id, escritorio_id, cnpj, nome, regime, tem_empregados)
-obrigacoes_template (id, nome, sigla, regimes[], frequencia, dia_vencimento, mes_vencimento)
+escritorios (id, user_id, nome, estado, plano, alertas_email_ativo,
+             onboarding_dispensado, onboarding_pulou_cliente, onboarding_concluido, created_at)
+clientes (id, escritorio_id, cnpj, nome, regime, tem_empregados, created_at)
+obrigacoes_template (id, nome, sigla, regimes[], frequencia, dia_vencimento, mes_vencimento,
+                     requer_empregados, regra_ajuste, dependencia)
 obrigacoes_cliente (id, cliente_id, template_id, data_vencimento, status, concluido_por, concluido_em, nota)
-alertas_log (id, obrigacao_id, tipo, enviado_em)
+alertas_log (id, obrigacao_id, tipo, enviado_em, email_enviado_em)
+feriados (id, data, descricao, tipo, estado, municipio_ibge)
+cnpj_rate_limit (escritorio_id, data, contagem)
 ```
 
 ## Domínio de atuação

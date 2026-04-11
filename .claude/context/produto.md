@@ -135,7 +135,11 @@ envia alertas antecipados e mantém histórico de entregas.
 
 ```
 escritorios
-  id, user_id, nome, estado, plano, alertas_email_ativo, created_at
+  id, user_id, nome, estado, plano, alertas_email_ativo,
+  onboarding_dispensado,    ← oculta checklist permanentemente
+  onboarding_pulou_cliente, ← métrica: pulou cadastro do 1º cliente
+  onboarding_concluido,     ← controle de fluxo (flow A ou B)
+  created_at
 
 clientes
   id, escritorio_id, cnpj, nome, regime [simples|mei], tem_empregados
@@ -159,9 +163,11 @@ cnpj_rate_limit
 ```
 
 ### Notas do modelo
-- `escritorios.regime` aceita apenas `simples` e `mei` no MVP — lucro_presumido/real na fase 2
+- `clientes.regime` aceita apenas `simples` e `mei` no MVP — lucro_presumido/real na fase 2
 - `alertas_log.email_enviado_em` é null até o webhook confirmar envio pelo Resend
 - `escritorios.alertas_email_ativo` controla descadastro de e-mails (LGPD)
+- `escritorios.onboarding_concluido` é o guard central do `(app)/layout.tsx` — sem ele, todas as rotas do app redirecionam para `/onboarding/cliente`
+- `escritorios.onboarding_pulou_cliente` é exclusivamente métrica — não usar para controle de fluxo
 
 ---
 
