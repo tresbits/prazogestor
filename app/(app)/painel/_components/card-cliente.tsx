@@ -42,14 +42,6 @@ function formatCNPJ(cnpj: string | null | undefined): string {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .filter(w => w.length > 2)
-    .slice(0, 2)
-    .map(w => w[0].toUpperCase())
-    .join('') || name.slice(0, 2).toUpperCase()
-}
 
 function UrgencyLabel({ days, status }: { days: number; status: string }) {
   const isOverdue = status === 'overdue' || days < 0
@@ -118,12 +110,9 @@ export function CardCliente({
   const extras  = totalPending - preview.length
 
   return (
-    <div className="bg-card rounded-[16px] shadow-card p-6 flex flex-col gap-0">
-      {/* Header — tonal edge-to-edge + avatar */}
-      <div className="-mx-6 -mt-6 px-6 py-4 rounded-t-[16px] bg-muted/50 flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-full bg-card flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-bold text-foreground">{getInitials(clientName)}</span>
-        </div>
+    <div className="bg-card rounded-[16px] shadow-card overflow-hidden flex flex-col">
+      {/* Header — tonal */}
+      <div className="px-4 py-3 bg-muted/50 flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="font-heading text-[15px] font-semibold text-foreground leading-tight truncate">
             {clientName}
@@ -132,37 +121,40 @@ export function CardCliente({
             {formatCNPJ(cnpj)}
           </span>
         </div>
-        <span className="text-[10px] bg-card px-2.5 py-1 rounded-full text-foreground font-bold shrink-0">
+        <span className="text-[10px] bg-background px-2.5 py-1 rounded-full text-foreground font-bold shrink-0">
           {REGIME_LABEL[taxRegime] ?? taxRegime.toUpperCase()}
         </span>
       </div>
 
-      {/* Seção VENCIDOS — pill container */}
-      {hasOverdue && (
-        <div className="mt-4 bg-destructive/5 border border-destructive/15 rounded-xl px-3 py-2 [&>div:first-child]:pt-0">
-          {previewOverdue.map(o => (
+      {/* Conteúdo */}
+      <div className="px-4 pt-3 pb-4 flex-1 flex flex-col">
+        {/* Seção VENCIDOS */}
+        {hasOverdue && (
+          <div className="bg-destructive/5 border border-destructive/15 rounded-xl px-3 py-2 [&>div:first-child]:pt-0">
+            {previewOverdue.map(o => (
+              <ObligationRow key={o.id} obligation={o} clientName={clientName} />
+            ))}
+            {extrasOverdue > 0 && (
+              <ModalAtrasados
+                clientName={clientName}
+                obligations={overdueObligations}
+                extrasCount={extrasOverdue}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Lista de próximos */}
+        <div className={cn('flex-1 rounded-xl px-3 py-2 [&>div:first-child]:pt-0 [&>div]:border-t-0', hasOverdue && 'mt-3')}>
+          {preview.map(o => (
             <ObligationRow key={o.id} obligation={o} clientName={clientName} />
           ))}
-          {extrasOverdue > 0 && (
-            <ModalAtrasados
-              clientName={clientName}
-              obligations={overdueObligations}
-              extrasCount={extrasOverdue}
-            />
-          )}
         </div>
-      )}
-
-      {/* Lista de próximos — container neutro */}
-      <div className="mt-4 flex-1 rounded-xl px-3 py-2 [&>div:first-child]:pt-0 [&>div]:border-t-0">
-        {preview.map(o => (
-          <ObligationRow key={o.id} obligation={o} clientName={clientName} />
-        ))}
       </div>
 
       {/* Footer — ver mais */}
       {extras > 0 && (
-        <div className="-mx-6 -mb-6 mt-auto px-6 py-3 bg-muted/50 rounded-b-[16px] text-center">
+        <div className="px-4 py-3 bg-muted/50 border-t border-border/40 text-center">
           <ModalProximos
             clientName={clientName}
             obligations={obligations.slice(previewSize)}

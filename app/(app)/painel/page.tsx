@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { CalendarDays, ShieldCheck, Bell } from 'lucide-react'
 import { CardCliente } from './_components/card-cliente'
-import { StatsFooter } from './_components/stats-footer'
+import { ZonaNumeros } from './_components/zona-numeros'
 import { ChecklistOnboarding } from './_components/checklist-onboarding'
 import { ModalNovoCliente } from '@/components/clientes/modal-novo-cliente'
 
@@ -97,14 +97,6 @@ export default async function PainelPage({
     .order('due_date', { ascending: true })
     .limit(200)
 
-  // Concluídos hoje
-  const { count: completedToday } = await supabase
-    .from('client_obligations')
-    .select(`id, clients!inner ( office_id )`, { count: 'exact', head: true })
-    .eq('clients.office_id', office.id)
-    .eq('status', 'completed')
-    .gte('completed_at', `${toISO(today)}T00:00:00`)
-
   // Todos os clientes
   const { data: clients, count: totalClients } = await supabase
     .from('clients')
@@ -136,14 +128,12 @@ export default async function PainelPage({
     byClientOverdue.set(o.clientId, list)
   }
 
-  // Stats
-  const critical = overdue.length +
-    obligations.filter(o => getDaysRemaining(o.due_date) === 0).length
-
-  const next7days = obligations.filter(o => {
-    const days = getDaysRemaining(o.due_date)
-    return days > 0 && days <= 7
-  }).length
+  // Dados para ZonaNumeros
+  const hoje = obligations.filter(o => getDaysRemaining(o.due_date) === 0)
+  const proximos7 = obligations.filter(o => {
+    const d = getDaysRemaining(o.due_date)
+    return d >= 1 && d <= 7
+  })
 
   // Clientes com obrigações (pendentes próximos 30 dias OU atrasadas)
   const clientsWithObs = (clients ?? [])
@@ -182,13 +172,19 @@ export default async function PainelPage({
   )
 
   return (
-    <div className="pb-36">
+    <div>
       {showChecklist && (
         <ChecklistOnboarding
           totalClients={totalClients ?? 0}
           alertsEnabled={office.email_alerts_enabled}
         />
       )}
+
+      <ZonaNumeros
+        vencidos={overdue}
+        hoje={hoje}
+        proximos7={proximos7}
+      />
 
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
@@ -301,11 +297,6 @@ export default async function PainelPage({
         </div>
       )}
 
-      <StatsFooter
-        critical={critical}
-        next7days={next7days}
-        completedToday={completedToday ?? 0}
-      />
     </div>
   )
 }
