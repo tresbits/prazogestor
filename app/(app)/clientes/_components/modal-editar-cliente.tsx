@@ -114,6 +114,7 @@ export function ModalEditarCliente({
                   <select
                     name="tax_regime"
                     defaultValue={client.tax_regime}
+                    required
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-sm',
                       'bg-muted/60 border border-border/60',
@@ -135,6 +136,7 @@ export function ModalEditarCliente({
                   <select
                     name="has_employees"
                     defaultValue={client.has_employees ? 'true' : 'false'}
+                    required
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-sm',
                       'bg-muted/60 border border-border/60',

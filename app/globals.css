@@ -178,3 +178,10 @@
     cursor: pointer;
   }
 }
+
+/* Field validation — outside @layer to override Tailwind utilities */
+input:user-invalid,
+select:user-invalid {
+  border-color: var(--color-destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-destructive) 20%, transparent);
+}

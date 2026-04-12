@@ -94,6 +94,8 @@ export function ModalNovoCliente({
                   placeholder="00.000.000/0001-00"
                   required
                   inputMode="numeric"
+                  minLength={18}
+                  maxLength={18}
                   className={cn(
                     'w-full px-3 py-2 rounded-xl text-sm font-mono',
                     'bg-muted/60 border border-border/60',

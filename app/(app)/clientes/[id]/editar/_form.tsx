@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FormError } from '@/components/ui/form-error'
 import { cn } from '@/lib/utils'
 
 type Client = {
@@ -82,9 +83,7 @@ export function EditarClienteForm({ client }: { client: Client }) {
               </Select>
             </div>
 
-            {state?.error && (
-              <p className="text-sm text-destructive">{state.error}</p>
-            )}
+            {state?.error && <FormError message={state.error} />}
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1" disabled={pending}>
