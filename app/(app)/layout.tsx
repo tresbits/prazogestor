@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         officeState={office?.state ?? ''}
         userEmail={user.email ?? ''}
       />
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 overflow-x-hidden">
         <Suspense>
           <TopNav />
         </Suspense>

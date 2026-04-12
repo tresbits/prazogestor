@@ -200,7 +200,7 @@ export default async function PainelPage({
             Obrigações fiscais para os próximos 30 dias.
           </p>
         </div>
-        <div className="text-right shrink-0">
+        <div className="hidden md:block text-right shrink-0">
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
             Última Atualização
           </p>
