@@ -96,12 +96,12 @@ export function ModalAtrasados({
                   <div
                     key={o.id}
                     className={cn(
-                      'group flex items-center justify-between px-4 py-3',
+                      'group flex items-start justify-between px-4 py-3',
                       i > 0 && 'border-t border-border'
                     )}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-destructive text-white">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className="shrink-0 mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-destructive text-white">
                         {o.acronym || '—'}
                       </span>
                       <div className="min-w-0">
@@ -109,7 +109,7 @@ export function ModalAtrasados({
                         <p className="text-[11px] text-muted-foreground">{dueFormatted}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 ml-4 relative flex items-center">
+                    <div className="shrink-0 ml-4 relative flex items-center pt-0.5">
                       <span className="text-[10px] font-bold text-destructive tracking-wide whitespace-nowrap transition-opacity group-hover:opacity-0">
                         VENCIDO
                       </span>
