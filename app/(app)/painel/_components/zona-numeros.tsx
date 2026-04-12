@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, CalendarDays } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ModalGlobal, type ObItem } from './modal-global'
 
@@ -55,14 +56,23 @@ export function ZonaNumeros({
   return (
     <>
       {allZero ? (
-        <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-card border border-border shadow-card mb-8">
-          <CheckCircle2 className="h-5 w-5 text-green-500 dark:text-green-400 shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-foreground">Tudo em dia</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Nenhum vencimento nos próximos 7 dias.
-            </p>
+        <div className="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl bg-card border border-border shadow-card mb-8">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-500 dark:text-green-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Tudo em dia</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Nenhum vencimento nos próximos 7 dias.
+              </p>
+            </div>
           </div>
+          <Link
+            href="/calendario"
+            className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <CalendarDays className="h-4 w-4" />
+            Calendário
+          </Link>
         </div>
       ) : (
         <div className="flex gap-3 mb-8">
@@ -84,6 +94,19 @@ export function ZonaNumeros({
             color="amber"
             onClick={() => setModal('7dias')}
           />
+          <Link
+            href="/calendario"
+            className={cn(
+              'flex-none w-[72px] flex flex-col items-center justify-center gap-1.5 px-3 py-4 rounded-2xl border border-border',
+              'bg-card shadow-card text-muted-foreground',
+              'hover:border-foreground/20 hover:text-foreground hover:shadow-md transition-all duration-150 active:scale-[0.98]'
+            )}
+          >
+            <CalendarDays className="h-5 w-5" />
+            <span className="text-[10px] uppercase tracking-widest font-medium text-center leading-tight">
+              Calendário
+            </span>
+          </Link>
         </div>
       )}
 
