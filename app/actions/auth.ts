@@ -24,6 +24,10 @@ export async function signup(_: unknown, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
+  if (password.length < 6) {
+    return { error: 'A senha deve ter pelo menos 6 caracteres.' }
+  }
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -35,6 +39,12 @@ export async function signup(_: unknown, formData: FormData) {
   if (error) {
     if (error.message.includes('already registered')) {
       return { error: 'Este e-mail já está cadastrado.' }
+    }
+    if (error.message.includes('password') || error.message.includes('weak')) {
+      return { error: 'Senha muito fraca. Use pelo menos 6 caracteres.' }
+    }
+    if (error.message.includes('valid email') || error.message.includes('invalid')) {
+      return { error: 'E-mail inválido.' }
     }
     return { error: 'Erro ao criar conta. Tente novamente.' }
   }

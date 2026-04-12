@@ -68,7 +68,7 @@ export function ModalDeletarCliente({
                 Excluir Cliente
               </AlertDialog.Title>
               <AlertDialog.Description className="text-sm text-muted-foreground mt-1">
-                Esta acção não pode ser revertida. Todas as obrigações associadas serão excluídas.
+                Esta ação não pode ser revertida. Todas as obrigações associadas serão excluídas.
               </AlertDialog.Description>
             </div>
             <AlertDialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">

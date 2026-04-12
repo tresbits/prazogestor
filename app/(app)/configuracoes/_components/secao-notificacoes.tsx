@@ -7,13 +7,19 @@ import { toggleEmailAlerts } from '@/app/actions/configuracoes'
 export function SecaoNotificacoes({ alertsEnabled }: { alertsEnabled: boolean }) {
   const [enabled, setEnabled] = useState(alertsEnabled)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleToggle() {
     const newValue = !enabled
     setEnabled(newValue)
+    setError(null)
     setSaving(true)
-    await toggleEmailAlerts(newValue)
+    const result = await toggleEmailAlerts(newValue)
     setSaving(false)
+    if (result?.error) {
+      setEnabled(!newValue)
+      setError('Não foi possível salvar a preferência. Tente novamente.')
+    }
   }
 
   return (
@@ -48,6 +54,10 @@ export function SecaoNotificacoes({ alertsEnabled }: { alertsEnabled: boolean })
           </button>
         </div>
       </div>
+
+      {error && (
+        <p className="text-xs text-destructive px-1">{error}</p>
+      )}
 
       <p className="text-[11px] text-muted-foreground/70 px-1 leading-relaxed">
         Em conformidade com a LGPD, você pode desativar estes alertas a qualquer momento. Para

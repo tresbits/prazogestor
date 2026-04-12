@@ -11,7 +11,7 @@ export async function completeObligation(formData: FormData) {
 
   const obligationId = formData.get('obligation_id') as string
 
-  await supabase
+  const { error } = await supabase
     .from('client_obligations')
     .update({
       status: 'completed',
@@ -20,6 +20,9 @@ export async function completeObligation(formData: FormData) {
     })
     .eq('id', obligationId)
 
+  if (error) return { error: 'Não foi possível registrar a conclusão. Tente novamente.' }
+
   revalidatePath('/painel')
   revalidatePath('/calendario')
+  return { success: true }
 }

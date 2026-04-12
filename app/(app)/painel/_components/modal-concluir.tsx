@@ -21,13 +21,19 @@ export function ModalConcluir({
 }: ModalConcluirProps) {
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   function handleSubmit() {
+    setError(null)
     startTransition(async () => {
       const formData = new FormData()
       formData.set('obligation_id', obligationId)
-      await completeObligation(formData)
-      setOpen(false)
+      const result = await completeObligation(formData)
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        setOpen(false)
+      }
     })
   }
 
@@ -106,6 +112,9 @@ export function ModalConcluir({
           </div>
 
           {/* Footer */}
+          {error && (
+            <p className="px-6 pb-3 text-sm text-destructive">{error}</p>
+          )}
           <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
             <Dialog.Close
               className={cn(
