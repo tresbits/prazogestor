@@ -15,14 +15,13 @@ export function TopNav() {
 
   return (
     <header
-      className="fixed top-4 z-30 flex items-center px-4 py-2.5
+      className="fixed top-4 z-30 left-4 right-4 md:left-[15rem] md:right-8 flex items-center px-4 py-2.5
         bg-background/80 dark:bg-[rgba(26,26,26,0.80)]
         backdrop-blur-2xl saturate-200
         border border-white/20 dark:border-white/10
         rounded-full
         shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]
         hover:border-foreground/20 transition-colors"
-      style={{ left: 'calc(13rem + 2rem)', right: '2rem' }}
       role="button"
       aria-label="Abrir busca"
       onClick={handleClick}

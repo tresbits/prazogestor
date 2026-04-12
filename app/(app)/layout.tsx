@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/sidebar'
 import { TopNav } from '@/components/layout/top-nav'
+import { BottomNav } from '@/components/layout/bottom-nav'
 import { Spotlight } from '@/components/spotlight'
 import { SearchBanner } from '@/components/layout/search-banner'
 
@@ -35,10 +36,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Suspense>
           <SearchBanner />
         </Suspense>
-        <main className="pt-24 px-8 pb-8">
+        <main className="pt-24 px-4 md:px-8 pb-28 md:pb-8">
           {children}
         </main>
       </div>
+      <BottomNav />
       <Spotlight />
     </div>
   )

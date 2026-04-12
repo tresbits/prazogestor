@@ -35,7 +35,7 @@ export default async function ClientesPage({
   return (
     <div className="space-y-6">
       <div className='p-2'>
-        <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">Clientes</h1>
+        <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">Clientes</h1>
         <p className="text-sm text-muted-foreground flex items-center gap-2 py-3">
           Gerencie sua base de clientes. {`${clients?.length ?? 0} ${q?.trim() ? `resultado(s)` : `cadastrado(s)`}`}
         </p>

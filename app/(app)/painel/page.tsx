@@ -193,7 +193,7 @@ export default async function PainelPage({
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div className='p-2'>
-          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">
+          <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">
             Próximos Vencimentos
           </h1>
           <p className="text-muted-foreground text-sm flex items-center gap-2 py-3">

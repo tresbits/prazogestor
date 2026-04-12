@@ -24,7 +24,7 @@ export default async function ConfiguracoesPage() {
     <div className="p-2 space-y-8 max-w-5xl">
       {/* Header */}
       <div>
-        <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">
+        <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">
           Configurações
         </h1>
         <p className="text-sm text-muted-foreground mt-3">

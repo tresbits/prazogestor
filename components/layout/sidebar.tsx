@@ -35,7 +35,7 @@ export function Sidebar({
   const initials = officeName ? getInitials(officeName) : '?'
 
   return (
-    <aside className="w-52 flex flex-col border-r border-border bg-sidebar h-screen sticky top-0">
+    <aside className="hidden md:flex w-52 flex-col border-r border-border bg-sidebar h-screen sticky top-0">
 
       {/* Workspace identity */}
       <div className="px-4 py-5 flex items-center gap-3">
