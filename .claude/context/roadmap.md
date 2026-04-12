@@ -111,7 +111,51 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 - Integração com e-CAC
 - Download de guias (DARF)
 - Cálculo de impostos
-- App mobile
+
+---
+
+## Fase 2 · Pós product-market fit
+
+### App Admin (interno)
+
+App separado (`admin.prazogestor.com.br`) para operação interna da Tresbits:
+- Visão geral de escritórios, planos e MRR
+- Gerenciamento de assinaturas e trial
+- Impersonation de conta para suporte
+- Métricas de uso (onboarding_concluido, onboarding_pulou_cliente, retenção)
+- Controle de feature flags por plano
+- Log de alertas enviados e erros
+
+**Quando construir:** a partir de ~20 escritórios pagantes, quando o suporte manual por Supabase Dashboard virar gargalo. Antes disso, queries diretas no Supabase são suficientes.
+
+**Stack:** app Next.js separado, mesmo Supabase, service role key protegida por auth própria (não compartilha auth com o produto principal).
+
+---
+
+### App Mobile
+
+App nativo ou PWA para acesso mobile ao PrazoGestor:
+- Visualização de vencimentos do dia/semana
+- Receber push notifications de prazos (7, 3, 1 dia)
+- Marcar obrigação como concluída
+- Leitura de dados — não necessariamente criação/edição
+
+**Quando construir:** após validação do produto no desktop e sinal claro de demanda mobile dos betas. A responsividade básica (semana 7) cobre o acesso mobile no curto prazo.
+
+**Stack a decidir:** React Native (Expo) para reutilizar lógica TypeScript, ou PWA com service workers se o escopo de push for suficiente.
+
+---
+
+### Integração com Sistemas Contábeis (fase 3)
+
+Integração bidirecional com plataformas de gestão contábil:
+- **Importação de clientes** — sincronizar base de clientes de sistemas como Domínio, Alterdata, Questor, Omie, ContaAzul, evitando cadastro manual
+- **Exportação de status** — devolver status de obrigações concluídas para o sistema de origem
+- **Balancetes e documentos** — segunda etapa, após validação da integração básica
+
+**Quando construir:** após atingir ~50 escritórios pagantes e receber demanda recorrente de integração. É um diferencial competitivo forte mas de alta complexidade técnica (cada sistema tem API própria ou requer scraping).
+
+**Priorizar por volume:** Domínio e Alterdata dominam o mercado de escritórios pequenos/médios no Brasil.
 
 ---
 
