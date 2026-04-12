@@ -25,9 +25,9 @@ function NumberBlock({
       disabled={count === 0}
       className={cn(
         'flex-1 flex flex-col items-center gap-1.5 px-3 py-4 rounded-2xl border border-border',
-        'bg-card shadow-card transition-all duration-150',
+        'bg-card transition-all duration-150',
         count > 0
-          ? 'hover:border-foreground/20 hover:shadow-md cursor-pointer active:scale-[0.98]'
+          ? 'hover:border-foreground/20 cursor-pointer active:scale-[0.98]'
           : 'opacity-40 cursor-default'
       )}
     >
@@ -56,7 +56,7 @@ export function ZonaNumeros({
   return (
     <>
       {allZero ? (
-        <div className="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl bg-card border border-border shadow-card mb-8">
+        <div className="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl bg-card border border-border mb-8">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-green-500 dark:text-green-400 shrink-0" />
             <div>
@@ -97,12 +97,12 @@ export function ZonaNumeros({
           <Link
             href="/calendario"
             className={cn(
-              'flex-none w-[72px] flex flex-col items-center justify-center gap-1.5 px-3 py-4 rounded-2xl border border-border',
-              'bg-card shadow-card text-muted-foreground',
-              'hover:border-foreground/20 hover:text-foreground hover:shadow-md transition-all duration-150 active:scale-[0.98]'
+              'flex-1 flex flex-col items-center gap-1.5 px-3 py-4 rounded-2xl border border-border',
+              'bg-card text-muted-foreground transition-all duration-150',
+              'hover:border-foreground/20 hover:text-foreground active:scale-[0.98]'
             )}
           >
-            <CalendarDays className="h-5 w-5" />
+            <CalendarDays className="h-[30px] w-[30px]" strokeWidth={1.5} />
             <span className="text-[10px] uppercase tracking-widest font-medium text-center leading-tight">
               Calendário
             </span>
