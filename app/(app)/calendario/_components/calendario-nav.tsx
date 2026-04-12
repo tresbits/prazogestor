@@ -40,7 +40,7 @@ export function CalendarioNav({
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      <span className="font-heading text-[15px] font-semibold text-foreground min-w-[180px] text-center">
+      <span className="font-heading text-[15px] font-semibold text-foreground min-w-[120px] md:min-w-[180px] text-center">
         {monthLabel}
       </span>
 

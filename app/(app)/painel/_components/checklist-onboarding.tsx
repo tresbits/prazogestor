@@ -90,7 +90,7 @@ export function ChecklistOnboarding({
   }
 
   return (
-    <div className="animate-in fade-in-0 slide-in-from-top-2 duration-200 bg-card rounded-2xl border border-border shadow-card p-6 mb-8">
+    <div className="animate-in fade-in-0 slide-in-from-top-2 duration-200 bg-card rounded-2xl border border-border shadow-card p-4 md:p-6 mb-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-5">
         <div className="min-w-0">

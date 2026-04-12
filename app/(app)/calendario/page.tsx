@@ -103,7 +103,7 @@ export default async function CalendarioPage({
   return (
     <div className="space-y-5">
       <div className='p-2'>
-        <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">Calendário</h1>
+        <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">Calendário</h1>
       </div>
       <CalendarioControls daysMap={daysMap} year={year} month={month} monthLabel={monthLabel} filter={params.q?.trim()} />
     </div>

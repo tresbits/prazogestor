@@ -7,7 +7,8 @@ import { ModalConcluir } from '../../painel/_components/modal-concluir'
 import type { ObrigacaoCalendario } from '../page'
 import type { CalendarioView } from './calendario-controls'
 
-const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const DIAS_SEMANA     = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const DIAS_SEMANA_MOB = ['D',   'S',   'T',   'Q',   'Q',   'S',   'S'  ]
 const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
 function getDias(dueDate: string): number {
@@ -15,6 +16,27 @@ function getDias(dueDate: string): number {
   hoje.setHours(0, 0, 0, 0)
   const venc = new Date(dueDate + 'T00:00:00')
   return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function cellUrgency(items: ObrigacaoCalendario[]): 'critical' | 'urgent' | 'close' | 'normal' {
+  for (const item of items) {
+    const d = getDias(item.due_date)
+    if (item.status === 'overdue' || d <= 0) return 'critical'
+  }
+  for (const item of items) {
+    if (getDias(item.due_date) <= 3) return 'urgent'
+  }
+  for (const item of items) {
+    if (getDias(item.due_date) <= 7) return 'close'
+  }
+  return 'normal'
+}
+
+function badgeClass(urgency: ReturnType<typeof cellUrgency>): string {
+  if (urgency === 'critical') return 'bg-destructive text-white'
+  if (urgency === 'urgent')   return 'bg-amber-500 text-white'
+  if (urgency === 'close')    return 'bg-yellow-400 text-foreground'
+  return 'bg-foreground/80 text-background'
 }
 
 function pillClass(status: string, dueDate: string): string {
@@ -113,26 +135,29 @@ export function CalendarioGrid({
       {view === 'grade' && (
         <div>
           <div className="grid grid-cols-7 mb-1">
-            {DIAS_SEMANA.map(d => (
+            {DIAS_SEMANA.map((d, i) => (
               <div key={d} className="text-center text-[10px] font-medium text-muted-foreground uppercase tracking-widest py-2">
-                {d}
+                <span className="hidden md:inline">{d}</span>
+                <span className="md:hidden">{DIAS_SEMANA_MOB[i]}</span>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-7 gap-1 md:gap-1.5">
             {cells.map(cell => {
               const items = daysMap[cell.date] ?? []
               const isHoje = cell.date === hojeStr
               const hasItems = items.length > 0
               const preview = items.slice(0, 2)
               const extras = items.length - 2
+              const urgency = hasItems ? cellUrgency(items) : 'normal'
 
               return (
                 <div
                   key={cell.date}
                   onClick={() => handleClick(cell.date)}
                   className={cn(
-                    'rounded-xl min-h-[100px] p-2 flex flex-col gap-1 shadow-card',
+                    'rounded-xl p-1.5 md:p-2 flex flex-col gap-1 shadow-card',
+                    'min-h-[48px] md:min-h-[100px]',
                     cell.currentMonth ? 'bg-card' : 'bg-muted/30 dark:bg-muted/10',
                     !cell.currentMonth && 'opacity-50',
                     hasItems && 'cursor-pointer hover:brightness-95 dark:hover:brightness-110 transition-all',
@@ -140,16 +165,30 @@ export function CalendarioGrid({
                   )}
                 >
                   <span className={cn(
-                    'text-[11px] font-medium w-6 h-6 flex items-center justify-center rounded-full shrink-0',
+                    'text-[11px] font-medium w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full shrink-0',
                     isHoje ? 'bg-foreground text-background font-bold' : 'text-muted-foreground'
                   )}>
                     {cell.dia}
                   </span>
+
+                  {/* Mobile: badge de contagem com cor de urgência */}
+                  {hasItems && (
+                    <div className="md:hidden mt-auto flex justify-center">
+                      <span className={cn(
+                        'text-[9px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full',
+                        badgeClass(urgency)
+                      )}>
+                        {items.length}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Desktop: pills completas */}
                   {preview.map(item => (
                     <div
                       key={item.id}
                       className={cn(
-                        'flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate',
+                        'hidden md:flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate',
                         pillClass(item.status, item.due_date)
                       )}
                     >
@@ -158,7 +197,7 @@ export function CalendarioGrid({
                     </div>
                   ))}
                   {extras > 0 && (
-                    <span className="text-[10px] text-muted-foreground font-medium px-1 mt-auto">
+                    <span className="hidden md:block text-[10px] text-muted-foreground font-medium px-1 mt-auto">
                       + {extras} mais
                     </span>
                   )}
