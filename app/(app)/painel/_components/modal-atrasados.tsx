@@ -14,12 +14,18 @@ type ObligationItem = {
   name: string
 }
 
+function formatCNPJ(cnpj: string): string {
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+}
+
 export function ModalAtrasados({
   clientName,
+  clientCnpj,
   obligations,
   extrasCount,
 }: {
   clientName: string
+  clientCnpj: string
   obligations: ObligationItem[]
   extrasCount: number
 }) {
@@ -62,8 +68,8 @@ export function ModalAtrasados({
               <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
                 Obrigações Vencidas
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5 truncate max-w-[280px]">
-                {clientName}
+              <Dialog.Description className="text-sm text-muted-foreground mt-0.5">
+                {obligations.length} {obligations.length === 1 ? 'obrigação' : 'obrigações'}
               </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
@@ -71,9 +77,16 @@ export function ModalAtrasados({
             </Dialog.Close>
           </div>
 
-          {/* List */}
-          <div className="px-6 py-4 flex-1 overflow-y-auto min-h-0 no-scrollbar">
-            <div className="rounded-xl overflow-hidden border border-border bg-muted">
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar py-2">
+            <div className="px-6 py-4">
+              <div className="mb-3">
+                <p className="font-heading text-[15px] font-semibold text-foreground truncate">{clientName}</p>
+                {clientCnpj && (
+                  <p className="text-[11px] font-mono text-muted-foreground mt-0.5">{formatCNPJ(clientCnpj)}</p>
+                )}
+              </div>
+              <div className="rounded-xl overflow-hidden border border-border bg-muted">
               {obligations.map((o, i) => {
                 const due = new Date(o.due_date + 'T00:00:00')
                 const dueFormatted = due.toLocaleDateString('pt-BR', {
@@ -112,6 +125,7 @@ export function ModalAtrasados({
                   </div>
                 )
               })}
+              </div>
             </div>
           </div>
         </Dialog.Popup>

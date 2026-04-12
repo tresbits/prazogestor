@@ -136,6 +136,7 @@ export function CardCliente({
             {extrasOverdue > 0 && (
               <ModalAtrasados
                 clientName={clientName}
+                clientCnpj={cnpj}
                 obligations={overdueObligations}
                 extrasCount={extrasOverdue}
               />
