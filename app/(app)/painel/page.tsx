@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { CalendarDays, ShieldCheck, Bell } from 'lucide-react'
-import { CardCliente } from './_components/card-cliente'
 import { ZonaNumeros } from './_components/zona-numeros'
+import { CardsGrid } from './_components/cards-grid'
 import { ChecklistOnboarding } from './_components/checklist-onboarding'
 import { ModalNovoCliente } from '@/components/clientes/modal-novo-cliente'
 
@@ -253,48 +253,18 @@ export default async function PainelPage({
       )}
 
       {!!(clients?.length) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {clientsWithObsFiltered.map(c => (
-            <CardCliente
-              key={c.id}
-              clientId={c.id}
-              clientName={c.name}
-              cnpj={c.cnpj}
-              taxRegime={c.tax_regime}
-              obligations={c.obs.map(o => ({
-                id: o.id,
-                due_date: o.due_date,
-                status: o.status,
-                acronym: o.acronym,
-                name: o.name,
-              }))}
-              totalPending={c.obs.length}
-              overdueObligations={c.overdues.map(o => ({
-                id: o.id,
-                due_date: o.due_date,
-                status: o.status,
-                acronym: o.acronym,
-                name: o.name,
-              }))}
-            />
-          ))}
-
-          {/* Clientes sem vencimentos no período */}
-          {clientsWithoutObsFiltered.slice(0, 2).map(c => (
-            <div key={c.id} className="bg-card rounded-[16px] shadow-card p-6 opacity-40">
-              <h3 className="font-heading text-[15px] font-semibold text-foreground">
-                {c.name}
-              </h3>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
-                {c.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-4">
-                Sem vencimentos nos próximos 30 dias
-              </p>
-            </div>
-          ))}
-
-        </div>
+        <CardsGrid
+          key={filter ?? ''}
+          clients={clientsWithObsFiltered.map(c => ({
+            id: c.id,
+            name: c.name,
+            cnpj: c.cnpj,
+            tax_regime: c.tax_regime,
+            obs: c.obs.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
+            overdues: c.overdues.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
+          }))}
+          dimmedClients={clientsWithoutObsFiltered.map(c => ({ id: c.id, name: c.name, cnpj: c.cnpj }))}
+        />
       )}
 
     </div>
