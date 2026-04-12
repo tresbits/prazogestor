@@ -51,7 +51,7 @@ export async function gerarVencimentos(
   const { data: templates, error: tErr } = await supabase
     .from('obligation_templates')
     .select('*')
-    .contains('tax_regimes', [taxRegime])
+    .contains('tax', [taxRegime])
 
   if (tErr || !templates?.length) return
 

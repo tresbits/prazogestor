@@ -29,7 +29,7 @@ export interface ObligationTemplate {
   id: string
   name: string
   acronym: string
-  tax_regimes: TaxRegime[]
+  tax: TaxRegime[]
   frequency: Frequency
   requires_employees: boolean
   due_day: number | null

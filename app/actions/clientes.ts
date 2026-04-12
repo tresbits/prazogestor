@@ -40,7 +40,7 @@ export async function createClient(_: unknown, formData: FormData) {
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
   // Verificar rate limit antes de consultar BrasilAPI
-  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
+  const { data: allowed } = await supabase.rpc('purgar_cnpj_rate_limit', {
     p_office_id: office.id,
   })
 

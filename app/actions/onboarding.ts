@@ -63,7 +63,7 @@ export async function onboardingCreateClient(_: unknown, formData: FormData) {
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
-  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
+  const { data: allowed } = await supabase.rpc('purgar_cnpj_rate_limit', {
     p_office_id: office.id,
   })
 
