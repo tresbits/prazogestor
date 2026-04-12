@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
-import { atualizarCliente } from '@/app/actions/clientes'
+import { updateClient } from '@/app/actions/clientes'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,16 +11,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
-type Cliente = {
+type Client = {
   id: string
-  nome: string
+  name: string
   cnpj: string
-  regime: string
-  tem_empregados: boolean
+  tax_regime: string
+  has_employees: boolean
 }
 
-export function EditarClienteForm({ cliente }: { cliente: Cliente }) {
-  const [state, action, pending] = useActionState(atualizarCliente, null)
+export function EditarClienteForm({ client }: { client: Client }) {
+  const [state, action, pending] = useActionState(updateClient, null)
 
   return (
     <div className="max-w-md mx-auto mt-8">
@@ -36,27 +36,27 @@ export function EditarClienteForm({ cliente }: { cliente: Cliente }) {
         <CardHeader>
           <CardTitle>Editar cliente</CardTitle>
           <CardDescription>
-            {cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+            {client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={action} className="space-y-4">
-            <input type="hidden" name="cliente_id" value={cliente.id} />
+            <input type="hidden" name="client_id" value={client.id} />
 
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome / Razão Social</Label>
+              <Label htmlFor="name">Nome / Razão Social</Label>
               <Input
-                id="nome"
-                name="nome"
-                defaultValue={cliente.nome}
+                id="name"
+                name="name"
+                defaultValue={client.name}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="regime">Regime tributário</Label>
-              <Select name="regime" defaultValue={cliente.regime}>
-                <SelectTrigger id="regime">
+              <Label htmlFor="tax_regime">Regime tributário</Label>
+              <Select name="tax_regime" defaultValue={client.tax_regime}>
+                <SelectTrigger id="tax_regime">
                   <SelectValue placeholder="Selecione o regime" />
                 </SelectTrigger>
                 <SelectContent>
@@ -70,9 +70,9 @@ export function EditarClienteForm({ cliente }: { cliente: Cliente }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tem_empregados">Tem funcionários?</Label>
-              <Select name="tem_empregados" defaultValue={String(cliente.tem_empregados)}>
-                <SelectTrigger id="tem_empregados">
+              <Label htmlFor="has_employees">Tem funcionários?</Label>
+              <Select name="has_employees" defaultValue={String(client.has_employees)}>
+                <SelectTrigger id="has_employees">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>

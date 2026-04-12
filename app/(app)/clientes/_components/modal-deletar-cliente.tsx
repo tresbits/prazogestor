@@ -3,18 +3,18 @@
 import { useActionState, useEffect, useState } from 'react'
 import { AlertDialog } from '@base-ui/react/alert-dialog'
 import { X } from 'lucide-react'
-import { deletarCliente } from '@/app/actions/clientes'
+import { deleteClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 
 export function ModalDeletarCliente({
-  clienteId,
-  clienteNome,
+  clientId,
+  clientName,
   onDeleted,
   open: externalOpen,
   onOpenChange: externalOnOpenChange,
 }: {
-  clienteId: string
-  clienteNome: string
+  clientId: string
+  clientName: string
   onDeleted?: () => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -22,7 +22,7 @@ export function ModalDeletarCliente({
   const [internalOpen, setInternalOpen] = useState(false)
   const open = externalOpen !== undefined ? externalOpen : internalOpen
   const setOpen = externalOnOpenChange ?? setInternalOpen
-  const [state, action, pending] = useActionState(deletarCliente, null)
+  const [state, action, pending] = useActionState(deleteClient, null)
 
   useEffect(() => {
     if (state?.success) {
@@ -80,7 +80,7 @@ export function ModalDeletarCliente({
           <div className="px-6 pb-4">
             <div className="bg-muted/60 rounded-xl px-4 py-3">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Cliente</p>
-              <p className="text-sm font-semibold text-foreground mt-0.5">{clienteNome}</p>
+              <p className="text-sm font-semibold text-foreground mt-0.5">{clientName}</p>
             </div>
             {state?.error && (
               <p className="text-sm text-destructive mt-3">{state.error}</p>
@@ -89,7 +89,7 @@ export function ModalDeletarCliente({
 
           {/* Footer */}
           <form action={action}>
-            <input type="hidden" name="cliente_id" value={clienteId} />
+            <input type="hidden" name="client_id" value={clientId} />
             <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
               <AlertDialog.Close
                 className={cn(

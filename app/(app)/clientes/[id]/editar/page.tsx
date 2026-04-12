@@ -13,21 +13,21 @@ export default async function EditarClientePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
-  if (!escritorio) return null
+  if (!office) return null
 
-  const { data: cliente } = await supabase
-    .from('clientes')
-    .select('id, nome, cnpj, regime, tem_empregados')
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, name, cnpj, tax_regime, has_employees')
     .eq('id', id)
-    .eq('escritorio_id', escritorio.id)
+    .eq('office_id', office.id)
     .single()
 
-  if (!cliente) notFound()
+  if (!client) notFound()
 
-  return <EditarClienteForm cliente={cliente} />
+  return <EditarClienteForm client={client} />
 }

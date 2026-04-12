@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState, useRef, isValidElement } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
-import { criarCliente } from '@/app/actions/clientes'
+import { createClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 import { formatCNPJ } from '@/lib/format'
 
@@ -18,7 +18,7 @@ export function ModalNovoCliente({
   trigger: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
-  const [state, action, pending] = useActionState(criarCliente, null)
+  const [state, action, pending] = useActionState(createClient, null)
   const [cnpj, setCnpj] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -108,7 +108,7 @@ export function ModalNovoCliente({
                   Nome / Razão Social
                 </label>
                 <input
-                  name="nome"
+                  name="name"
                   placeholder="Preenchido automaticamente ou digite"
                   required
                   className={cn(
@@ -130,7 +130,7 @@ export function ModalNovoCliente({
                     Regime
                   </label>
                   <select
-                    name="regime"
+                    name="tax_regime"
                     required
                     defaultValue=""
                     className={cn(
@@ -153,7 +153,7 @@ export function ModalNovoCliente({
                     Funcionários
                   </label>
                   <select
-                    name="tem_empregados"
+                    name="has_employees"
                     required
                     defaultValue=""
                     className={cn(

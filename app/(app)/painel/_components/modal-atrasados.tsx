@@ -6,21 +6,21 @@ import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ModalConcluir } from './modal-concluir'
 
-type ObrigacaoItem = {
+type ObligationItem = {
   id: string
-  data_vencimento: string
+  due_date: string
   status: string
-  sigla: string
-  nome: string
+  acronym: string
+  name: string
 }
 
 export function ModalAtrasados({
-  clienteNome,
-  obrigacoes,
+  clientName,
+  obligations,
   extrasCount,
 }: {
-  clienteNome: string
-  obrigacoes: ObrigacaoItem[]
+  clientName: string
+  obligations: ObligationItem[]
   extrasCount: number
 }) {
   const [open, setOpen] = useState(false)
@@ -63,7 +63,7 @@ export function ModalAtrasados({
                 Obrigações Vencidas
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground mt-0.5 truncate max-w-[280px]">
-                {clienteNome}
+                {clientName}
               </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
@@ -74,9 +74,9 @@ export function ModalAtrasados({
           {/* List */}
           <div className="px-6 py-4 flex-1 overflow-y-auto min-h-0 no-scrollbar">
             <div className="rounded-xl overflow-hidden border border-border bg-muted">
-              {obrigacoes.map((o, i) => {
-                const venc = new Date(o.data_vencimento + 'T00:00:00')
-                const vencFormatado = venc.toLocaleDateString('pt-BR', {
+              {obligations.map((o, i) => {
+                const due = new Date(o.due_date + 'T00:00:00')
+                const dueFormatted = due.toLocaleDateString('pt-BR', {
                   day: '2-digit', month: 'short', year: 'numeric',
                 })
                 return (
@@ -89,19 +89,19 @@ export function ModalAtrasados({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-destructive text-white">
-                        {o.sigla || '—'}
+                        {o.acronym || '—'}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm text-foreground truncate">{o.nome}</p>
-                        <p className="text-[11px] text-muted-foreground">{vencFormatado}</p>
+                        <p className="text-sm text-foreground truncate">{o.name}</p>
+                        <p className="text-[11px] text-muted-foreground">{dueFormatted}</p>
                       </div>
                     </div>
                     <div className="shrink-0 ml-4">
                       <ModalConcluir
-                        obrigacaoId={o.id}
-                        nomeObrigacao={o.nome}
-                        clienteNome={clienteNome}
-                        dataVencimento={o.data_vencimento}
+                        obligationId={o.id}
+                        obligationName={o.name}
+                        clientName={clientName}
+                        dueDate={o.due_date}
                       />
                     </div>
                   </div>

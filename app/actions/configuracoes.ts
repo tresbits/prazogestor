@@ -4,19 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-export async function atualizarEscritorio(_: unknown, formData: FormData) {
+export async function updateOffice(_: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const nome = (formData.get('nome') as string).trim()
-  const estado = formData.get('estado') as string
+  const name = (formData.get('name') as string).trim()
+  const state = formData.get('state') as string
 
-  if (!nome || !estado) return { error: 'Preencha todos os campos.' }
+  if (!name || !state) return { error: 'Preencha todos os campos.' }
 
   const { error } = await supabase
-    .from('escritorios')
-    .update({ nome, estado })
+    .from('offices')
+    .update({ name, state })
     .eq('user_id', user.id)
 
   if (error) return { error: 'Erro ao salvar. Tente novamente.' }
@@ -25,21 +25,21 @@ export async function atualizarEscritorio(_: unknown, formData: FormData) {
   return { success: true }
 }
 
-export async function toggleAlertasEmail(ativo: boolean) {
+export async function toggleEmailAlerts(enabled: boolean) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { error } = await supabase
-    .from('escritorios')
-    .update({ alertas_email_ativo: ativo })
+    .from('offices')
+    .update({ email_alerts_enabled: enabled })
     .eq('user_id', user.id)
 
   if (error) return { error: 'Erro ao salvar preferência.' }
   return { success: true }
 }
 
-export async function enviarResetSenha() {
+export async function sendPasswordReset() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -52,26 +52,26 @@ export async function enviarResetSenha() {
   return { success: true }
 }
 
-export async function dispensarChecklist() {
+export async function dismissChecklist() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   await supabase
-    .from('escritorios')
-    .update({ onboarding_dispensado: true })
+    .from('offices')
+    .update({ onboarding_dismissed: true })
     .eq('user_id', user.id)
 
   revalidatePath('/painel')
 }
 
-export async function excluirConta() {
+export async function deleteAccount() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   // Exclui o escritório (cascade remove clientes e obrigações via FK)
-  await supabase.from('escritorios').delete().eq('user_id', user.id)
+  await supabase.from('offices').delete().eq('user_id', user.id)
   await supabase.auth.signOut()
   redirect('/login')
 }

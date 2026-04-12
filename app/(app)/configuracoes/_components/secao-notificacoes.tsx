@@ -2,18 +2,18 @@
 
 import { useState } from 'react'
 import { Bell } from 'lucide-react'
-import { toggleAlertasEmail } from '@/app/actions/configuracoes'
+import { toggleEmailAlerts } from '@/app/actions/configuracoes'
 
-export function SecaoNotificacoes({ alertasAtivo }: { alertasAtivo: boolean }) {
-  const [ativo, setAtivo] = useState(alertasAtivo)
-  const [salvando, setSalvando] = useState(false)
+export function SecaoNotificacoes({ alertsEnabled }: { alertsEnabled: boolean }) {
+  const [enabled, setEnabled] = useState(alertsEnabled)
+  const [saving, setSaving] = useState(false)
 
   async function handleToggle() {
-    const novoValor = !ativo
-    setAtivo(novoValor)
-    setSalvando(true)
-    await toggleAlertasEmail(novoValor)
-    setSalvando(false)
+    const newValue = !enabled
+    setEnabled(newValue)
+    setSaving(true)
+    await toggleEmailAlerts(newValue)
+    setSaving(false)
   }
 
   return (
@@ -33,16 +33,16 @@ export function SecaoNotificacoes({ alertasAtivo }: { alertasAtivo: boolean }) {
           </div>
           <button
             role="switch"
-            aria-checked={ativo}
+            aria-checked={enabled}
             onClick={handleToggle}
-            disabled={salvando}
+            disabled={saving}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none disabled:opacity-50 ${
-              ativo ? 'bg-foreground' : 'bg-muted-foreground/30'
+              enabled ? 'bg-foreground' : 'bg-muted-foreground/30'
             }`}
           >
             <span
               className={`inline-block h-5 w-5 rounded-full bg-background shadow transition-transform ${
-                ativo ? 'translate-x-5' : 'translate-x-0.5'
+                enabled ? 'translate-x-5' : 'translate-x-0.5'
               }`}
             />
           </button>

@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition, useRef } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { buscarClientes, type ClienteBusca } from '@/app/actions/busca'
+import { searchClients, type ClientSearch } from '@/app/actions/busca'
 
 const REGIME_LABEL: Record<string, string> = {
   simples: 'Simples',
@@ -27,7 +27,7 @@ function formatCNPJ(cnpj: string): string {
 export function Spotlight() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<ClienteBusca[]>([])
+  const [results, setResults] = useState<ClientSearch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isPending, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -74,7 +74,7 @@ export function Spotlight() {
     }
     const timeout = setTimeout(() => {
       startTransition(async () => {
-        const data = await buscarClientes(query)
+        const data = await searchClients(query)
         setResults(data)
         setSelectedIndex(0)
       })
@@ -82,18 +82,18 @@ export function Spotlight() {
     return () => clearTimeout(timeout)
   }, [query])
 
-  function getDestino(nome: string) {
-    if (pathname === '/clientes') return `/clientes?q=${encodeURIComponent(nome)}`
+  function getDestino(name: string) {
+    if (pathname === '/clientes') return `/clientes?q=${encodeURIComponent(name)}`
     if (pathname === '/calendario') {
       const mes = searchParams.get('mes')
-      return `/calendario?${mes ? `mes=${mes}&` : ''}q=${encodeURIComponent(nome)}`
+      return `/calendario?${mes ? `mes=${mes}&` : ''}q=${encodeURIComponent(name)}`
     }
-    return `/painel?q=${encodeURIComponent(nome)}`
+    return `/painel?q=${encodeURIComponent(name)}`
   }
 
-  function handleSelect(cliente: ClienteBusca) {
+  function handleSelect(cliente: ClientSearch) {
     setOpen(false)
-    router.push(getDestino(cliente.nome))
+    router.push(getDestino(cliente.name))
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -186,14 +186,14 @@ export function Spotlight() {
                 )}
               >
                 <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center shrink-0 border border-border/40">
-                  <span className="text-[10px] font-bold text-foreground">{getIniciais(cliente.nome)}</span>
+                  <span className="text-[10px] font-bold text-foreground">{getIniciais(cliente.name)}</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">{cliente.nome}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{cliente.name}</p>
                   <p className="text-[11px] text-muted-foreground font-mono">
                     {formatCNPJ(cliente.cnpj)}
                     <span className="mx-1.5 opacity-40">·</span>
-                    {REGIME_LABEL[cliente.regime] ?? cliente.regime}
+                    {REGIME_LABEL[cliente.tax_regime] ?? cliente.tax_regime}
                   </p>
                 </div>
                 {i === selectedIndex && (

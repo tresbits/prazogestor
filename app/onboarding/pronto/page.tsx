@@ -25,50 +25,50 @@ export default async function OnboardingProntoPage() {
   if (!user) redirect('/login')
 
   const { data: escritorio } = await supabase
-    .from('escritorios')
-    .select('id, nome, onboarding_concluido, onboarding_pulou_cliente')
+    .from('offices')
+    .select('id, name, onboarding_completed, onboarding_skipped_client')
     .eq('user_id', user.id)
     .single()
 
   if (!escritorio) redirect('/onboarding/escritorio')
-  if (!escritorio.onboarding_concluido) redirect('/onboarding/cliente')
+  if (!escritorio.onboarding_completed) redirect('/onboarding/cliente')
 
-  const pulou = escritorio.onboarding_pulou_cliente
+  const pulou = escritorio.onboarding_skipped_client
 
   // Estado A: com cliente — busca próximos vencimentos
   let itens: {
     id: string
-    sigla: string
-    nome: string
-    clienteNome: string
-    dataVencimento: string
+    acronym: string
+    name: string
+    clientName: string
+    dueDate: string
     dias: number
   }[] = []
 
   if (!pulou) {
     const { data: proximos } = await supabase
-      .from('obrigacoes_cliente')
+      .from('client_obligations')
       .select(`
-        id, data_vencimento,
-        obrigacoes_template ( sigla, nome ),
-        clientes!inner ( nome, escritorio_id )
+        id, due_date,
+        obligation_templates ( acronym, name ),
+        clients!inner ( name, office_id )
       `)
-      .eq('clientes.escritorio_id', escritorio.id)
-      .eq('status', 'pendente')
-      .gte('data_vencimento', new Date().toISOString().split('T')[0])
-      .order('data_vencimento', { ascending: true })
+      .eq('clients.office_id', escritorio.id)
+      .eq('status', 'pending')
+      .gte('due_date', new Date().toISOString().split('T')[0])
+      .order('due_date', { ascending: true })
       .limit(3)
 
     itens = (proximos ?? []).map((o) => {
-      const template = Array.isArray(o.obrigacoes_template) ? o.obrigacoes_template[0] : o.obrigacoes_template
-      const cliente  = Array.isArray(o.clientes) ? o.clientes[0] : o.clientes
+      const template = Array.isArray(o.obligation_templates) ? o.obligation_templates[0] : o.obligation_templates
+      const client   = Array.isArray(o.clients) ? o.clients[0] : o.clients
       return {
         id: o.id,
-        sigla: template?.sigla ?? '',
-        nome: template?.nome ?? '',
-        clienteNome: cliente?.nome ?? '',
-        dataVencimento: o.data_vencimento,
-        dias: getDiasRestantes(o.data_vencimento),
+        acronym: template?.acronym ?? '',
+        name: template?.name ?? '',
+        clientName: client?.name ?? '',
+        dueDate: o.due_date,
+        dias: getDiasRestantes(o.due_date),
       }
     })
   }
@@ -137,17 +137,17 @@ export default async function OnboardingProntoPage() {
                     {isUrgente ? 'Urgente' : 'Programado'}
                   </span>
                   <span className="text-[10px] font-mono text-muted-foreground">
-                    {formatDataCard(item.dataVencimento)}
+                    {formatDataCard(item.dueDate)}
                   </span>
                 </div>
                 <p className="font-heading font-bold text-foreground text-[15px] leading-tight">
-                  {item.sigla}
+                  {item.acronym}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-1 leading-snug line-clamp-2">
-                  {item.nome}
+                  {item.name}
                 </p>
                 <p className="text-[10px] text-muted-foreground/60 mt-2 truncate">
-                  {item.clienteNome}
+                  {item.clientName}
                 </p>
               </div>
             )

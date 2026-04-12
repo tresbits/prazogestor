@@ -6,11 +6,11 @@ import { StatsFooter } from './_components/stats-footer'
 import { ChecklistOnboarding } from './_components/checklist-onboarding'
 import { ModalNovoCliente } from '@/components/clientes/modal-novo-cliente'
 
-function getDiasRestantes(dataVencimento: string): number {
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  const venc = new Date(dataVencimento + 'T00:00:00')
-  return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+function getDaysRemaining(dueDate: string): number {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate + 'T00:00:00')
+  return Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function toISO(d: Date) {
@@ -19,10 +19,10 @@ function toISO(d: Date) {
 
 type ObRow = {
   id: string
-  data_vencimento: string
+  due_date: string
   status: string
-  obrigacoes_template: { sigla: string; nome: string }[] | { sigla: string; nome: string } | null
-  clientes: { id: string; nome: string; cnpj: string; regime: string; escritorio_id: string }[] | { id: string; nome: string; cnpj: string; regime: string; escritorio_id: string } | null
+  obligation_templates: { acronym: string; name: string }[] | { acronym: string; name: string } | null
+  clients: { id: string; name: string; cnpj: string; tax_regime: string; office_id: string }[] | { id: string; name: string; cnpj: string; tax_regime: string; office_id: string } | null
 }
 
 function unwrap<T>(val: T[] | T | null): T | null {
@@ -31,25 +31,25 @@ function unwrap<T>(val: T[] | T | null): T | null {
 }
 
 function mapObRow(o: ObRow) {
-  const t = unwrap(o.obrigacoes_template)
-  const c = unwrap(o.clientes)
+  const t = unwrap(o.obligation_templates)
+  const c = unwrap(o.clients)
   return {
     id: o.id,
-    data_vencimento: o.data_vencimento,
+    due_date: o.due_date,
     status: o.status,
-    sigla: t?.sigla ?? '',
-    nome: t?.nome ?? '',
-    clienteId: c?.id ?? '',
-    clienteNome: c?.nome ?? '',
-    clienteCnpj: c?.cnpj ?? '',
-    regime: c?.regime ?? '',
+    acronym: t?.acronym ?? '',
+    name: t?.name ?? '',
+    clientId: c?.id ?? '',
+    clientName: c?.name ?? '',
+    clientCnpj: c?.cnpj ?? '',
+    taxRegime: c?.tax_regime ?? '',
   }
 }
 
 const OB_SELECT = `
-  id, data_vencimento, status,
-  obrigacoes_template ( sigla, nome ),
-  clientes!inner ( id, nome, cnpj, regime, escritorio_id )
+  id, due_date, status,
+  obligation_templates ( acronym, name ),
+  clients!inner ( id, name, cnpj, tax_regime, office_id )
 `
 
 export default async function PainelPage({
@@ -62,131 +62,131 @@ export default async function PainelPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
-    .select('id, nome, alertas_email_ativo, onboarding_dispensado')
+  const { data: office } = await supabase
+    .from('offices')
+    .select('id, name, email_alerts_enabled, onboarding_dismissed')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return null
+  if (!office) return null
 
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
-  const fim30 = new Date(hoje)
-  fim30.setDate(hoje.getDate() + 30)
+  const end30 = new Date(today)
+  end30.setDate(today.getDate() + 30)
 
   // Query 1: obrigações pendentes nos próximos 30 dias
-  const { data: obrigacoesRaw } = await supabase
-    .from('obrigacoes_cliente')
+  const { data: obligationsRaw } = await supabase
+    .from('client_obligations')
     .select(OB_SELECT)
-    .eq('clientes.escritorio_id', escritorio.id)
-    .in('status', ['pendente', 'atrasado'])
-    .gte('data_vencimento', toISO(hoje))
-    .lte('data_vencimento', toISO(fim30))
-    .order('data_vencimento', { ascending: true })
+    .eq('clients.office_id', office.id)
+    .in('status', ['pending', 'overdue'])
+    .gte('due_date', toISO(today))
+    .lte('due_date', toISO(end30))
+    .order('due_date', { ascending: true })
     .limit(300)
 
   // Query 2: obrigações realmente atrasadas (data passada)
-  const { data: atrasadosRaw } = await supabase
-    .from('obrigacoes_cliente')
+  const { data: overdueRaw } = await supabase
+    .from('client_obligations')
     .select(OB_SELECT)
-    .eq('clientes.escritorio_id', escritorio.id)
-    .in('status', ['pendente', 'atrasado'])
-    .lt('data_vencimento', toISO(hoje))
-    .order('data_vencimento', { ascending: true })
+    .eq('clients.office_id', office.id)
+    .in('status', ['pending', 'overdue'])
+    .lt('due_date', toISO(today))
+    .order('due_date', { ascending: true })
     .limit(200)
 
   // Concluídos hoje
-  const { count: concluidosHoje } = await supabase
-    .from('obrigacoes_cliente')
-    .select(`id, clientes!inner ( escritorio_id )`, { count: 'exact', head: true })
-    .eq('clientes.escritorio_id', escritorio.id)
-    .eq('status', 'concluido')
-    .gte('concluido_em', `${toISO(hoje)}T00:00:00`)
+  const { count: completedToday } = await supabase
+    .from('client_obligations')
+    .select(`id, clients!inner ( office_id )`, { count: 'exact', head: true })
+    .eq('clients.office_id', office.id)
+    .eq('status', 'completed')
+    .gte('completed_at', `${toISO(today)}T00:00:00`)
 
   // Todos os clientes
-  const { data: clientes, count: totalClientes } = await supabase
-    .from('clientes')
-    .select('id, nome, cnpj, regime', { count: 'exact' })
-    .eq('escritorio_id', escritorio.id)
-    .order('nome')
+  const { data: clients, count: totalClients } = await supabase
+    .from('clients')
+    .select('id, name, cnpj, tax_regime', { count: 'exact' })
+    .eq('office_id', office.id)
+    .order('name')
 
   // Mapear e filtrar
-  const obrigacoes = ((obrigacoesRaw as ObRow[] | null) ?? [])
+  const obligations = ((obligationsRaw as ObRow[] | null) ?? [])
     .map(mapObRow)
-    .filter(o => o.clienteId)
+    .filter(o => o.clientId)
 
-  const atrasados = ((atrasadosRaw as ObRow[] | null) ?? [])
+  const overdue = ((overdueRaw as ObRow[] | null) ?? [])
     .map(mapObRow)
-    .filter(o => o.clienteId)
+    .filter(o => o.clientId)
 
   // Agrupar por cliente
-  const porCliente = new Map<string, typeof obrigacoes>()
-  for (const o of obrigacoes) {
-    const lista = porCliente.get(o.clienteId) ?? []
-    lista.push(o)
-    porCliente.set(o.clienteId, lista)
+  const byClient = new Map<string, typeof obligations>()
+  for (const o of obligations) {
+    const list = byClient.get(o.clientId) ?? []
+    list.push(o)
+    byClient.set(o.clientId, list)
   }
 
-  const porClienteAtrasado = new Map<string, typeof atrasados>()
-  for (const o of atrasados) {
-    const lista = porClienteAtrasado.get(o.clienteId) ?? []
-    lista.push(o)
-    porClienteAtrasado.set(o.clienteId, lista)
+  const byClientOverdue = new Map<string, typeof overdue>()
+  for (const o of overdue) {
+    const list = byClientOverdue.get(o.clientId) ?? []
+    list.push(o)
+    byClientOverdue.set(o.clientId, list)
   }
 
   // Stats
-  const criticos = atrasados.length +
-    obrigacoes.filter(o => getDiasRestantes(o.data_vencimento) === 0).length
+  const critical = overdue.length +
+    obligations.filter(o => getDaysRemaining(o.due_date) === 0).length
 
-  const proximos7dias = obrigacoes.filter(o => {
-    const dias = getDiasRestantes(o.data_vencimento)
-    return dias > 0 && dias <= 7
+  const next7days = obligations.filter(o => {
+    const days = getDaysRemaining(o.due_date)
+    return days > 0 && days <= 7
   }).length
 
   // Clientes com obrigações (pendentes próximos 30 dias OU atrasadas)
-  const clientesComObs = (clientes ?? [])
-    .filter(c => porCliente.has(c.id) || porClienteAtrasado.has(c.id))
+  const clientsWithObs = (clients ?? [])
+    .filter(c => byClient.has(c.id) || byClientOverdue.has(c.id))
     .map(c => {
-      const obs      = porCliente.get(c.id) ?? []
-      const atrasadas = porClienteAtrasado.get(c.id) ?? []
-      const temCritico = atrasadas.length > 0 ||
-        obs.some(o => getDiasRestantes(o.data_vencimento) <= 0)
-      return { ...c, obs, atrasadas, temCritico }
+      const obs      = byClient.get(c.id) ?? []
+      const overdues = byClientOverdue.get(c.id) ?? []
+      const hasCritical = overdues.length > 0 ||
+        obs.some(o => getDaysRemaining(o.due_date) <= 0)
+      return { ...c, obs, overdues, hasCritical }
     })
     .sort((a, b) => {
-      if (a.temCritico && !b.temCritico) return -1
-      if (!a.temCritico && b.temCritico) return 1
-      return a.nome.localeCompare(b.nome)
+      if (a.hasCritical && !b.hasCritical) return -1
+      if (!a.hasCritical && b.hasCritical) return 1
+      return a.name.localeCompare(b.name)
     })
 
-  const clientesSemObs = (clientes ?? [])
-    .filter(c => !porCliente.has(c.id) && !porClienteAtrasado.has(c.id))
+  const clientsWithoutObs = (clients ?? [])
+    .filter(c => !byClient.has(c.id) && !byClientOverdue.has(c.id))
 
   // Filtro de busca
-  const filtro = q?.trim().toLowerCase()
-  const clientesComObsFiltrados = filtro
-    ? clientesComObs.filter(c => c.nome.toLowerCase().includes(filtro))
-    : clientesComObs
-  const clientesSemObsFiltrados = filtro
-    ? clientesSemObs.filter(c => c.nome.toLowerCase().includes(filtro))
-    : clientesSemObs
+  const filter = q?.trim().toLowerCase()
+  const clientsWithObsFiltered = filter
+    ? clientsWithObs.filter(c => c.name.toLowerCase().includes(filter))
+    : clientsWithObs
+  const clientsWithoutObsFiltered = filter
+    ? clientsWithoutObs.filter(c => c.name.toLowerCase().includes(filter))
+    : clientsWithoutObs
 
-  const agora = new Date()
-  const horaAtualStr = agora.toLocaleDateString('pt-BR') + ' ' +
-    agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const now = new Date()
+  const lastUpdatedStr = now.toLocaleDateString('pt-BR') + ' ' +
+    now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
-  const mostrarChecklist = !escritorio.onboarding_dispensado && (
-    (totalClientes ?? 0) < 3 || !escritorio.alertas_email_ativo
+  const showChecklist = !office.onboarding_dismissed && (
+    (totalClients ?? 0) < 3 || !office.email_alerts_enabled
   )
 
   return (
     <div className="pb-36">
-      {mostrarChecklist && (
+      {showChecklist && (
         <ChecklistOnboarding
-          totalClientes={totalClientes ?? 0}
-          alertasAtivo={escritorio.alertas_email_ativo}
+          totalClients={totalClients ?? 0}
+          alertsEnabled={office.email_alerts_enabled}
         />
       )}
 
@@ -204,17 +204,17 @@ export default async function PainelPage({
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
             Última Atualização
           </p>
-          <p className="text-sm font-mono font-bold text-foreground">{horaAtualStr}</p>
+          <p className="text-sm font-mono font-bold text-foreground">{lastUpdatedStr}</p>
         </div>
       </div>
 
-      {filtro && clientesComObsFiltrados.length === 0 && clientesSemObsFiltrados.length === 0 && (
+      {filter && clientsWithObsFiltered.length === 0 && clientsWithoutObsFiltered.length === 0 && (
         <p className="text-sm text-muted-foreground py-8">
           Nenhum cliente encontrado para <span className="font-semibold text-foreground">"{q}"</span>.
         </p>
       )}
 
-      {!clientes?.length && (
+      {!clients?.length && (
         <div className="flex flex-col items-center py-16 text-center">
           <h2 className="font-heading text-2xl font-extrabold tracking-tight text-foreground mb-2">
             Nenhum cliente cadastrado
@@ -256,38 +256,38 @@ export default async function PainelPage({
         </div>
       )}
 
-      {!!(clientes?.length) && (
+      {!!(clients?.length) && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {clientesComObsFiltrados.map(c => (
+          {clientsWithObsFiltered.map(c => (
             <CardCliente
               key={c.id}
-              clienteId={c.id}
-              clienteNome={c.nome}
+              clientId={c.id}
+              clientName={c.name}
               cnpj={c.cnpj}
-              regime={c.regime}
-              obrigacoes={c.obs.map(o => ({
+              taxRegime={c.tax_regime}
+              obligations={c.obs.map(o => ({
                 id: o.id,
-                data_vencimento: o.data_vencimento,
+                due_date: o.due_date,
                 status: o.status,
-                sigla: o.sigla,
-                nome: o.nome,
+                acronym: o.acronym,
+                name: o.name,
               }))}
-              totalPendente={c.obs.length}
-              obrigacoesAtrasadas={c.atrasadas.map(o => ({
+              totalPending={c.obs.length}
+              overdueObligations={c.overdues.map(o => ({
                 id: o.id,
-                data_vencimento: o.data_vencimento,
+                due_date: o.due_date,
                 status: o.status,
-                sigla: o.sigla,
-                nome: o.nome,
+                acronym: o.acronym,
+                name: o.name,
               }))}
             />
           ))}
 
           {/* Clientes sem vencimentos no período */}
-          {clientesSemObsFiltrados.slice(0, 2).map(c => (
+          {clientsWithoutObsFiltered.slice(0, 2).map(c => (
             <div key={c.id} className="bg-card rounded-[16px] shadow-card p-6 opacity-40">
               <h3 className="font-heading text-[15px] font-semibold text-foreground">
-                {c.nome}
+                {c.name}
               </h3>
               <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
                 {c.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
@@ -302,9 +302,9 @@ export default async function PainelPage({
       )}
 
       <StatsFooter
-        criticos={criticos}
-        proximos7dias={proximos7dias}
-        concluidosHoje={concluidosHoje ?? 0}
+        critical={critical}
+        next7days={next7days}
+        completedToday={completedToday ?? 0}
       />
     </div>
   )

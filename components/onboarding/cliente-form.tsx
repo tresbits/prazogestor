@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { onboardingCriarCliente, onboardingPularCliente } from '@/app/actions/onboarding'
+import { onboardingCreateClient, onboardingSkipClient } from '@/app/actions/onboarding'
 import { ProgressSteps } from '@/components/onboarding/progress-steps'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCNPJ } from '@/lib/format'
 
 export function ClienteForm() {
-  const [state, action, pending] = useActionState(onboardingCriarCliente, null)
+  const [state, action, pending] = useActionState(onboardingCreateClient, null)
   const [cnpj, setCnpj] = useState('')
 
   return (
@@ -49,23 +49,23 @@ export function ClienteForm() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="nome" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Nome <span className="normal-case font-normal text-muted-foreground">(caso não encontre pelo CNPJ)</span>
             </Label>
             <Input
-              id="nome"
-              name="nome"
+              id="name"
+              name="name"
               placeholder="Razão social ou nome fantasia"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="regime" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Label htmlFor="tax_regime" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Regime tributário
             </Label>
-            <Select name="regime" required>
-              <SelectTrigger id="regime">
+            <Select name="tax_regime" required>
+              <SelectTrigger id="tax_regime">
                 <SelectValue placeholder="Selecione o regime" />
               </SelectTrigger>
               <SelectContent>
@@ -76,11 +76,11 @@ export function ClienteForm() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tem_empregados" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Label htmlFor="has_employees" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Tem funcionários?
             </Label>
-            <Select name="tem_empregados" required>
-              <SelectTrigger id="tem_empregados">
+            <Select name="has_employees" required>
+              <SelectTrigger id="has_employees">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
@@ -103,7 +103,7 @@ export function ClienteForm() {
           </button>
         </form>
 
-        <form action={onboardingPularCliente} className="mt-3 text-center">
+        <form action={onboardingSkipClient} className="mt-3 text-center">
           <button
             type="submit"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"

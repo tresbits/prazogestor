@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { LayoutGrid } from 'lucide-react'
-import { atualizarEscritorio } from '@/app/actions/configuracoes'
+import { updateOffice } from '@/app/actions/configuracoes'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -12,8 +12,8 @@ const ESTADOS = [
   'SP','SE','TO',
 ]
 
-export function SecaoEscritorio({ nome, estado }: { nome: string; estado: string }) {
-  const [state, action, pending] = useActionState(atualizarEscritorio, null)
+export function SecaoEscritorio({ name, state }: { name: string; state: string }) {
+  const [formState, action, pending] = useActionState(updateOffice, null)
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-card p-6 space-y-5">
@@ -28,13 +28,13 @@ export function SecaoEscritorio({ nome, estado }: { nome: string; estado: string
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
               Nome do escritório
             </p>
-            <Input name="nome" defaultValue={nome} required />
+            <Input name="name" defaultValue={name} required />
           </div>
           <div className="space-y-1.5">
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
               Estado / UF
             </p>
-            <Select name="estado" defaultValue={estado} required>
+            <Select name="state" defaultValue={state} required>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -47,8 +47,8 @@ export function SecaoEscritorio({ nome, estado }: { nome: string; estado: string
           </div>
         </div>
 
-        {state?.error && <p className="text-xs text-destructive">{state.error}</p>}
-        {state?.success && <p className="text-xs text-green-600 dark:text-green-400">Salvo com sucesso.</p>}
+        {formState?.error && <p className="text-xs text-destructive">{formState.error}</p>}
+        {formState?.success && <p className="text-xs text-green-600 dark:text-green-400">Salvo com sucesso.</p>}
 
         <div className="flex justify-end">
           <button

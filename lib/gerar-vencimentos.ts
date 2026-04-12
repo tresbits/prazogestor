@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Regime } from '@/types'
+import type { TaxRegime } from '@/types'
 
 // Retorna data no formato YYYY-MM-DD sem conversão de timezone
 function toISODate(date: Date): string {
@@ -9,113 +9,113 @@ function toISODate(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
-function proximoDiaUtil(date: Date, feriados: Set<string>): Date {
+function nextBusinessDay(date: Date, holidays: Set<string>): Date {
   const d = new Date(date)
-  while (d.getDay() === 0 || d.getDay() === 6 || feriados.has(toISODate(d))) {
+  while (d.getDay() === 0 || d.getDay() === 6 || holidays.has(toISODate(d))) {
     d.setDate(d.getDate() + 1)
   }
   return d
 }
 
-function anteriorDiaUtil(date: Date, feriados: Set<string>): Date {
+function previousBusinessDay(date: Date, holidays: Set<string>): Date {
   const d = new Date(date)
-  while (d.getDay() === 0 || d.getDay() === 6 || feriados.has(toISODate(d))) {
+  while (d.getDay() === 0 || d.getDay() === 6 || holidays.has(toISODate(d))) {
     d.setDate(d.getDate() - 1)
   }
   return d
 }
 
-function ajustarData(
+function adjustDate(
   date: Date,
-  regra: 'prorroga' | 'antecipa',
-  feriados: Set<string>
+  rule: 'postpone' | 'advance',
+  holidays: Set<string>
 ): Date {
   const isWeekend = date.getDay() === 0 || date.getDay() === 6
-  const isFeriado = feriados.has(toISODate(date))
-  if (!isWeekend && !isFeriado) return date
-  return regra === 'prorroga'
-    ? proximoDiaUtil(date, feriados)
-    : anteriorDiaUtil(date, feriados)
+  const isHoliday = holidays.has(toISODate(date))
+  if (!isWeekend && !isHoliday) return date
+  return rule === 'postpone'
+    ? nextBusinessDay(date, holidays)
+    : previousBusinessDay(date, holidays)
 }
 
 export async function gerarVencimentos(
   supabase: SupabaseClient,
-  clienteId: string,
-  regime: Regime,
-  temEmpregados: boolean,
-  ano: number,
-  dataInicio?: Date, // só gera obrigações a partir desta data (inclusive)
-  dataFim?: Date,    // só gera obrigações até esta data (inclusive)
+  clientId: string,
+  taxRegime: TaxRegime,
+  hasEmployees: boolean,
+  year: number,
+  startDate?: Date, // só gera obrigações a partir desta data (inclusive)
+  endDate?: Date,   // só gera obrigações até esta data (inclusive)
 ) {
   // Busca os templates aplicáveis ao regime do cliente
   const { data: templates, error: tErr } = await supabase
-    .from('obrigacoes_template')
+    .from('obligation_templates')
     .select('*')
-    .contains('regimes', [regime])
+    .contains('tax_regimes', [taxRegime])
 
   if (tErr || !templates?.length) return
 
-  // Filtra por requer_empregados
-  const aplicaveis = templates.filter(
-    (t) => !t.requer_empregados || temEmpregados
+  // Filtra por requires_employees
+  const applicable = templates.filter(
+    (t) => !t.requires_employees || hasEmployees
   )
 
   // Busca feriados nacionais do ano
-  const inicioAno = `${ano}-01-01`
-  const fimAno = `${ano}-12-31`
-  const { data: feriadosRows } = await supabase
-    .from('feriados')
-    .select('data')
-    .gte('data', inicioAno)
-    .lte('data', fimAno)
-    .eq('tipo', 'nacional')
+  const yearStart = `${year}-01-01`
+  const yearEnd = `${year}-12-31`
+  const { data: holidayRows } = await supabase
+    .from('holidays')
+    .select('date')
+    .gte('date', yearStart)
+    .lte('date', yearEnd)
+    .eq('type', 'national')
 
-  const feriados = new Set<string>(feriadosRows?.map((f) => f.data) ?? [])
+  const holidays = new Set<string>(holidayRows?.map((h) => h.date) ?? [])
 
-  const obrigacoes: {
-    cliente_id: string
+  const obligations: {
+    client_id: string
     template_id: string
-    data_vencimento: string
-    status: 'pendente'
+    due_date: string
+    status: 'pending'
   }[] = []
 
-  function dentroJanela(data: Date): boolean {
-    if (dataInicio && data < dataInicio) return false
-    if (dataFim   && data > dataFim)    return false
+  function withinWindow(date: Date): boolean {
+    if (startDate && date < startDate) return false
+    if (endDate   && date > endDate)   return false
     return true
   }
 
-  for (const t of aplicaveis) {
-    if (t.frequencia === 'mensal') {
-      for (let mes = 1; mes <= 12; mes++) {
-        const dia = t.dia_vencimento ?? 1
+  for (const t of applicable) {
+    if (t.frequency === 'monthly') {
+      for (let month = 1; month <= 12; month++) {
+        const day = t.due_day ?? 1
         // Vencimento é no mês SEGUINTE à competência
-        const mesVencimento = mes === 12 ? 1 : mes + 1
-        const anoVencimento = mes === 12 ? ano + 1 : ano
-        const raw = new Date(anoVencimento, mesVencimento - 1, dia)
-        const ajustada = ajustarData(raw, t.regra_ajuste, feriados)
-        if (!dentroJanela(ajustada)) continue
-        obrigacoes.push({
-          cliente_id: clienteId,
+        const dueMonth = month === 12 ? 1 : month + 1
+        const dueYear  = month === 12 ? year + 1 : year
+        const raw = new Date(dueYear, dueMonth - 1, day)
+        const adjusted = adjustDate(raw, t.adjustment_rule, holidays)
+        if (!withinWindow(adjusted)) continue
+        obligations.push({
+          client_id: clientId,
           template_id: t.id,
-          data_vencimento: toISODate(ajustada),
-          status: 'pendente',
+          due_date: toISODate(adjusted),
+          status: 'pending',
         })
       }
-    } else if (t.frequencia === 'anual' && t.mes_vencimento && t.dia_vencimento) {
-      const raw = new Date(ano, t.mes_vencimento - 1, t.dia_vencimento)
-      const ajustada = ajustarData(raw, t.regra_ajuste, feriados)
-      if (!dentroJanela(ajustada)) continue
-      obrigacoes.push({
-        cliente_id: clienteId,
+    } else if (t.frequency === 'annual' && t.due_month && t.due_day) {
+      const raw = new Date(year, t.due_month - 1, t.due_day)
+      const adjusted = adjustDate(raw, t.adjustment_rule, holidays)
+      if (!withinWindow(adjusted)) continue
+      obligations.push({
+        client_id: clientId,
         template_id: t.id,
-        data_vencimento: toISODate(ajustada),
-        status: 'pendente',
+        due_date: toISODate(adjusted),
+        status: 'pending',
       })
     }
   }
 
-  if (obrigacoes.length) {
-    await supabase.from('obrigacoes_cliente').insert(obrigacoes)
+  if (obligations.length) {
+    await supabase.from('client_obligations').insert(obligations)
   }
 }

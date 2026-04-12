@@ -1,10 +1,10 @@
 type StatsFooterProps = {
-  criticos: number
-  proximos7dias: number
-  concluidosHoje: number
+  critical: number
+  next7days: number
+  completedToday: number
 }
 
-export function StatsFooter({ criticos, proximos7dias, concluidosHoje }: StatsFooterProps) {
+export function StatsFooter({ critical, next7days, completedToday }: StatsFooterProps) {
   return (
     <div
       className="fixed bottom-8 z-30 flex items-center gap-0
@@ -20,7 +20,7 @@ export function StatsFooter({ criticos, proximos7dias, concluidosHoje }: StatsFo
           Pendências Críticas
         </span>
         <span className="text-2xl font-mono font-bold text-destructive mt-0.5">
-          {String(criticos).padStart(2, '0')}
+          {String(critical).padStart(2, '0')}
         </span>
       </div>
 
@@ -31,7 +31,7 @@ export function StatsFooter({ criticos, proximos7dias, concluidosHoje }: StatsFo
           Próximos 7 Dias
         </span>
         <span className="text-2xl font-mono font-bold text-amber-500 mt-0.5">
-          {String(proximos7dias).padStart(2, '0')}
+          {String(next7days).padStart(2, '0')}
         </span>
       </div>
 
@@ -42,7 +42,7 @@ export function StatsFooter({ criticos, proximos7dias, concluidosHoje }: StatsFo
           Concluídos Hoje
         </span>
         <span className="text-2xl font-mono font-bold text-foreground mt-0.5">
-          {String(concluidosHoje).padStart(2, '0')}
+          {String(completedToday).padStart(2, '0')}
         </span>
       </div>
 

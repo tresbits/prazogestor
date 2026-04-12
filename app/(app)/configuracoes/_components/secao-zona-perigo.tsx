@@ -3,16 +3,16 @@
 import { useState } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import { AlertDialog } from '@base-ui/react/alert-dialog'
-import { excluirConta } from '@/app/actions/configuracoes'
+import { deleteAccount } from '@/app/actions/configuracoes'
 import { cn } from '@/lib/utils'
 
 export function SecaoZonaPerigo() {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
 
-  async function handleExcluir() {
+  async function handleDelete() {
     setPending(true)
-    await excluirConta()
+    await deleteAccount()
   }
 
   return (
@@ -78,7 +78,7 @@ export function SecaoZonaPerigo() {
                 Cancelar
               </AlertDialog.Close>
               <button
-                onClick={handleExcluir}
+                onClick={handleDelete}
                 disabled={pending}
                 className={cn(
                   'px-4 py-2 rounded-full text-sm font-medium',

@@ -8,7 +8,7 @@ export default async function OnboardingEscritorioPage() {
   if (!user) redirect('/login')
 
   const { data: escritorio } = await supabase
-    .from('escritorios')
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()

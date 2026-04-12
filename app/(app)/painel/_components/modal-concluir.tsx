@@ -3,21 +3,21 @@
 import { useState, useTransition } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
-import { concluirObrigacao } from '@/app/actions/obrigacoes'
+import { completeObligation } from '@/app/actions/obrigacoes'
 import { cn } from '@/lib/utils'
 
 type ModalConcluirProps = {
-  obrigacaoId: string
-  nomeObrigacao: string
-  clienteNome: string
-  dataVencimento: string
+  obligationId: string
+  obligationName: string
+  clientName: string
+  dueDate: string
 }
 
 export function ModalConcluir({
-  obrigacaoId,
-  nomeObrigacao,
-  clienteNome,
-  dataVencimento,
+  obligationId,
+  obligationName,
+  clientName,
+  dueDate,
 }: ModalConcluirProps) {
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
@@ -25,14 +25,14 @@ export function ModalConcluir({
   function handleSubmit() {
     startTransition(async () => {
       const formData = new FormData()
-      formData.set('obrigacao_id', obrigacaoId)
-      await concluirObrigacao(formData)
+      formData.set('obligation_id', obligationId)
+      await completeObligation(formData)
       setOpen(false)
     })
   }
 
-  const vencDate = new Date(dataVencimento + 'T00:00:00')
-  const vencFormatado = vencDate.toLocaleDateString('pt-BR', {
+  const dueDateTime = new Date(dueDate + 'T00:00:00')
+  const dueFormatted = dueDateTime.toLocaleDateString('pt-BR', {
     day: '2-digit', month: 'short', year: 'numeric'
   })
 
@@ -90,16 +90,16 @@ export function ModalConcluir({
             <div className="bg-muted/60 rounded-xl p-4 space-y-2">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Obrigação</p>
-                <p className="text-sm font-semibold text-foreground mt-0.5">{nomeObrigacao}</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">{obligationName}</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Cliente</p>
-                  <p className="text-sm text-foreground mt-0.5 truncate">{clienteNome}</p>
+                  <p className="text-sm text-foreground mt-0.5 truncate">{clientName}</p>
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Vencimento</p>
-                  <p className="text-sm text-foreground mt-0.5">{vencFormatado}</p>
+                  <p className="text-sm text-foreground mt-0.5">{dueFormatted}</p>
                 </div>
               </div>
             </div>

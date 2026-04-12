@@ -3,18 +3,18 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const escritorioId = searchParams.get('id')
+  const officeId = searchParams.get('id')
 
-  if (!escritorioId) {
+  if (!officeId) {
     return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
   }
 
   const supabase = createServiceClient()
 
   const { error } = await supabase
-    .from('escritorios')
-    .update({ alertas_email_ativo: false })
-    .eq('id', escritorioId)
+    .from('offices')
+    .update({ email_alerts_enabled: false })
+    .eq('id', officeId)
 
   if (error) {
     return NextResponse.json({ error: 'Erro ao processar' }, { status: 500 })

@@ -12,20 +12,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
-    .select('nome, estado, onboarding_concluido')
+  const { data: office } = await supabase
+    .from('offices')
+    .select('name, state, onboarding_completed')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding/escritorio')
-  if (!escritorio.onboarding_concluido) redirect('/onboarding/cliente')
+  if (!office) redirect('/onboarding/escritorio')
+  if (!office.onboarding_completed) redirect('/onboarding/cliente')
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar
-        escritorioNome={escritorio?.nome ?? ''}
-        escritorioEstado={escritorio?.estado ?? ''}
+        officeName={office?.name ?? ''}
+        officeState={office?.state ?? ''}
         userEmail={user.email ?? ''}
       />
       <div className="flex-1 min-w-0">

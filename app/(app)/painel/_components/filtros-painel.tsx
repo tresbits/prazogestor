@@ -22,7 +22,7 @@ export function FiltrosPainel({
   clienteIdAtivo,
 }: {
   filtroAtivo: string | undefined
-  clientes: { id: string; nome: string }[]
+  clientes: { id: string; name: string }[]
   clienteIdAtivo: string | undefined
 }) {
   const router = useRouter()
@@ -70,14 +70,14 @@ export function FiltrosPainel({
           <SelectTrigger className="w-48" size="sm">
             <SelectValue>
               {clienteIdAtivo
-                ? (clientes.find(c => c.id === clienteIdAtivo)?.nome ?? 'Cliente')
+                ? (clientes.find(c => c.id === clienteIdAtivo)?.name ?? 'Cliente')
                 : 'Todos os clientes'}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">Todos os clientes</SelectItem>
             {clientes.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

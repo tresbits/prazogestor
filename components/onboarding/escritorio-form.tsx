@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { onboardingCriarEscritorio } from '@/app/actions/onboarding'
+import { onboardingCreateOffice } from '@/app/actions/onboarding'
 import { ProgressSteps } from '@/components/onboarding/progress-steps'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,7 +14,7 @@ const ESTADOS = [
 ]
 
 export function EscritorioForm() {
-  const [state, action, pending] = useActionState(onboardingCriarEscritorio, null)
+  const [state, action, pending] = useActionState(onboardingCreateOffice, null)
 
   return (
     <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
@@ -36,12 +36,12 @@ export function EscritorioForm() {
 
         <form action={action} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="nome" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Nome do escritório
             </Label>
             <Input
-              id="nome"
-              name="nome"
+              id="name"
+              name="name"
               placeholder="Contabilidade Silva & Associados"
               required
               autoFocus
@@ -49,11 +49,11 @@ export function EscritorioForm() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="estado" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Label htmlFor="state" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Estado / UF
             </Label>
-            <Select name="estado" required>
-              <SelectTrigger id="estado">
+            <Select name="state" required>
+              <SelectTrigger id="state">
                 <SelectValue placeholder="Selecione o estado" />
               </SelectTrigger>
               <SelectContent>

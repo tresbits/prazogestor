@@ -8,13 +8,13 @@ export default async function OnboardingClientePage() {
   if (!user) redirect('/login')
 
   const { data: escritorio } = await supabase
-    .from('escritorios')
-    .select('id, onboarding_concluido')
+    .from('offices')
+    .select('id, onboarding_completed')
     .eq('user_id', user.id)
     .single()
 
   if (!escritorio) redirect('/onboarding/escritorio')
-  if (escritorio.onboarding_concluido) redirect('/painel')
+  if (escritorio.onboarding_completed) redirect('/painel')
 
   return <ClienteForm />
 }

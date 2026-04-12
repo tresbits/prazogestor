@@ -12,13 +12,13 @@ export default async function ConfiguracoesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
-    .select('nome, estado, plano, alertas_email_ativo')
+  const { data: office } = await supabase
+    .from('offices')
+    .select('name, state, plan, email_alerts_enabled')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return null
+  if (!office) return null
 
   return (
     <div className="p-2 space-y-8 max-w-5xl">
@@ -36,15 +36,15 @@ export default async function ConfiguracoesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
         {/* Coluna esquerda */}
         <div className="space-y-5">
-          <SecaoEscritorio nome={escritorio.nome} estado={escritorio.estado} />
+          <SecaoEscritorio name={office.name} state={office.state} />
           <SecaoConta email={user.email!} />
-          <SecaoNotificacoes alertasAtivo={escritorio.alertas_email_ativo ?? true} />
+          <SecaoNotificacoes alertsEnabled={office.email_alerts_enabled ?? true} />
         </div>
 
         {/* Coluna direita */}
         <div className="space-y-5">
           <SecaoAparencia />
-          <SecaoPlano plano={escritorio.plano ?? 'trial'} />
+          <SecaoPlano plan={office.plan ?? 'trial'} />
           <SecaoZonaPerigo />
         </div>
       </div>

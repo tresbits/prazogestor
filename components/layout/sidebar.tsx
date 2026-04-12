@@ -13,8 +13,8 @@ const navItems = [
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
-function getInitials(nome: string): string {
-  return nome
+function getInitials(name: string): string {
+  return name
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -23,16 +23,16 @@ function getInitials(nome: string): string {
 }
 
 export function Sidebar({
-  escritorioNome,
-  escritorioEstado,
+  officeName,
+  officeState,
   userEmail,
 }: {
-  escritorioNome: string
-  escritorioEstado: string
+  officeName: string
+  officeState: string
   userEmail: string
 }) {
   const pathname = usePathname()
-  const initials = escritorioNome ? getInitials(escritorioNome) : '?'
+  const initials = officeName ? getInitials(officeName) : '?'
 
   return (
     <aside className="w-52 flex flex-col border-r border-border bg-sidebar h-screen sticky top-0">
@@ -44,10 +44,10 @@ export function Sidebar({
         </div>
         <div className="min-w-0">
           <p className="text-[13px] font-semibold text-foreground leading-tight truncate">
-            {escritorioNome || 'Meu Escritório'}
+            {officeName || 'Meu Escritório'}
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {escritorioEstado ? `${escritorioEstado} · PrazoGestor` : 'PrazoGestor'}
+            {officeState ? `${officeState} · PrazoGestor` : 'PrazoGestor'}
           </p>
         </div>
       </div>

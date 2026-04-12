@@ -12,16 +12,16 @@ const MESES_PT = [
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
 ]
 
-function getDias(dataVencimento: string): number {
+function getDias(dueDate: string): number {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
-  const venc = new Date(dataVencimento + 'T00:00:00')
+  const venc = new Date(dueDate + 'T00:00:00')
   return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function urgenciaPrioridade(item: ObrigacaoCalendario): number {
-  const dias = getDias(item.data_vencimento)
-  if (item.status === 'atrasado' || dias < 0) return 0
+  const dias = getDias(item.due_date)
+  if (item.status === 'overdue' || dias < 0) return 0
   if (dias === 0) return 1
   if (dias <= 3) return 2
   if (dias <= 7) return 3
@@ -68,10 +68,10 @@ export function ModalDia({
   // Agrupar por cliente
   const porCliente = new Map<string, { nome: string; cnpj: string; obs: ObrigacaoCalendario[] }>()
   for (const item of items) {
-    if (!porCliente.has(item.clienteId)) {
-      porCliente.set(item.clienteId, { nome: item.clienteNome, cnpj: item.clienteCnpj, obs: [] })
+    if (!porCliente.has(item.clientId)) {
+      porCliente.set(item.clientId, { nome: item.clientName, cnpj: item.clientCnpj, obs: [] })
     }
-    porCliente.get(item.clienteId)!.obs.push(item)
+    porCliente.get(item.clientId)!.obs.push(item)
   }
 
   // Ordenar clientes pela pior urgência
@@ -142,7 +142,7 @@ export function ModalDia({
             {grupos.map((grupo, gi) => {
               const piorPrioridade = Math.min(...grupo.obs.map(urgenciaPrioridade))
               const piorItem = grupo.obs.find(o => urgenciaPrioridade(o) === piorPrioridade)!
-              const piorDias = getDias(piorItem.data_vencimento)
+              const piorDias = getDias(piorItem.due_date)
 
               return (
                 <div key={grupo.nome} className={cn('px-6 py-4', gi > 0 && 'border-t border-border')}>
@@ -180,18 +180,18 @@ export function ModalDia({
                               'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
                               siglaPillClass(prioridade)
                             )}>
-                              {item.sigla || '—'}
+                              {item.acronym || '—'}
                             </span>
                             <span className="text-sm text-muted-foreground truncate">
-                              {item.nome}
+                              {item.name}
                             </span>
                           </div>
                           <div className="shrink-0 ml-4">
                             <ModalConcluir
-                              obrigacaoId={item.id}
-                              nomeObrigacao={item.nome}
-                              clienteNome={item.clienteNome}
-                              dataVencimento={item.data_vencimento}
+                              obligationId={item.id}
+                              obligationName={item.name}
+                              clientName={item.clientName}
+                              dueDate={item.due_date}
                             />
                           </div>
                         </div>

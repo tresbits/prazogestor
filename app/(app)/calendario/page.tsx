@@ -4,10 +4,10 @@ import { CalendarioControls } from './_components/calendario-controls'
 
 type ObRow = {
   id: string
-  data_vencimento: string
+  due_date: string
   status: string
-  obrigacoes_template: { sigla: string; nome: string }[] | { sigla: string; nome: string } | null
-  clientes: { id: string; nome: string; cnpj: string }[] | { id: string; nome: string; cnpj: string } | null
+  obligation_templates: { acronym: string; name: string }[] | { acronym: string; name: string } | null
+  clients: { id: string; name: string; cnpj: string }[] | { id: string; name: string; cnpj: string } | null
 }
 
 function unwrap<T>(val: T[] | T | null): T | null {
@@ -17,21 +17,21 @@ function unwrap<T>(val: T[] | T | null): T | null {
 
 export type ObrigacaoCalendario = {
   id: string
-  data_vencimento: string
+  due_date: string
   status: string
-  sigla: string
-  nome: string
-  clienteId: string
-  clienteNome: string
-  clienteCnpj: string
+  acronym: string
+  name: string
+  clientId: string
+  clientName: string
+  clientCnpj: string
 }
 
-const MESES_PT = [
+const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-const OB_SELECT = `id, data_vencimento, status, obrigacoes_template ( sigla, nome ), clientes!inner ( id, nome, cnpj, escritorio_id )`
+const OB_SELECT = `id, due_date, status, obligation_templates ( acronym, name ), clients!inner ( id, name, cnpj, office_id )`
 
 export default async function CalendarioPage({
   searchParams,
@@ -40,73 +40,72 @@ export default async function CalendarioPage({
 }) {
   const params = await searchParams
 
-  let ano: number
-  let mes: number
+  let year: number
+  let month: number
 
   if (params.mes && /^\d{4}-\d{2}$/.test(params.mes)) {
     const [y, m] = params.mes.split('-').map(Number)
-    ano = y
-    mes = m
+    year = y
+    month = m
   } else {
-    const hoje = new Date()
-    ano = hoje.getFullYear()
-    mes = hoje.getMonth() + 1
+    const today = new Date()
+    year = today.getFullYear()
+    month = today.getMonth() + 1
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return null
+  if (!office) return null
 
-  const primeiroDia = `${ano}-${String(mes).padStart(2, '0')}-01`
-  const ultimoDiaNum = new Date(ano, mes, 0).getDate()
-  const ultimoDia = `${ano}-${String(mes).padStart(2, '0')}-${String(ultimoDiaNum).padStart(2, '0')}`
+  const firstDay = `${year}-${String(month).padStart(2, '0')}-01`
+  const lastDayNum = new Date(year, month, 0).getDate()
+  const lastDay = `${year}-${String(month).padStart(2, '0')}-${String(lastDayNum).padStart(2, '0')}`
 
   const { data: rows } = await supabase
-    .from('obrigacoes_cliente')
+    .from('client_obligations')
     .select(OB_SELECT)
-    .eq('clientes.escritorio_id', escritorio.id)
-    .gte('data_vencimento', primeiroDia)
-    .lte('data_vencimento', ultimoDia)
-    .neq('status', 'concluido')
-    .order('data_vencimento', { ascending: true })
+    .eq('clients.office_id', office.id)
+    .gte('due_date', firstDay)
+    .lte('due_date', lastDay)
+    .neq('status', 'completed')
+    .order('due_date', { ascending: true })
 
-  const diasMap: Record<string, ObrigacaoCalendario[]> = {}
+  const daysMap: Record<string, ObrigacaoCalendario[]> = {}
 
   for (const row of (rows ?? []) as ObRow[]) {
-    const t = unwrap(row.obrigacoes_template)
-    const c = unwrap(row.clientes)
+    const t = unwrap(row.obligation_templates)
+    const c = unwrap(row.clients)
     if (!c) continue
     const item: ObrigacaoCalendario = {
       id: row.id,
-      data_vencimento: row.data_vencimento,
+      due_date: row.due_date,
       status: row.status,
-      sigla: t?.sigla ?? '',
-      nome: t?.nome ?? '',
-      clienteId: c.id,
-      clienteNome: c.nome,
-      clienteCnpj: c.cnpj ?? '',
+      acronym: t?.acronym ?? '',
+      name: t?.name ?? '',
+      clientId: c.id,
+      clientName: c.name,
+      clientCnpj: c.cnpj ?? '',
     }
-    if (!diasMap[row.data_vencimento]) diasMap[row.data_vencimento] = []
-    diasMap[row.data_vencimento].push(item)
+    if (!daysMap[row.due_date]) daysMap[row.due_date] = []
+    daysMap[row.due_date].push(item)
   }
 
-  const mesLabel = `${MESES_PT[mes - 1]} ${ano}`
+  const monthLabel = `${MONTHS_PT[month - 1]} ${year}`
 
   return (
     <div className="space-y-5">
       <div className='p-2'>
         <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground leading-none">Calendário</h1>
-        {/* <p className="text-sm text-muted-foreground">{mesLabel}</p> */}
       </div>
-      <CalendarioControls diasMap={diasMap} ano={ano} mes={mes} mesLabel={mesLabel} filtro={params.q?.trim()} />
+      <CalendarioControls daysMap={daysMap} year={year} month={month} monthLabel={monthLabel} filter={params.q?.trim()} />
     </div>
   )
 }

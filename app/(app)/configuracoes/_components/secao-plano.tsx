@@ -1,14 +1,14 @@
 import { Sparkles } from 'lucide-react'
 
-const PLANOS: Record<string, { label: string; descricao: string; progresso: number }> = {
-  trial:        { label: 'Beta',          descricao: '90 dias grátis restantes', progresso: 10 },
-  essencial:    { label: 'Essencial',     descricao: 'Até 15 clientes',          progresso: 100 },
-  profissional: { label: 'Profissional',  descricao: 'Até 50 clientes',          progresso: 100 },
-  agencia:      { label: 'Agência',       descricao: 'Clientes ilimitados',      progresso: 100 },
+const PLANS: Record<string, { label: string; descricao: string; progress: number }> = {
+  trial:        { label: 'Beta',          descricao: '90 dias grátis restantes', progress: 10 },
+  essencial:    { label: 'Essencial',     descricao: 'Até 15 clientes',          progress: 100 },
+  profissional: { label: 'Profissional',  descricao: 'Até 50 clientes',          progress: 100 },
+  agencia:      { label: 'Agência',       descricao: 'Clientes ilimitados',      progress: 100 },
 }
 
-export function SecaoPlano({ plano }: { plano: string }) {
-  const info = PLANOS[plano] ?? PLANOS['trial']
+export function SecaoPlano({ plan }: { plan: string }) {
+  const info = PLANS[plan] ?? PLANS['trial']
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-card p-6 space-y-4">
@@ -25,7 +25,7 @@ export function SecaoPlano({ plano }: { plano: string }) {
       <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
         <div
           className="h-full bg-foreground rounded-full transition-all"
-          style={{ width: `${info.progresso}%` }}
+          style={{ width: `${info.progress}%` }}
         />
       </div>
 

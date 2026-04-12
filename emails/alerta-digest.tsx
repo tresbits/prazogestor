@@ -11,55 +11,55 @@ import {
   Text,
 } from '@react-email/components'
 
-type TipoAlerta = '7d' | '3d' | '1d'
+type AlertType = '7d' | '3d' | '1d'
 
 export interface ObrigacaoDigest {
-  tipo: TipoAlerta
-  sigla: string
-  nome: string
-  clienteNome: string
-  dataVencimento: string // DD/MM/YYYY
+  tipo: AlertType
+  acronym: string
+  name: string
+  clientName: string
+  dueDate: string // DD/MM/YYYY
 }
 
 interface AlertaDigestProps {
-  escritorioNome: string
-  obrigacoes: ObrigacaoDigest[]
+  officeName: string
+  obligations: ObrigacaoDigest[]
   urlPainel: string
   urlDescadastrar: string
 }
 
-const TIPO_LABEL: Record<TipoAlerta, string> = {
+const TIPO_LABEL: Record<AlertType, string> = {
   '1d': 'Amanhã',
   '3d': 'Em 3 dias',
   '7d': 'Em 7 dias',
 }
 
-const TIPO_COR: Record<TipoAlerta, string> = {
+const TIPO_COR: Record<AlertType, string> = {
   '1d': '#dc2626',
   '3d': '#d97706',
   '7d': '#6b7280',
 }
 
-const TIPO_ORDER: TipoAlerta[] = ['1d', '3d', '7d']
+const TIPO_ORDER: AlertType[] = ['1d', '3d', '7d']
 
 export function AlertaDigest({
-  escritorioNome,
-  obrigacoes,
+  officeName,
+  obligations,
   urlPainel,
   urlDescadastrar,
 }: AlertaDigestProps) {
-  const total = obrigacoes.length
-  const porTipo = TIPO_ORDER.reduce<Record<TipoAlerta, ObrigacaoDigest[]>>(
+  const total = obligations.length
+  const porTipo = TIPO_ORDER.reduce<Record<AlertType, ObrigacaoDigest[]>>(
     (acc, tipo) => {
-      acc[tipo] = obrigacoes.filter(o => o.tipo === tipo)
+      acc[tipo] = obligations.filter(o => o.tipo === tipo)
       return acc
     },
     { '1d': [], '3d': [], '7d': [] }
   )
 
   const previewText = total === 1
-    ? `${obrigacoes[0].sigla} · ${obrigacoes[0].clienteNome} vence ${TIPO_LABEL[obrigacoes[0].tipo].toLowerCase()}`
-    : `${total} vencimentos próximos — ${escritorioNome}`
+    ? `${obligations[0].acronym} · ${obligations[0].clientName} vence ${TIPO_LABEL[obligations[0].tipo].toLowerCase()}`
+    : `${total} vencimentos próximos — ${officeName}`
 
   return (
     <Html lang="pt-BR">
@@ -74,7 +74,7 @@ export function AlertaDigest({
               ⚠ Resumo de vencimentos
             </Text>
             <Text style={{ color: '#9ca3af', fontSize: '13px', margin: '4px 0 0' }}>
-              {total} {total === 1 ? 'obrigação' : 'obrigações'} · {escritorioNome}
+              {total} {total === 1 ? 'obrigação' : 'obrigações'} · {officeName}
             </Text>
           </Section>
 
@@ -107,13 +107,13 @@ export function AlertaDigest({
                     }}
                   >
                     <Text style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#111827' }}>
-                      {ob.sigla}
+                      {ob.acronym}
                       <span style={{ fontWeight: 'normal', color: '#6b7280' }}>
-                        {' '}· {ob.clienteNome}
+                        {' '}· {ob.clientName}
                       </span>
                     </Text>
                     <Text style={{ margin: '2px 0 0', fontSize: '12px', color: '#9ca3af' }}>
-                      {ob.nome} · vence em {ob.dataVencimento}
+                      {ob.name} · vence em {ob.dueDate}
                     </Text>
                   </Section>
                 ))}

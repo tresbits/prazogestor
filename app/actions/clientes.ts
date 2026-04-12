@@ -1,10 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { gerarVencimentos } from '@/lib/gerar-vencimentos'
-import type { Regime } from '@/types'
+import type { TaxRegime } from '@/types'
 
 async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
   try {
@@ -19,43 +19,43 @@ async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
   }
 }
 
-export async function criarCliente(_: unknown, formData: FormData) {
-  const supabase = await createClient()
+export async function createClient(_: unknown, formData: FormData) {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return { error: 'Escritório não encontrado.' }
+  if (!office) return { error: 'Escritório não encontrado.' }
 
   const cnpjRaw = (formData.get('cnpj') as string).replace(/\D/g, '')
-  const nomeDigitado = (formData.get('nome') as string).trim()
-  const regime = formData.get('regime') as string
-  const temEmpregados = formData.get('tem_empregados') === 'true'
+  const nameTyped = (formData.get('name') as string).trim()
+  const taxRegime = formData.get('tax_regime') as string
+  const hasEmployees = formData.get('has_employees') === 'true'
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
   // Verificar rate limit antes de consultar BrasilAPI
-  const { data: permitido } = await supabase.rpc('verificar_cnpj_rate_limit', {
-    p_escritorio_id: escritorio.id,
+  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
+    p_office_id: office.id,
   })
 
-  let nomeFinal = nomeDigitado
-  if (permitido) {
-    const razaoSocial = await buscarRazaoSocial(cnpjRaw)
-    if (razaoSocial) nomeFinal = razaoSocial
+  let finalName = nameTyped
+  if (allowed) {
+    const businessName = await buscarRazaoSocial(cnpjRaw)
+    if (businessName) finalName = businessName
   }
 
-  const { error } = await supabase.from('clientes').insert({
-    escritorio_id: escritorio.id,
+  const { error } = await supabase.from('clients').insert({
+    office_id: office.id,
     cnpj: cnpjRaw,
-    nome: nomeFinal,
-    regime,
-    tem_empregados: temEmpregados,
+    name: finalName,
+    tax_regime: taxRegime,
+    has_employees: hasEmployees,
   })
 
   if (error) {
@@ -64,23 +64,22 @@ export async function criarCliente(_: unknown, formData: FormData) {
   }
 
   // Busca o id do cliente recém-criado para gerar os vencimentos
-  const { data: novoCliente } = await supabase
-    .from('clientes')
+  const { data: newClient } = await supabase
+    .from('clients')
     .select('id')
-    .eq('escritorio_id', escritorio.id)
+    .eq('office_id', office.id)
     .eq('cnpj', cnpjRaw)
     .single()
 
-  if (novoCliente) {
-    const hoje = new Date()
-    hoje.setHours(0, 0, 0, 0)
-    const umAnoDepois = new Date(hoje)
-    umAnoDepois.setFullYear(hoje.getFullYear() + 1)
+  if (newClient) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const oneYearLater = new Date(today)
+    oneYearLater.setFullYear(today.getFullYear() + 1)
 
-    const ano = hoje.getFullYear()
-    // Gera apenas dentro da janela [hoje, hoje + 1 ano]
-    await gerarVencimentos(supabase, novoCliente.id, regime as Regime, temEmpregados, ano, hoje, umAnoDepois)
-    await gerarVencimentos(supabase, novoCliente.id, regime as Regime, temEmpregados, ano + 1, hoje, umAnoDepois)
+    const year = today.getFullYear()
+    await gerarVencimentos(supabase, newClient.id, taxRegime as TaxRegime, hasEmployees, year, today, oneYearLater)
+    await gerarVencimentos(supabase, newClient.id, taxRegime as TaxRegime, hasEmployees, year + 1, today, oneYearLater)
   }
 
   revalidatePath('/clientes')
@@ -88,26 +87,26 @@ export async function criarCliente(_: unknown, formData: FormData) {
   return { success: true }
 }
 
-export async function deletarCliente(_: unknown, formData: FormData) {
-  const supabase = await createClient()
+export async function deleteClient(_: unknown, formData: FormData) {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return { error: 'Escritório não encontrado.' }
+  if (!office) return { error: 'Escritório não encontrado.' }
 
-  const clienteId = formData.get('cliente_id') as string
+  const clientId = formData.get('client_id') as string
 
   const { error } = await supabase
-    .from('clientes')
+    .from('clients')
     .delete()
-    .eq('id', clienteId)
-    .eq('escritorio_id', escritorio.id)
+    .eq('id', clientId)
+    .eq('office_id', office.id)
 
   if (error) return { error: 'Erro ao excluir. Tente novamente.' }
 
@@ -116,58 +115,58 @@ export async function deletarCliente(_: unknown, formData: FormData) {
   return { success: true }
 }
 
-export async function atualizarCliente(_: unknown, formData: FormData) {
-  const supabase = await createClient()
+export async function updateClient(_: unknown, formData: FormData) {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return { error: 'Escritório não encontrado.' }
+  if (!office) return { error: 'Escritório não encontrado.' }
 
-  const clienteId = formData.get('cliente_id') as string
-  const nome = (formData.get('nome') as string).trim()
-  const regime = formData.get('regime') as Regime
-  const temEmpregados = formData.get('tem_empregados') === 'true'
+  const clientId = formData.get('client_id') as string
+  const name = (formData.get('name') as string).trim()
+  const taxRegime = formData.get('tax_regime') as TaxRegime
+  const hasEmployees = formData.get('has_employees') === 'true'
 
   // Confirma que o cliente pertence a este escritório
-  const { data: clienteAtual } = await supabase
-    .from('clientes')
-    .select('regime, tem_empregados')
-    .eq('id', clienteId)
-    .eq('escritorio_id', escritorio.id)
+  const { data: currentClient } = await supabase
+    .from('clients')
+    .select('tax_regime, has_employees')
+    .eq('id', clientId)
+    .eq('office_id', office.id)
     .single()
 
-  if (!clienteAtual) return { error: 'Cliente não encontrado.' }
+  if (!currentClient) return { error: 'Cliente não encontrado.' }
 
   const { error } = await supabase
-    .from('clientes')
-    .update({ nome, regime, tem_empregados: temEmpregados })
-    .eq('id', clienteId)
-    .eq('escritorio_id', escritorio.id)
+    .from('clients')
+    .update({ name, tax_regime: taxRegime, has_employees: hasEmployees })
+    .eq('id', clientId)
+    .eq('office_id', office.id)
 
   if (error) return { error: 'Erro ao atualizar. Tente novamente.' }
 
   // Se regime ou empregados mudou, regenera vencimentos futuros
-  const regimeMudou = clienteAtual.regime !== regime
-  const empregadosMudou = clienteAtual.tem_empregados !== temEmpregados
+  const regimeChanged = currentClient.tax_regime !== taxRegime
+  const employeesChanged = currentClient.has_employees !== hasEmployees
 
-  if (regimeMudou || empregadosMudou) {
-    const hoje = new Date().toISOString().split('T')[0]
+  if (regimeChanged || employeesChanged) {
+    const today = new Date().toISOString().split('T')[0]
     await supabase
-      .from('obrigacoes_cliente')
+      .from('client_obligations')
       .delete()
-      .eq('cliente_id', clienteId)
-      .gte('data_vencimento', hoje)
-      .eq('status', 'pendente')
+      .eq('client_id', clientId)
+      .gte('due_date', today)
+      .eq('status', 'pending')
 
-    const ano = new Date().getFullYear()
-    await gerarVencimentos(supabase, clienteId, regime, temEmpregados, ano)
-    await gerarVencimentos(supabase, clienteId, regime, temEmpregados, ano + 1)
+    const year = new Date().getFullYear()
+    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year)
+    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year + 1)
   }
 
   revalidatePath('/clientes')

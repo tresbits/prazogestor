@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { UserCircle } from 'lucide-react'
-import { enviarResetSenha } from '@/app/actions/configuracoes'
+import { sendPasswordReset } from '@/app/actions/configuracoes'
 import { Input } from '@/components/ui/input'
 
 export function SecaoConta({ email }: { email: string }) {
@@ -10,7 +10,7 @@ export function SecaoConta({ email }: { email: string }) {
 
   async function handleReset() {
     setStatus('loading')
-    const result = await enviarResetSenha()
+    const result = await sendPasswordReset()
     setStatus(result?.error ? 'error' : 'sent')
   }
 

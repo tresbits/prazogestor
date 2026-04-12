@@ -3,9 +3,9 @@
 import { useActionState, useEffect, useState } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X, Pencil } from 'lucide-react'
-import { atualizarCliente } from '@/app/actions/clientes'
+import { updateClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
-import type { Cliente } from '@/types'
+import type { Client } from '@/types'
 
 const REGIME_OPTIONS = [
   { value: 'simples', label: 'Simples Nacional' },
@@ -13,18 +13,18 @@ const REGIME_OPTIONS = [
 ]
 
 export function ModalEditarCliente({
-  cliente,
+  client,
   open: externalOpen,
   onOpenChange: externalOnOpenChange,
 }: {
-  cliente: Cliente
+  client: Client
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
   const [internalOpen, setInternalOpen] = useState(false)
   const open = externalOpen !== undefined ? externalOpen : internalOpen
   const setOpen = externalOnOpenChange ?? setInternalOpen
-  const [state, action, pending] = useActionState(atualizarCliente, null)
+  const [state, action, pending] = useActionState(updateClient, null)
 
   useEffect(() => {
     if (state?.success) {
@@ -72,7 +72,7 @@ export function ModalEditarCliente({
                 Editar Cliente
               </Dialog.Title>
               <Dialog.Description className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
-                {cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+                {client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
               </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
@@ -82,7 +82,7 @@ export function ModalEditarCliente({
 
           {/* Form */}
           <form action={action}>
-            <input type="hidden" name="cliente_id" value={cliente.id} />
+            <input type="hidden" name="client_id" value={client.id} />
 
             <div className="px-6 space-y-4 pb-4">
               {/* Nome */}
@@ -91,8 +91,8 @@ export function ModalEditarCliente({
                   Nome / Razão Social
                 </label>
                 <input
-                  name="nome"
-                  defaultValue={cliente.nome}
+                  name="name"
+                  defaultValue={client.name}
                   required
                   className={cn(
                     'w-full px-3 py-2 rounded-xl text-sm',
@@ -111,8 +111,8 @@ export function ModalEditarCliente({
                     Regime
                   </label>
                   <select
-                    name="regime"
-                    defaultValue={cliente.regime}
+                    name="tax_regime"
+                    defaultValue={client.tax_regime}
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-sm',
                       'bg-muted/60 border border-border/60',
@@ -132,8 +132,8 @@ export function ModalEditarCliente({
                     Funcionários
                   </label>
                   <select
-                    name="tem_empregados"
-                    defaultValue={cliente.tem_empregados ? 'true' : 'false'}
+                    name="has_employees"
+                    defaultValue={client.has_employees ? 'true' : 'false'}
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-sm',
                       'bg-muted/60 border border-border/60',

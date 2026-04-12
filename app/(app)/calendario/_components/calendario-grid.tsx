@@ -10,16 +10,16 @@ import type { CalendarioView } from './calendario-controls'
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
-function getDias(dataVencimento: string): number {
+function getDias(dueDate: string): number {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
-  const venc = new Date(dataVencimento + 'T00:00:00')
+  const venc = new Date(dueDate + 'T00:00:00')
   return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-function pillClass(status: string, dataVencimento: string): string {
-  const dias = getDias(dataVencimento)
-  const isAtrasado = status === 'atrasado' || dias < 0
+function pillClass(status: string, dueDate: string): string {
+  const dias = getDias(dueDate)
+  const isAtrasado = status === 'overdue' || dias < 0
   const isHoje = dias === 0
   const isUrgente = !isAtrasado && !isHoje && dias <= 3
   const isProximo = !isAtrasado && !isHoje && !isUrgente && dias <= 7
@@ -29,9 +29,9 @@ function pillClass(status: string, dataVencimento: string): string {
   return 'bg-muted text-muted-foreground'
 }
 
-function UrgenciaLabel({ status, dataVencimento }: { status: string; dataVencimento: string }) {
-  const dias = getDias(dataVencimento)
-  const isAtrasado = status === 'atrasado' || dias < 0
+function UrgenciaLabel({ status, dueDate }: { status: string; dueDate: string }) {
+  const dias = getDias(dueDate)
+  const isAtrasado = status === 'overdue' || dias < 0
   const isHoje = dias === 0
   const isUrgente = !isAtrasado && !isHoje && dias <= 3
   const isProximo = !isAtrasado && !isHoje && !isUrgente && dias <= 7
@@ -73,14 +73,14 @@ function buildCells(ano: number, mes: number): Celula[] {
 }
 
 export function CalendarioGrid({
-  diasMap,
-  ano,
-  mes,
+  daysMap,
+  year,
+  month,
   view,
 }: {
-  diasMap: Record<string, ObrigacaoCalendario[]>
-  ano: number
-  mes: number
+  daysMap: Record<string, ObrigacaoCalendario[]>
+  year: number
+  month: number
   view: CalendarioView
 }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -90,22 +90,22 @@ export function CalendarioGrid({
   hoje.setHours(0, 0, 0, 0)
   const hojeStr = hoje.toISOString().split('T')[0]
 
-  const cells = buildCells(ano, mes)
+  const cells = buildCells(year, month)
   const weeks: Celula[][] = []
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
 
   function handleClick(date: string) {
-    const items = diasMap[date] ?? []
+    const items = daysMap[date] ?? []
     if (!items.length) return
     setSelectedDate(date)
     setModalOpen(true)
   }
 
-  const selectedItems = selectedDate ? (diasMap[selectedDate] ?? []) : []
+  const selectedItems = selectedDate ? (daysMap[selectedDate] ?? []) : []
 
   // Dias com itens ordenados para a view lista
   const diasComItens = cells
-    .filter(c => c.currentMonth && (diasMap[c.date]?.length ?? 0) > 0)
+    .filter(c => c.currentMonth && (daysMap[c.date]?.length ?? 0) > 0)
 
   return (
     <>
@@ -121,7 +121,7 @@ export function CalendarioGrid({
           </div>
           <div className="grid grid-cols-7 gap-1.5">
             {cells.map(cell => {
-              const items = diasMap[cell.date] ?? []
+              const items = daysMap[cell.date] ?? []
               const isHoje = cell.date === hojeStr
               const hasItems = items.length > 0
               const preview = items.slice(0, 2)
@@ -150,11 +150,11 @@ export function CalendarioGrid({
                       key={item.id}
                       className={cn(
                         'flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate',
-                        pillClass(item.status, item.data_vencimento)
+                        pillClass(item.status, item.due_date)
                       )}
                     >
-                      <span className="font-bold shrink-0">{item.sigla || '—'}</span>
-                      <span className="truncate opacity-70">{item.clienteNome}</span>
+                      <span className="font-bold shrink-0">{item.acronym || '—'}</span>
+                      <span className="truncate opacity-70">{item.clientName}</span>
                     </div>
                   ))}
                   {extras > 0 && (
@@ -178,7 +178,7 @@ export function CalendarioGrid({
             </p>
           )}
           {diasComItens.map(cell => {
-            const items = diasMap[cell.date] ?? []
+            const items = daysMap[cell.date] ?? []
             const isHoje = cell.date === hojeStr
             const d = new Date(cell.date + 'T00:00:00')
             const diaSemana = DIAS_SEMANA[d.getDay()]
@@ -213,8 +213,8 @@ export function CalendarioGrid({
                 {/* Itens */}
                 <div className="divide-y divide-border/40">
                   {items.map(item => {
-                    const dias = getDias(item.data_vencimento)
-                    const isAtrasado = item.status === 'atrasado' || dias < 0
+                    const dias = getDias(item.due_date)
+                    const isAtrasado = item.status === 'overdue' || dias < 0
                     const isHojeItem  = dias === 0
                     const isUrgente  = !isAtrasado && !isHojeItem && dias <= 3
                     const isProximo  = !isAtrasado && !isHojeItem && !isUrgente && dias <= 7
@@ -232,18 +232,18 @@ export function CalendarioGrid({
                               : isProximo            ? 'bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
                               :                        'bg-muted text-muted-foreground'
                           )}>
-                            {item.sigla || '—'}
+                            {item.acronym || '—'}
                           </span>
-                          <p className="text-sm font-semibold text-foreground truncate">{item.nome}</p>
-                          <p className="text-[11px] text-muted-foreground truncate">{item.clienteNome}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{item.clientName}</p>
                         </div>
                         <div className="flex flex-col items-end gap-1 shrink-0 ml-4">
-                          <UrgenciaLabel status={item.status} dataVencimento={item.data_vencimento} />
+                          <UrgenciaLabel status={item.status} dueDate={item.due_date} />
                           <ModalConcluir
-                            obrigacaoId={item.id}
-                            nomeObrigacao={item.nome}
-                            clienteNome={item.clienteNome}
-                            dataVencimento={item.data_vencimento}
+                            obligationId={item.id}
+                            obligationName={item.name}
+                            clientName={item.clientName}
+                            dueDate={item.due_date}
                           />
                         </div>
                       </div>

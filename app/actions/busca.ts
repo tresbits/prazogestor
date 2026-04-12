@@ -2,34 +2,34 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-export type ClienteBusca = {
+export type ClientSearch = {
   id: string
-  nome: string
+  name: string
   cnpj: string
-  regime: string
+  tax_regime: string
 }
 
-export async function buscarClientes(q: string): Promise<ClienteBusca[]> {
+export async function searchClients(q: string): Promise<ClientSearch[]> {
   if (!q.trim()) return []
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) return []
+  if (!office) return []
 
   const { data } = await supabase
-    .from('clientes')
-    .select('id, nome, cnpj, regime')
-    .eq('escritorio_id', escritorio.id)
-    .ilike('nome', `%${q.trim()}%`)
-    .order('nome')
+    .from('clients')
+    .select('id, name, cnpj, tax_regime')
+    .eq('office_id', office.id)
+    .ilike('name', `%${q.trim()}%`)
+    .order('name')
     .limit(8)
 
   return data ?? []

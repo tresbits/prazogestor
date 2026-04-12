@@ -3,24 +3,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function criarEscritorio(_: unknown, formData: FormData) {
+export async function createOffice(_: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
-  const nome = (formData.get('nome') as string).trim()
-  const estado = formData.get('estado') as string
+  const name = (formData.get('name') as string).trim()
+  const state = formData.get('state') as string
 
-  if (!nome || !estado) {
+  if (!name || !state) {
     return { error: 'Preencha todos os campos.' }
   }
 
-  const { error } = await supabase.from('escritorios').insert({
+  const { error } = await supabase.from('offices').insert({
     user_id: user.id,
-    nome,
-    estado,
-    plano: 'trial',
+    name,
+    state,
+    plan: 'trial',
   })
 
   if (error) {

@@ -12,37 +12,37 @@ import type { ObrigacaoCalendario } from '../page'
 export type CalendarioView = 'grade' | 'lista'
 
 export function CalendarioControls({
-  diasMap,
-  ano,
-  mes,
-  mesLabel,
-  filtro,
+  daysMap,
+  year,
+  month,
+  monthLabel,
+  filter,
 }: {
-  diasMap: Record<string, ObrigacaoCalendario[]>
-  ano: number
-  mes: number
-  mesLabel: string
-  filtro?: string
+  daysMap: Record<string, ObrigacaoCalendario[]>
+  year: number
+  month: number
+  monthLabel: string
+  filter?: string
 }) {
   const [view, setView] = useState<CalendarioView>('grade')
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   // Filtro client-side: mantém só dias com obrigações do cliente buscado
-  const diasMapFiltrado: Record<string, ObrigacaoCalendario[]> = filtro
+  const filteredDaysMap: Record<string, ObrigacaoCalendario[]> = filter
     ? Object.fromEntries(
-        Object.entries(diasMap)
-          .map(([dia, obs]) => [
-            dia,
-            obs.filter(o => o.clienteNome.toLowerCase().includes(filtro.toLowerCase())),
+        Object.entries(daysMap)
+          .map(([day, obs]) => [
+            day,
+            obs.filter(o => o.clientName.toLowerCase().includes(filter.toLowerCase())),
           ])
           .filter(([, obs]) => (obs as ObrigacaoCalendario[]).length > 0)
       )
-    : diasMap
+    : daysMap
 
   // Nome real do cliente encontrado (para exibir no banner)
-  const clienteEncontrado = filtro
-    ? Object.values(diasMapFiltrado).flat()[0]?.clienteNome ?? null
+  const foundClient = filter
+    ? Object.values(filteredDaysMap).flat()[0]?.clientName ?? null
     : null
 
   // URL para limpar filtro preservando o mês
@@ -53,7 +53,7 @@ export function CalendarioControls({
     <div className="space-y-5">
       {/* Nav + toggle na mesma linha */}
       <div className="flex items-center justify-between">
-        <CalendarioNav ano={ano} mes={mes} mesLabel={mesLabel} filtro={filtro} />
+        <CalendarioNav year={year} month={month} monthLabel={monthLabel} filter={filter} />
 
         <div className="flex items-center gap-0.5 bg-muted rounded-full p-1">
           <button
@@ -84,23 +84,23 @@ export function CalendarioControls({
       </div>
 
       {/* Banner do cliente filtrado */}
-      {filtro && (
+      {filter && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-[12px] bg-muted/60 border border-border/40">
           <div className="flex-1 min-w-0">
-            {clienteEncontrado ? (
+            {foundClient ? (
               <>
                 <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   Filtrando por cliente
                 </p>
                 <p className="text-[15px] font-semibold text-foreground truncate mt-0.5">
-                  {clienteEncontrado}
+                  {foundClient}
                 </p>
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Nenhum vencimento encontrado para{' '}
-                <span className="font-semibold text-foreground">"{filtro}"</span>{' '}
-                em {mesLabel}.
+                <span className="font-semibold text-foreground">"{filter}"</span>{' '}
+                em {monthLabel}.
               </p>
             )}
           </div>
@@ -113,7 +113,7 @@ export function CalendarioControls({
         </div>
       )}
 
-      <CalendarioGrid diasMap={diasMapFiltrado} ano={ano} mes={mes} view={view} />
+      <CalendarioGrid daysMap={filteredDaysMap} year={year} month={month} view={view} />
     </div>
   )
 }

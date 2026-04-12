@@ -1,9 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { gerarVencimentos } from '@/lib/gerar-vencimentos'
-import type { Regime } from '@/types'
+import type { TaxRegime } from '@/types'
 
 async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
   try {
@@ -18,21 +18,21 @@ async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
   }
 }
 
-export async function onboardingCriarEscritorio(_: unknown, formData: FormData) {
-  const supabase = await createClient()
+export async function onboardingCreateOffice(_: unknown, formData: FormData) {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const nome = (formData.get('nome') as string).trim()
-  const estado = formData.get('estado') as string
+  const name = (formData.get('name') as string).trim()
+  const state = formData.get('state') as string
 
-  if (!nome || !estado) return { error: 'Preencha todos os campos.' }
+  if (!name || !state) return { error: 'Preencha todos os campos.' }
 
-  const { error } = await supabase.from('escritorios').insert({
+  const { error } = await supabase.from('offices').insert({
     user_id: user.id,
-    nome,
-    estado,
-    plano: 'trial',
+    name,
+    state,
+    plan: 'trial',
   })
 
   if (error) {
@@ -43,42 +43,42 @@ export async function onboardingCriarEscritorio(_: unknown, formData: FormData) 
   redirect('/onboarding/cliente')
 }
 
-export async function onboardingCriarCliente(_: unknown, formData: FormData) {
-  const supabase = await createClient()
+export async function onboardingCreateClient(_: unknown, formData: FormData) {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!escritorio) redirect('/onboarding/escritorio')
+  if (!office) redirect('/onboarding/escritorio')
 
   const cnpjRaw = (formData.get('cnpj') as string).replace(/\D/g, '')
-  const nomeDigitado = (formData.get('nome') as string).trim()
-  const regime = formData.get('regime') as Regime
-  const temEmpregados = formData.get('tem_empregados') === 'true'
+  const nameTyped = (formData.get('name') as string).trim()
+  const taxRegime = formData.get('tax_regime') as TaxRegime
+  const hasEmployees = formData.get('has_employees') === 'true'
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
-  const { data: permitido } = await supabase.rpc('verificar_cnpj_rate_limit', {
-    p_escritorio_id: escritorio.id,
+  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
+    p_office_id: office.id,
   })
 
-  let nomeFinal = nomeDigitado
-  if (permitido) {
-    const razaoSocial = await buscarRazaoSocial(cnpjRaw)
-    if (razaoSocial) nomeFinal = razaoSocial
+  let finalName = nameTyped
+  if (allowed) {
+    const businessName = await buscarRazaoSocial(cnpjRaw)
+    if (businessName) finalName = businessName
   }
 
-  const { error } = await supabase.from('clientes').insert({
-    escritorio_id: escritorio.id,
+  const { error } = await supabase.from('clients').insert({
+    office_id: office.id,
     cnpj: cnpjRaw,
-    nome: nomeFinal,
-    regime,
-    tem_empregados: temEmpregados,
+    name: finalName,
+    tax_regime: taxRegime,
+    has_employees: hasEmployees,
   })
 
   if (error) {
@@ -86,35 +86,35 @@ export async function onboardingCriarCliente(_: unknown, formData: FormData) {
     return { error: 'Erro ao salvar. Tente novamente.' }
   }
 
-  const { data: novoCliente } = await supabase
-    .from('clientes')
+  const { data: newClient } = await supabase
+    .from('clients')
     .select('id')
-    .eq('escritorio_id', escritorio.id)
+    .eq('office_id', office.id)
     .eq('cnpj', cnpjRaw)
     .single()
 
-  if (novoCliente) {
-    const ano = new Date().getFullYear()
-    await gerarVencimentos(supabase, novoCliente.id, regime, temEmpregados, ano)
-    await gerarVencimentos(supabase, novoCliente.id, regime, temEmpregados, ano + 1)
+  if (newClient) {
+    const year = new Date().getFullYear()
+    await gerarVencimentos(supabase, newClient.id, taxRegime, hasEmployees, year)
+    await gerarVencimentos(supabase, newClient.id, taxRegime, hasEmployees, year + 1)
   }
 
   await supabase
-    .from('escritorios')
-    .update({ onboarding_concluido: true })
-    .eq('id', escritorio.id)
+    .from('offices')
+    .update({ onboarding_completed: true })
+    .eq('id', office.id)
 
   redirect('/onboarding/pronto')
 }
 
-export async function onboardingPularCliente() {
-  const supabase = await createClient()
+export async function onboardingSkipClient() {
+  const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   await supabase
-    .from('escritorios')
-    .update({ onboarding_pulou_cliente: true, onboarding_concluido: true })
+    .from('offices')
+    .update({ onboarding_skipped_client: true, onboarding_completed: true })
     .eq('user_id', user.id)
 
   redirect('/onboarding/pronto')

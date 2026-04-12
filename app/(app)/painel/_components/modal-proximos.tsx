@@ -6,51 +6,51 @@ import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ModalConcluir } from './modal-concluir'
 
-type ObrigacaoItem = {
+type ObligationItem = {
   id: string
-  data_vencimento: string
+  due_date: string
   status: string
-  sigla: string
-  nome: string
+  acronym: string
+  name: string
 }
 
-function getDiasRestantes(dataVencimento: string): number {
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  const venc = new Date(dataVencimento + 'T00:00:00')
-  return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+function getDaysRemaining(dueDate: string): number {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate + 'T00:00:00')
+  return Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-function siglaPillClass(dias: number, status: string) {
-  const isAtrasado = status === 'atrasado' || dias < 0
-  const isHoje     = dias === 0
-  const isUrgente  = !isAtrasado && !isHoje && dias <= 3
-  const isProximo  = !isAtrasado && !isHoje && !isUrgente && dias <= 7
-  if (isAtrasado || isHoje) return 'bg-destructive text-white'
-  if (isUrgente)            return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-  if (isProximo)            return 'bg-yellow-400/15 text-yellow-600 dark:text-yellow-400'
+function acronymPillClass(days: number, status: string) {
+  const isOverdue = status === 'overdue' || days < 0
+  const isToday   = days === 0
+  const isUrgent  = !isOverdue && !isToday && days <= 3
+  const isClose   = !isOverdue && !isToday && !isUrgent && days <= 7
+  if (isOverdue || isToday) return 'bg-destructive text-white'
+  if (isUrgent)             return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+  if (isClose)              return 'bg-yellow-400/15 text-yellow-600 dark:text-yellow-400'
   return 'bg-muted-foreground/15 text-muted-foreground'
 }
 
-function UrgenciaLabel({ dias, status }: { dias: number; status: string }) {
-  const isAtrasado = status === 'atrasado' || dias < 0
-  const isHoje     = dias === 0
-  const isUrgente  = !isAtrasado && !isHoje && dias <= 3
-  const isProximo  = !isAtrasado && !isHoje && !isUrgente && dias <= 7
-  if (isAtrasado) return <span className="text-[10px] font-bold text-destructive tracking-wide">VENCIDO</span>
-  if (isHoje)     return <span className="text-[10px] font-bold text-destructive tracking-wide">HOJE</span>
-  if (isUrgente)  return <span className="text-[10px] font-bold text-amber-500 tracking-wide">EM {dias} {dias === 1 ? 'DIA' : 'DIAS'}</span>
-  if (isProximo)  return <span className="text-[10px] font-bold text-yellow-500 dark:text-yellow-400 tracking-wide">EM {dias} DIAS</span>
-  return <span className="text-[10px] font-bold text-muted-foreground/50 tracking-wide">EM {dias} DIAS</span>
+function UrgencyLabel({ days, status }: { days: number; status: string }) {
+  const isOverdue = status === 'overdue' || days < 0
+  const isToday   = days === 0
+  const isUrgent  = !isOverdue && !isToday && days <= 3
+  const isClose   = !isOverdue && !isToday && !isUrgent && days <= 7
+  if (isOverdue) return <span className="text-[10px] font-bold text-destructive tracking-wide">VENCIDO</span>
+  if (isToday)   return <span className="text-[10px] font-bold text-destructive tracking-wide">HOJE</span>
+  if (isUrgent)  return <span className="text-[10px] font-bold text-amber-500 tracking-wide">EM {days} {days === 1 ? 'DIA' : 'DIAS'}</span>
+  if (isClose)   return <span className="text-[10px] font-bold text-yellow-500 dark:text-yellow-400 tracking-wide">EM {days} DIAS</span>
+  return <span className="text-[10px] font-bold text-muted-foreground/50 tracking-wide">EM {days} DIAS</span>
 }
 
 export function ModalProximos({
-  clienteNome,
-  obrigacoes,
+  clientName,
+  obligations,
   extrasCount,
 }: {
-  clienteNome: string
-  obrigacoes: ObrigacaoItem[]
+  clientName: string
+  obligations: ObligationItem[]
   extrasCount: number
 }) {
   const [open, setOpen] = useState(false)
@@ -93,7 +93,7 @@ export function ModalProximos({
                 Próximos Vencimentos
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground mt-0.5 truncate max-w-[280px]">
-                {clienteNome}
+                {clientName}
               </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
@@ -104,8 +104,8 @@ export function ModalProximos({
           {/* List */}
           <div className="px-6 py-4 flex-1 overflow-y-auto min-h-0 no-scrollbar">
             <div className="rounded-xl overflow-hidden border border-border bg-muted">
-              {obrigacoes.map((o, i) => {
-                const dias = getDiasRestantes(o.data_vencimento)
+              {obligations.map((o, i) => {
+                const days = getDaysRemaining(o.due_date)
                 return (
                   <div
                     key={o.id}
@@ -117,22 +117,22 @@ export function ModalProximos({
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={cn(
                         'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
-                        siglaPillClass(dias, o.status)
+                        acronymPillClass(days, o.status)
                       )}>
-                        {o.sigla || '—'}
+                        {o.acronym || '—'}
                       </span>
-                      <span className="text-sm text-foreground truncate">{o.nome}</span>
+                      <span className="text-sm text-foreground truncate">{o.name}</span>
                     </div>
                     <div className="shrink-0 ml-4 relative flex items-center">
                       <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
-                        <UrgenciaLabel dias={dias} status={o.status} />
+                        <UrgencyLabel days={days} status={o.status} />
                       </span>
                       <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <ModalConcluir
-                          obrigacaoId={o.id}
-                          nomeObrigacao={o.nome}
-                          clienteNome={clienteNome}
-                          dataVencimento={o.data_vencimento}
+                          obligationId={o.id}
+                          obligationName={o.name}
+                          clientName={clientName}
+                          dueDate={o.due_date}
                         />
                       </div>
                     </div>

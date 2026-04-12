@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -13,10 +13,10 @@ const REGIME_LABEL: Record<string, string> = {
   lucro_real: 'Lucro Real',
 }
 
-function getDiasRestantes(dataVencimento: string): number {
+function getDiasRestantes(dueDate: string): number {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
-  const venc = new Date(dataVencimento + 'T00:00:00')
+  const venc = new Date(dueDate + 'T00:00:00')
   return Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }
 
@@ -38,42 +38,42 @@ export default async function PrazosClientePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: escritorio } = await supabase
-    .from('escritorios')
+  const { data: office } = await supabase
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
-  if (!escritorio) return null
+  if (!office) return null
 
-  const { data: cliente } = await supabase
-    .from('clientes')
-    .select('id, nome, cnpj, regime, tem_empregados')
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, name, cnpj, tax_regime, has_employees')
     .eq('id', id)
-    .eq('escritorio_id', escritorio.id)
+    .eq('office_id', office.id)
     .single()
 
-  if (!cliente) notFound()
+  if (!client) notFound()
 
   // Obrigações do ano atual em diante
   const anoAtual = new Date().getFullYear()
   const { data: obrigacoesRaw } = await supabase
-    .from('obrigacoes_cliente')
+    .from('client_obligations')
     .select(`
-      id, data_vencimento, status, concluido_por, concluido_em,
-      obrigacoes_template ( sigla, nome )
+      id, due_date, status, completed_by, completed_at,
+      obligation_templates ( acronym, name )
     `)
-    .eq('cliente_id', cliente.id)
-    .gte('data_vencimento', `${anoAtual}-01-01`)
-    .order('data_vencimento', { ascending: true })
+    .eq('client_id', client.id)
+    .gte('due_date', `${anoAtual}-01-01`)
+    .order('due_date', { ascending: true })
     .limit(500)
 
   type ObRow = {
     id: string
-    data_vencimento: string
+    due_date: string
     status: string
-    concluido_por: string | null
-    concluido_em: string | null
-    obrigacoes_template: { sigla: string; nome: string }[] | { sigla: string; nome: string } | null
+    completed_by: string | null
+    completed_at: string | null
+    obligation_templates: { acronym: string; name: string }[] | { acronym: string; name: string } | null
   }
 
   function unwrap<T>(val: T[] | T | null): T | null {
@@ -82,18 +82,18 @@ export default async function PrazosClientePage({
   }
 
   const obrigacoes = (obrigacoesRaw as ObRow[] ?? []).map(o => {
-    const t = unwrap(o.obrigacoes_template)
-    const dias = getDiasRestantes(o.data_vencimento)
+    const t = unwrap(o.obligation_templates)
+    const dias = getDiasRestantes(o.due_date)
     return {
       id: o.id,
-      data_vencimento: o.data_vencimento,
-      status: o.status as 'pendente' | 'concluido' | 'atrasado',
-      concluido_em: o.concluido_em,
-      sigla: t?.sigla ?? '',
-      nome: t?.nome ?? '',
+      due_date: o.due_date,
+      status: o.status as 'pending' | 'completed' | 'overdue',
+      completed_at: o.completed_at,
+      acronym: t?.acronym ?? '',
+      name: t?.name ?? '',
       dias,
-      mes: parseInt(o.data_vencimento.split('-')[1]) - 1,
-      ano: parseInt(o.data_vencimento.split('-')[0]),
+      mes: parseInt(o.due_date.split('-')[1]) - 1,
+      ano: parseInt(o.due_date.split('-')[0]),
     }
   })
 
@@ -108,9 +108,9 @@ export default async function PrazosClientePage({
 
   const mesesOrdenados = Array.from(porMes.entries()).sort(([a], [b]) => a.localeCompare(b))
 
-  const pendentes = obrigacoes.filter(o => o.status !== 'concluido').length
-  const concluidos = obrigacoes.filter(o => o.status === 'concluido').length
-  const atrasados = obrigacoes.filter(o => o.status === 'atrasado' || (o.status !== 'concluido' && o.dias < 0)).length
+  const pendentes = obrigacoes.filter(o => o.status !== 'completed').length
+  const concluidos = obrigacoes.filter(o => o.status === 'completed').length
+  const atrasados = obrigacoes.filter(o => o.status === 'overdue' || (o.status !== 'completed' && o.dias < 0)).length
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -126,13 +126,13 @@ export default async function PrazosClientePage({
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-xl font-medium text-foreground">{cliente.nome}</h1>
+            <h1 className="font-heading text-xl font-medium text-foreground">{client.name}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+              {client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
             </p>
           </div>
           <Badge variant="secondary" className="rounded-full shrink-0">
-            {REGIME_LABEL[cliente.regime] ?? cliente.regime}
+            {REGIME_LABEL[client.tax_regime] ?? client.tax_regime}
           </Badge>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default async function PrazosClientePage({
           {mesesOrdenados.map(([key, obs]) => {
             const [ano, mes] = key.split('-')
             const label = `${MESES[parseInt(mes) - 1]} ${ano}`
-            const temAtrasado = obs.some(o => o.status !== 'concluido' && o.dias < 0)
+            const temAtrasado = obs.some(o => o.status !== 'completed' && o.dias < 0)
 
             return (
               <Card key={key}>
@@ -177,7 +177,7 @@ export default async function PrazosClientePage({
                 <CardContent className="pt-1">
                   <div className="space-y-0.5">
                     {obs.map(o => {
-                      const isConcluido = o.status === 'concluido'
+                      const isConcluido = o.status === 'completed'
                       const isAtrasado = !isConcluido && o.dias < 0
                       const isUrgente = !isConcluido && !isAtrasado && o.dias <= 3
 
@@ -196,13 +196,13 @@ export default async function PrazosClientePage({
                               'text-xs font-semibold shrink-0',
                               isConcluido ? 'text-muted-foreground line-through' : 'text-foreground',
                             )}>
-                              {o.sigla}
+                              {o.acronym}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate">{o.nome}</span>
+                            <span className="text-xs text-muted-foreground truncate">{o.name}</span>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             <span className="text-xs text-muted-foreground">
-                              {formatarData(o.data_vencimento)}
+                              {formatarData(o.due_date)}
                             </span>
                             {isConcluido ? (
                               <span className="text-[11px] text-muted-foreground">Concluído</span>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { gerarVencimentos } from '@/lib/gerar-vencimentos'
-import type { Regime } from '@/types'
+import type { TaxRegime } from '@/types'
 
 // Vercel Cron envia: Authorization: Bearer <CRON_SECRET>
 // Configurar CRON_SECRET nas env vars do projeto Vercel.
@@ -14,58 +14,58 @@ export async function GET(request: Request) {
   const supabase = createServiceClient()
 
   // Alvo: mês exatamente 12 meses à frente
-  const hoje = new Date()
-  const target = new Date(hoje.getFullYear(), hoje.getMonth() + 12, 1)
-  const targetAno = target.getFullYear()
-  const targetMes = target.getMonth() + 1 // 1-based
+  const today = new Date()
+  const target = new Date(today.getFullYear(), today.getMonth() + 12, 1)
+  const targetYear = target.getFullYear()
+  const targetMonth = target.getMonth() + 1 // 1-based
 
-  const primeiroDia = new Date(targetAno, targetMes - 1, 1)
-  const ultimoDia = new Date(targetAno, targetMes, 0) // último dia do mês
+  const firstDay = new Date(targetYear, targetMonth - 1, 1)
+  const lastDay = new Date(targetYear, targetMonth, 0) // último dia do mês
 
-  const isoFirst = toISODate(primeiroDia)
-  const isoLast = toISODate(ultimoDia)
+  const isoFirst = toISODate(firstDay)
+  const isoLast = toISODate(lastDay)
 
   // Busca todos os clientes do sistema
-  const { data: clientes, error: cErr } = await supabase
-    .from('clientes')
-    .select('id, regime, tem_empregados')
+  const { data: clients, error: cErr } = await supabase
+    .from('clients')
+    .select('id, tax_regime, has_employees')
 
   if (cErr) {
     console.error('[cron:gerar-vencimentos]', cErr)
     return NextResponse.json({ error: 'Erro ao buscar clientes' }, { status: 500 })
   }
 
-  let gerados = 0
-  let pulados = 0
+  let generated = 0
+  let skipped = 0
 
-  for (const cliente of clientes ?? []) {
+  for (const client of clients ?? []) {
     // Pula se já existem vencimentos para o mês alvo (evita duplicatas)
     const { count } = await supabase
-      .from('obrigacoes_cliente')
+      .from('client_obligations')
       .select('id', { count: 'exact', head: true })
-      .eq('cliente_id', cliente.id)
-      .gte('data_vencimento', isoFirst)
-      .lte('data_vencimento', isoLast)
+      .eq('client_id', client.id)
+      .gte('due_date', isoFirst)
+      .lte('due_date', isoLast)
 
     if (count && count > 0) {
-      pulados++
+      skipped++
       continue
     }
 
     await gerarVencimentos(
       supabase,
-      cliente.id,
-      cliente.regime as Regime,
-      cliente.tem_empregados,
-      targetAno,
-      primeiroDia,
-      ultimoDia
+      client.id,
+      client.tax_regime as TaxRegime,
+      client.has_employees,
+      targetYear,
+      firstDay,
+      lastDay
     )
-    gerados++
+    generated++
   }
 
-  console.log(`[cron:gerar-vencimentos] ${isoFirst}–${isoLast}: gerados=${gerados} pulados=${pulados}`)
-  return NextResponse.json({ ok: true, mes: `${targetAno}-${String(targetMes).padStart(2, '0')}`, gerados, pulados })
+  console.log(`[cron:gerar-vencimentos] ${isoFirst}–${isoLast}: generated=${generated} skipped=${skipped}`)
+  return NextResponse.json({ ok: true, mes: `${targetYear}-${String(targetMonth).padStart(2, '0')}`, generated, skipped })
 }
 
 function toISODate(d: Date): string {

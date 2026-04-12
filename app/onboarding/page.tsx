@@ -7,7 +7,7 @@ export default async function OnboardingPage() {
   if (!user) redirect('/login')
 
   const { data: escritorio } = await supabase
-    .from('escritorios')
+    .from('offices')
     .select('id')
     .eq('user_id', user.id)
     .single()
@@ -15,9 +15,9 @@ export default async function OnboardingPage() {
   if (!escritorio) redirect('/onboarding/escritorio')
 
   const { count } = await supabase
-    .from('clientes')
+    .from('clients')
     .select('id', { count: 'exact', head: true })
-    .eq('escritorio_id', escritorio.id)
+    .eq('office_id', escritorio.id)
 
   if (!count || count === 0) redirect('/onboarding/cliente')
 

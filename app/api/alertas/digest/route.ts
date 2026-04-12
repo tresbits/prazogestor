@@ -4,9 +4,9 @@ import { render } from '@react-email/components'
 import { createServiceClient } from '@/lib/supabase/service'
 import { AlertaDigest, type ObrigacaoDigest } from '@/emails/alerta-digest'
 
-function formatarData(iso: string): string {
-  const [ano, mes, dia] = iso.split('-')
-  return `${dia}/${mes}/${ano}`
+function formatDate(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  return `${day}/${month}/${year}`
 }
 
 export async function POST(request: Request) {
@@ -18,106 +18,106 @@ export async function POST(request: Request) {
   const supabase = createServiceClient()
 
   // Busca todos os alertas não enviados com dados completos
-  const { data: alertas, error } = await supabase
-    .from('alertas_log')
+  const { data: alerts, error } = await supabase
+    .from('alert_logs')
     .select(`
       id,
-      tipo,
-      obrigacao_id,
-      obrigacoes_cliente (
-        data_vencimento,
-        obrigacoes_template ( sigla, nome ),
-        clientes (
-          nome,
-          escritorios ( id, nome, alertas_email_ativo, user_id )
+      type,
+      obligation_id,
+      client_obligations (
+        due_date,
+        obligation_templates ( acronym, name ),
+        clients (
+          name,
+          offices ( id, name, email_alerts_enabled, user_id )
         )
       )
     `)
-    .is('email_enviado_em', null)
+    .is('email_sent_at', null)
 
   if (error) {
     console.error('Erro ao buscar alertas:', error)
     return NextResponse.json({ error: 'Erro ao buscar alertas' }, { status: 500 })
   }
 
-  if (!alertas || alertas.length === 0) {
-    return NextResponse.json({ ok: true, enviados: 0, escritorios: 0 })
+  if (!alerts || alerts.length === 0) {
+    return NextResponse.json({ ok: true, sent: 0, offices: 0 })
   }
 
   // Agrupa por escritório
-  type AlertaAgrupado = {
-    escritorioId: string
-    escritorioNome: string
+  type GroupedAlert = {
+    officeId: string
+    officeName: string
     userId: string
-    alertasEmailAtivo: boolean
-    itens: Array<{ logId: string } & ObrigacaoDigest>
+    emailAlertsEnabled: boolean
+    items: Array<{ logId: string } & ObrigacaoDigest>
   }
 
-  const porEscritorio = new Map<string, AlertaAgrupado>()
+  const byOffice = new Map<string, GroupedAlert>()
 
-  for (const alerta of alertas) {
-    const ob = Array.isArray(alerta.obrigacoes_cliente)
-      ? alerta.obrigacoes_cliente[0]
-      : alerta.obrigacoes_cliente
-    const template = ob && (Array.isArray(ob.obrigacoes_template)
-      ? ob.obrigacoes_template[0]
-      : ob.obrigacoes_template)
-    const cliente = ob && (Array.isArray(ob.clientes)
-      ? ob.clientes[0]
-      : ob.clientes)
-    const escritorio = cliente && (Array.isArray(cliente.escritorios)
-      ? cliente.escritorios[0]
-      : cliente.escritorios)
+  for (const alert of alerts) {
+    const ob = Array.isArray(alert.client_obligations)
+      ? alert.client_obligations[0]
+      : alert.client_obligations
+    const template = ob && (Array.isArray(ob.obligation_templates)
+      ? ob.obligation_templates[0]
+      : ob.obligation_templates)
+    const client = ob && (Array.isArray(ob.clients)
+      ? ob.clients[0]
+      : ob.clients)
+    const office = client && (Array.isArray(client.offices)
+      ? client.offices[0]
+      : client.offices)
 
-    if (!ob || !template || !cliente || !escritorio) continue
+    if (!ob || !template || !client || !office) continue
 
-    if (!porEscritorio.has(escritorio.id)) {
-      porEscritorio.set(escritorio.id, {
-        escritorioId: escritorio.id,
-        escritorioNome: escritorio.nome,
-        userId: escritorio.user_id,
-        alertasEmailAtivo: escritorio.alertas_email_ativo,
-        itens: [],
+    if (!byOffice.has(office.id)) {
+      byOffice.set(office.id, {
+        officeId: office.id,
+        officeName: office.name,
+        userId: office.user_id,
+        emailAlertsEnabled: office.email_alerts_enabled,
+        items: [],
       })
     }
 
-    porEscritorio.get(escritorio.id)!.itens.push({
-      logId: alerta.id,
-      tipo: alerta.tipo as '7d' | '3d' | '1d',
-      sigla: template.sigla,
-      nome: template.nome,
-      clienteNome: cliente.nome,
-      dataVencimento: formatarData(ob.data_vencimento),
+    byOffice.get(office.id)!.items.push({
+      logId: alert.id,
+      tipo: alert.type as '7d' | '3d' | '1d',
+      acronym: template.acronym,
+      name: template.name,
+      clientName: client.name,
+      dueDate: formatDate(ob.due_date),
     })
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://prazogestor.tresbits.com'
 
-  let totalEnviados = 0
-  let totalEscritorios = 0
+  let totalSent = 0
+  let totalOffices = 0
 
-  for (const grupo of porEscritorio.values()) {
-    if (!grupo.alertasEmailAtivo) continue
+  for (const group of byOffice.values()) {
+    if (!group.emailAlertsEnabled) continue
 
     // Busca e-mail do usuário
-    const { data: authUser } = await supabase.auth.admin.getUserById(grupo.userId)
+    const { data: authUser } = await supabase.auth.admin.getUserById(group.userId)
     const email = authUser?.user?.email
     if (!email) continue
 
-    const total = grupo.itens.length
-    const temAmanha = grupo.itens.some(i => i.tipo === '1d')
+    const total = group.items.length
+    const hasUrgent = group.items.some(i => i.tipo === '1d')
 
     const subject = total === 1
-      ? `⚠ ${grupo.itens[0].sigla} · ${grupo.itens[0].clienteNome} vence ${grupo.itens[0].tipo === '1d' ? 'amanhã' : `em ${grupo.itens[0].tipo === '3d' ? '3' : '7'} dias`}`
-      : `⚠ ${total} vencimentos ${temAmanha ? 'urgentes' : 'próximos'} · PrazoGestor`
+      ? `⚠ ${group.items[0].acronym} · ${group.items[0].clientName} vence ${group.items[0].tipo === '1d' ? 'amanhã' : `em ${group.items[0].tipo === '3d' ? '3' : '7'} dias`}`
+      : `⚠ ${total} vencimentos ${hasUrgent ? 'urgentes' : 'próximos'} · PrazoGestor`
 
     const html = await render(
       AlertaDigest({
-        escritorioNome: grupo.escritorioNome,
-        obrigacoes: grupo.itens,
+        officeName: group.officeName,
+        obligations: group.items,
         urlPainel: `${siteUrl}/painel`,
-        urlDescadastrar: `${siteUrl}/api/alertas/descadastrar?id=${grupo.escritorioId}`,
+        urlDescadastrar: `${siteUrl}/api/alertas/descadastrar?id=${group.officeId}`,
       })
     )
 
@@ -129,24 +129,24 @@ export async function POST(request: Request) {
     })
 
     if (resendError) {
-      console.error(`Resend error para escritório ${grupo.escritorioId}:`, resendError)
+      console.error(`Resend error para escritório ${group.officeId}:`, resendError)
       continue
     }
 
     // Marca todas as linhas do escritório como enviadas
-    const logIds = grupo.itens.map(i => i.logId)
+    const logIds = group.items.map(i => i.logId)
     await supabase
-      .from('alertas_log')
-      .update({ email_enviado_em: new Date().toISOString() })
+      .from('alert_logs')
+      .update({ email_sent_at: new Date().toISOString() })
       .in('id', logIds)
 
-    totalEnviados += total
-    totalEscritorios++
+    totalSent += total
+    totalOffices++
   }
 
   return NextResponse.json({
     ok: true,
-    enviados: totalEnviados,
-    escritorios: totalEscritorios,
+    sent: totalSent,
+    offices: totalOffices,
   })
 }

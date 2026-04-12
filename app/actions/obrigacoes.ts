@@ -4,21 +4,21 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function concluirObrigacao(formData: FormData) {
+export async function completeObligation(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const obrigacaoId = formData.get('obrigacao_id') as string
+  const obligationId = formData.get('obligation_id') as string
 
   await supabase
-    .from('obrigacoes_cliente')
+    .from('client_obligations')
     .update({
-      status: 'concluido',
-      concluido_por: user.email,
-      concluido_em: new Date().toISOString(),
+      status: 'completed',
+      completed_by: user.email,
+      completed_at: new Date().toISOString(),
     })
-    .eq('id', obrigacaoId)
+    .eq('id', obligationId)
 
   revalidatePath('/painel')
   revalidatePath('/calendario')

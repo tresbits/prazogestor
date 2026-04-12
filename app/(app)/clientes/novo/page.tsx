@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { criarCliente } from '@/app/actions/clientes'
+import { createClient } from '@/app/actions/clientes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCNPJ } from '@/lib/format'
 
 export default function NovoClientePage() {
-  const [state, action, pending] = useActionState(criarCliente, null)
+  const [state, action, pending] = useActionState(createClient, null)
   const [cnpj, setCnpj] = useState('')
 
   return (
@@ -38,10 +38,10 @@ export default function NovoClientePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome / Razão Social</Label>
+              <Label htmlFor="name">Nome / Razão Social</Label>
               <Input
-                id="nome"
-                name="nome"
+                id="name"
+                name="name"
                 placeholder="Preenchido automaticamente ou digite"
                 required
               />
@@ -51,9 +51,9 @@ export default function NovoClientePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="regime">Regime tributário</Label>
-              <Select name="regime" required>
-                <SelectTrigger id="regime">
+              <Label htmlFor="tax_regime">Regime tributário</Label>
+              <Select name="tax_regime" required>
+                <SelectTrigger id="tax_regime">
                   <SelectValue placeholder="Selecione o regime" />
                 </SelectTrigger>
                 <SelectContent>
@@ -64,9 +64,9 @@ export default function NovoClientePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tem_empregados">Tem funcionários?</Label>
-              <Select name="tem_empregados" required>
-                <SelectTrigger id="tem_empregados">
+              <Label htmlFor="has_employees">Tem funcionários?</Label>
+              <Select name="has_employees" required>
+                <SelectTrigger id="has_employees">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
