@@ -109,7 +109,7 @@ export function ModalAtrasados({
                         <p className="text-[11px] text-muted-foreground">{dueFormatted}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 ml-4 relative flex items-center pt-0.5">
+                    <div className="shrink-0 ml-4 relative flex items-center pt-0.5 min-w-[58px] justify-end">
                       <span className="text-[10px] font-bold text-destructive tracking-wide whitespace-nowrap transition-opacity group-hover:opacity-0">
                         VENCIDO
                       </span>

@@ -139,7 +139,7 @@ export function ModalGlobal({
                         </span>
                         <span className="text-sm text-muted-foreground truncate">{item.name}</span>
                       </div>
-                      <div className="shrink-0 ml-4 relative flex items-center">
+                      <div className="shrink-0 ml-4 relative flex items-center min-w-[58px] justify-end">
                         <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
                           <UrgenciaLabel status={item.status} dueDate={item.due_date} />
                         </span>
