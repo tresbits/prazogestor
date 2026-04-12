@@ -24,8 +24,8 @@ export async function signup(_: unknown, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  if (password.length < 6) {
-    return { error: 'A senha deve ter pelo menos 6 caracteres.' }
+  if (password.length < 8) {
+    return { error: 'A senha deve ter pelo menos 8 caracteres.' }
   }
 
   const { error } = await supabase.auth.signUp({

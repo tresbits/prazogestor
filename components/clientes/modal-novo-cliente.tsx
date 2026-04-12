@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 import { createClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 import { formatCNPJ } from '@/lib/format'
+import { FormError } from '@/components/ui/form-error'
 
 const REGIME_OPTIONS = [
   { value: 'simples', label: 'Simples Nacional' },
@@ -171,9 +172,7 @@ export function ModalNovoCliente({
                 </div>
               </div>
 
-              {state?.error && (
-                <p className="text-sm text-destructive">{state.error}</p>
-              )}
+              {state?.error && <FormError message={state.error} />}
             </div>
 
             <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">

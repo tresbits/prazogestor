@@ -5,6 +5,7 @@ import { AlertDialog } from '@base-ui/react/alert-dialog'
 import { X } from 'lucide-react'
 import { deleteClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
+import { FormError } from '@/components/ui/form-error'
 
 export function ModalDeletarCliente({
   clientId,
@@ -82,9 +83,7 @@ export function ModalDeletarCliente({
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Cliente</p>
               <p className="text-sm font-semibold text-foreground mt-0.5">{clientName}</p>
             </div>
-            {state?.error && (
-              <p className="text-sm text-destructive mt-3">{state.error}</p>
-            )}
+            {state?.error && <FormError message={state.error} />}
           </div>
 
           {/* Footer */}

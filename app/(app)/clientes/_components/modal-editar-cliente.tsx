@@ -6,6 +6,7 @@ import { X, Pencil } from 'lucide-react'
 import { updateClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 import type { Client } from '@/types'
+import { FormError } from '@/components/ui/form-error'
 
 const REGIME_OPTIONS = [
   { value: 'simples', label: 'Simples Nacional' },
@@ -148,10 +149,7 @@ export function ModalEditarCliente({
                 </div>
               </div>
 
-              {/* Error */}
-              {state?.error && (
-                <p className="text-sm text-destructive">{state.error}</p>
-              )}
+              {state?.error && <FormError message={state.error} />}
             </div>
 
             {/* Footer */}

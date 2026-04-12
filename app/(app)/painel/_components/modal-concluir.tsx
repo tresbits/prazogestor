@@ -5,6 +5,7 @@ import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { completeObligation } from '@/app/actions/obrigacoes'
 import { cn } from '@/lib/utils'
+import { FormError } from '@/components/ui/form-error'
 
 type ModalConcluirProps = {
   obligationId: string
@@ -113,7 +114,9 @@ export function ModalConcluir({
 
           {/* Footer */}
           {error && (
-            <p className="px-6 pb-3 text-sm text-destructive">{error}</p>
+            <div className="px-6 pb-3">
+              <FormError message={error} />
+            </div>
           )}
           <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
             <Dialog.Close

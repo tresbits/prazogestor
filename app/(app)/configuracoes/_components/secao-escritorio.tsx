@@ -5,6 +5,7 @@ import { LayoutGrid } from 'lucide-react'
 import { updateOffice } from '@/app/actions/configuracoes'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FormError } from '@/components/ui/form-error'
 
 const ESTADOS = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -47,7 +48,7 @@ export function SecaoEscritorio({ name, state }: { name: string; state: string }
           </div>
         </div>
 
-        {formState?.error && <p className="text-xs text-destructive">{formState.error}</p>}
+        {formState?.error && <FormError message={formState.error} />}
         {formState?.success && <p className="text-xs text-green-600 dark:text-green-400">Salvo com sucesso.</p>}
 
         <div className="flex justify-end">

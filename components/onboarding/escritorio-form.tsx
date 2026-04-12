@@ -6,6 +6,7 @@ import { ProgressSteps } from '@/components/onboarding/progress-steps'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FormError } from '@/components/ui/form-error'
 
 const ESTADOS = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -64,9 +65,7 @@ export function EscritorioForm() {
             </Select>
           </div>
 
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
+          {state?.error && <FormError message={state.error} />}
 
           <button
             type="submit"

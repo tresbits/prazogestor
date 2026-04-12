@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { login } from '@/app/actions/auth'
+import { FormError } from '@/components/ui/form-error'
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, null)
@@ -43,9 +44,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {state?.error && (
-          <p className="text-xs text-destructive">{state.error}</p>
-        )}
+        {state?.error && <FormError message={state.error} />}
 
         <button
           type="submit"
