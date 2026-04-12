@@ -139,14 +139,18 @@ export function ModalGlobal({
                         </span>
                         <span className="text-sm text-muted-foreground truncate">{item.name}</span>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0 ml-4">
-                        <UrgenciaLabel status={item.status} dueDate={item.due_date} />
-                        <ModalConcluir
-                          obligationId={item.id}
-                          obligationName={item.name}
-                          clientName={item.clientName}
-                          dueDate={item.due_date}
-                        />
+                      <div className="shrink-0 ml-4 relative flex items-center">
+                        <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
+                          <UrgenciaLabel status={item.status} dueDate={item.due_date} />
+                        </span>
+                        <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ModalConcluir
+                            obligationId={item.id}
+                            obligationName={item.name}
+                            clientName={item.clientName}
+                            dueDate={item.due_date}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}

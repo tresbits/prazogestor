@@ -96,13 +96,18 @@ export function ModalAtrasados({
                         <p className="text-[11px] text-muted-foreground">{dueFormatted}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 ml-4">
-                      <ModalConcluir
-                        obligationId={o.id}
-                        obligationName={o.name}
-                        clientName={clientName}
-                        dueDate={o.due_date}
-                      />
+                    <div className="shrink-0 ml-4 relative flex items-center">
+                      <span className="text-[10px] font-bold text-destructive tracking-wide whitespace-nowrap transition-opacity group-hover:opacity-0">
+                        VENCIDO
+                      </span>
+                      <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ModalConcluir
+                          obligationId={o.id}
+                          obligationName={o.name}
+                          clientName={clientName}
+                          dueDate={o.due_date}
+                        />
+                      </div>
                     </div>
                   </div>
                 )
