@@ -104,8 +104,7 @@ export function CardCliente({
   const previewOverdue  = overdueObligations.slice(0, 1)
   const extrasOverdue   = overdueObligations.length - 1
 
-  // 3 próximos quando há vencidos, 4 quando não há
-  const previewSize = hasOverdue ? 3 : 4
+  const previewSize = hasOverdue ? 1 : 2
   const preview = obligations.slice(0, previewSize)
   const extras  = totalPending - preview.length
 
