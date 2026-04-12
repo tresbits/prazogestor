@@ -1,5 +1,5 @@
 /**
- * Sincroniza feriados nacionais via BrasilAPI → tabela `feriados` no Supabase.
+ * Sincroniza feriados nacionais via BrasilAPI → tabela `holidays` no Supabase.
  *
  * Uso:
  *   npx tsx --env-file=.env.local scripts/sync-feriados.ts 2026
@@ -26,16 +26,16 @@ async function sincronizarAno(ano: number) {
   const feriados: FeriadoBrasilAPI[] = await res.json()
 
   const rows = feriados.map((f) => ({
-    data: f.date,
-    descricao: f.name,
-    tipo: 'nacional' as const,
-    estado: null,
-    municipio_ibge: null,
+    date: f.date,
+    description: f.name,
+    type: 'national' as const,
+    state: null,
+    municipality_ibge: null,
   }))
 
   const { error } = await supabase
-    .from('feriados')
-    .upsert(rows, { onConflict: 'data', ignoreDuplicates: false })
+    .from('holidays')
+    .upsert(rows, { onConflict: 'date', ignoreDuplicates: false })
 
   if (error) throw error
   console.log(`✓ ${rows.length} feriados de ${ano} sincronizados`)

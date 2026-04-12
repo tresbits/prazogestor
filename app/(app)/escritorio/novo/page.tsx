@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { criarEscritorio } from '@/app/actions/escritorio'
+import { createOffice } from '@/app/actions/escritorio'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +15,7 @@ const ESTADOS = [
 ]
 
 export default function NovoEscritorioPage() {
-  const [state, action, pending] = useActionState(criarEscritorio, null)
+  const [state, action, pending] = useActionState(createOffice, null)
 
   return (
     <div className="max-w-md mx-auto mt-8">
@@ -27,19 +27,19 @@ export default function NovoEscritorioPage() {
         <CardContent>
           <form action={action} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome do escritório</Label>
+              <Label htmlFor="name">Nome do escritório</Label>
               <Input
-                id="nome"
-                name="nome"
+                id="name"
+                name="name"
                 placeholder="Contabilidade Silva & Associados"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="estado">Estado</Label>
-              <Select name="estado" required>
-                <SelectTrigger id="estado">
+              <Label htmlFor="state">Estado</Label>
+              <Select name="state" required>
+                <SelectTrigger id="state">
                   <SelectValue placeholder="Selecione o estado" />
                 </SelectTrigger>
                 <SelectContent>
