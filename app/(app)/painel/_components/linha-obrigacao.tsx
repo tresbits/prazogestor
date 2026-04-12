@@ -90,7 +90,7 @@ export function LinhaObrigacao({ obrigacao: o }: { obrigacao: ObligationRow }) {
         </p>
       </div>
 
-      <form action={completeObligation}>
+      <form action={async (fd) => { await completeObligation(fd) }}>
         <input type="hidden" name="obligation_id" value={o.id} />
         <button
           type="submit"
