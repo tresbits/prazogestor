@@ -44,12 +44,18 @@ function UrgencyLabel({ days, status }: { days: number; status: string }) {
   return <span className="text-[10px] font-bold text-muted-foreground/50 tracking-wide">EM {days} DIAS</span>
 }
 
+function formatCNPJ(cnpj: string): string {
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+}
+
 export function ModalProximos({
   clientName,
+  clientCnpj,
   obligations,
   extrasCount,
 }: {
   clientName: string
+  clientCnpj: string
   obligations: ObligationItem[]
   extrasCount: number
 }) {
@@ -92,8 +98,8 @@ export function ModalProximos({
               <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
                 Próximos Vencimentos
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5 truncate max-w-[280px]">
-                {clientName}
+              <Dialog.Description className="text-sm text-muted-foreground mt-0.5">
+                {obligations.length} {obligations.length === 1 ? 'obrigação' : 'obrigações'}
               </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5">
@@ -101,44 +107,52 @@ export function ModalProximos({
             </Dialog.Close>
           </div>
 
-          {/* List */}
-          <div className="px-6 py-4 flex-1 overflow-y-auto min-h-0 no-scrollbar">
-            <div className="rounded-xl overflow-hidden border border-border bg-muted">
-              {obligations.map((o, i) => {
-                const days = getDaysRemaining(o.due_date)
-                return (
-                  <div
-                    key={o.id}
-                    className={cn(
-                      'group relative flex items-center justify-between px-4 py-3',
-                      i > 0 && 'border-t border-border'
-                    )}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={cn(
-                        'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
-                        acronymPillClass(days, o.status)
-                      )}>
-                        {o.acronym || '—'}
-                      </span>
-                      <span className="text-sm text-foreground truncate">{o.name}</span>
-                    </div>
-                    <div className="shrink-0 ml-4 relative flex items-center">
-                      <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
-                        <UrgencyLabel days={days} status={o.status} />
-                      </span>
-                      <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ModalConcluir
-                          obligationId={o.id}
-                          obligationName={o.name}
-                          clientName={clientName}
-                          dueDate={o.due_date}
-                        />
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar py-2">
+            <div className="px-6 py-4">
+              <div className="mb-3">
+                <p className="font-heading text-[15px] font-semibold text-foreground truncate">{clientName}</p>
+                {clientCnpj && (
+                  <p className="text-[11px] font-mono text-muted-foreground mt-0.5">{formatCNPJ(clientCnpj)}</p>
+                )}
+              </div>
+              <div className="rounded-xl overflow-hidden border border-border bg-muted">
+                {obligations.map((o, i) => {
+                  const days = getDaysRemaining(o.due_date)
+                  return (
+                    <div
+                      key={o.id}
+                      className={cn(
+                        'group relative flex items-center justify-between px-4 py-3',
+                        i > 0 && 'border-t border-border'
+                      )}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className={cn(
+                          'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
+                          acronymPillClass(days, o.status)
+                        )}>
+                          {o.acronym || '—'}
+                        </span>
+                        <span className="text-sm text-foreground truncate">{o.name}</span>
+                      </div>
+                      <div className="shrink-0 ml-4 relative flex items-center">
+                        <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
+                          <UrgencyLabel days={days} status={o.status} />
+                        </span>
+                        <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ModalConcluir
+                            obligationId={o.id}
+                            obligationName={o.name}
+                            clientName={clientName}
+                            dueDate={o.due_date}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
         </Dialog.Popup>

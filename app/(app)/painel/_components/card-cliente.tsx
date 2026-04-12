@@ -156,6 +156,7 @@ export function CardCliente({
         <div className="px-4 py-3 bg-muted/50 border-t border-border/40 text-center">
           <ModalProximos
             clientName={clientName}
+            clientCnpj={cnpj}
             obligations={obligations.slice(previewSize)}
             extrasCount={extras}
           />
