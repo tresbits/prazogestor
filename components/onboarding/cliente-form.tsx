@@ -3,10 +3,7 @@
 import { useActionState, useState } from 'react'
 import { onboardingCreateClient, onboardingSkipClient } from '@/app/actions/onboarding'
 import { ProgressSteps } from '@/components/onboarding/progress-steps'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { formatCNPJ } from '@/lib/format'
+import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 import { FormError } from '@/components/ui/form-error'
 
 export function ClienteForm() {
@@ -33,63 +30,9 @@ export function ClienteForm() {
         </p>
 
         <form action={action} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="cnpj" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              CNPJ
-            </Label>
-            <Input
-              id="cnpj"
-              name="cnpj"
-              value={cnpj}
-              onChange={e => setCnpj(formatCNPJ(e.target.value))}
-              placeholder="00.000.000/0001-00"
-              required
-              inputMode="numeric"
-              autoFocus
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Nome <span className="normal-case font-normal text-muted-foreground">(caso não encontre pelo CNPJ)</span>
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Razão social ou nome fantasia"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="tax_regime" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Regime tributário
-            </Label>
-            <Select name="tax_regime" required>
-              <SelectTrigger id="tax_regime">
-                <SelectValue placeholder="Selecione o regime" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="simples">Simples Nacional</SelectItem>
-                <SelectItem value="mei">MEI</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="has_employees" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Tem funcionários?
-            </Label>
-            <Select name="has_employees" required>
-              <SelectTrigger id="has_employees">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="false">Não</SelectItem>
-                <SelectItem value="true">Sim</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <ClienteFormFields
+            cnpj={{ value: cnpj, onChange: setCnpj }}
+          />
 
           {state?.error && <FormError message={state.error} />}
 

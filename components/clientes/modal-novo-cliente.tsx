@@ -5,13 +5,8 @@ import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { createClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
-import { formatCNPJ } from '@/lib/format'
 import { FormError } from '@/components/ui/form-error'
-
-const REGIME_OPTIONS = [
-  { value: 'simples', label: 'Simples Nacional' },
-  { value: 'mei', label: 'MEI' },
-]
+import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 
 export function ModalNovoCliente({
   trigger,
@@ -82,99 +77,15 @@ export function ModalNovoCliente({
           </div>
 
           <form ref={formRef} action={action}>
-            <div className="px-6 space-y-4 pb-4">
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                  CNPJ
-                </label>
-                <input
-                  name="cnpj"
-                  value={cnpj}
-                  onChange={e => setCnpj(formatCNPJ(e.target.value))}
-                  placeholder="00.000.000/0001-00"
-                  required
-                  inputMode="numeric"
-                  minLength={18}
-                  maxLength={18}
-                  className={cn(
-                    'w-full px-3 py-2 rounded-xl text-sm font-mono',
-                    'bg-muted/60 border border-border/60',
-                    'text-foreground placeholder:text-muted-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                    'transition-colors'
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                  Nome / Razão Social
-                </label>
-                <input
-                  name="name"
-                  placeholder="Preenchido automaticamente ou digite"
-                  required
-                  className={cn(
-                    'w-full px-3 py-2 rounded-xl text-sm',
-                    'bg-muted/60 border border-border/60',
-                    'text-foreground placeholder:text-muted-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                    'transition-colors'
-                  )}
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Se o CNPJ for encontrado na Receita, o nome será atualizado ao salvar.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                    Regime
-                  </label>
-                  <select
-                    name="tax_regime"
-                    required
-                    defaultValue=""
-                    className={cn(
-                      'w-full px-3 py-2 rounded-xl text-sm',
-                      'bg-muted/60 border border-border/60',
-                      'text-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                      'transition-colors appearance-none'
-                    )}
-                  >
-                    <option value="" disabled>Selecione</option>
-                    {REGIME_OPTIONS.map(o => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+            <div className="px-6 pb-4">
+              <ClienteFormFields
+                cnpj={{ value: cnpj, onChange: setCnpj }}
+              />
+              {state?.error && (
+                <div className="mt-4">
+                  <FormError message={state.error} />
                 </div>
-
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                    Funcionários
-                  </label>
-                  <select
-                    name="has_employees"
-                    required
-                    defaultValue=""
-                    className={cn(
-                      'w-full px-3 py-2 rounded-xl text-sm',
-                      'bg-muted/60 border border-border/60',
-                      'text-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                      'transition-colors appearance-none'
-                    )}
-                  >
-                    <option value="" disabled>Selecione</option>
-                    <option value="false">Sem funcionários</option>
-                    <option value="true">Com funcionários</option>
-                  </select>
-                </div>
-              </div>
-
-              {state?.error && <FormError message={state.error} />}
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">

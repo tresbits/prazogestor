@@ -4,13 +4,11 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { updateClient } from '@/app/actions/clientes'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 import { FormError } from '@/components/ui/form-error'
 import { cn } from '@/lib/utils'
+import { buttonVariants } from '@/components/ui/button'
 
 type Client = {
   id: string
@@ -44,51 +42,31 @@ export function EditarClienteForm({ client }: { client: Client }) {
           <form action={action} className="space-y-4">
             <input type="hidden" name="client_id" value={client.id} />
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome / Razão Social</Label>
-              <Input
-                id="name"
-                name="name"
-                defaultValue={client.name}
-                required
-              />
-            </div>
+            <ClienteFormFields
+              defaultValues={{
+                name: client.name,
+                tax_regime: client.tax_regime,
+                has_employees: String(client.has_employees),
+              }}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="tax_regime">Regime tributário</Label>
-              <Select name="tax_regime" defaultValue={client.tax_regime}>
-                <SelectTrigger id="tax_regime">
-                  <SelectValue placeholder="Selecione o regime" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="simples">Simples Nacional</SelectItem>
-                  <SelectItem value="mei">MEI</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Alterar o regime regenera os vencimentos futuros.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="has_employees">Tem funcionários?</Label>
-              <Select name="has_employees" defaultValue={String(client.has_employees)}>
-                <SelectTrigger id="has_employees">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">Não</SelectItem>
-                  <SelectItem value="true">Sim</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Alterar o regime regenera os vencimentos futuros.
+            </p>
 
             {state?.error && <FormError message={state.error} />}
 
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1" disabled={pending}>
-                {pending ? 'Salvando...' : 'Salvar alterações'}
-              </Button>
+              <button
+                type="submit"
+                disabled={pending}
+                className={cn(
+                  buttonVariants(),
+                  'flex-1 disabled:opacity-40'
+                )}
+              >
+                {pending ? 'Salvando…' : 'Salvar alterações'}
+              </button>
               <Link href="/clientes" className={cn(buttonVariants({ variant: 'outline' }))}>
                 Cancelar
               </Link>
