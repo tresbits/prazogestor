@@ -25,6 +25,10 @@ export interface Client {
   created_at: string
 }
 
+export type ClientWithEmail = Pick<Client, 'id' | 'name' | 'cnpj' | 'tax_regime' | 'has_employees'> & {
+  email?: string | null
+}
+
 export interface ObligationTemplate {
   id: string
   name: string

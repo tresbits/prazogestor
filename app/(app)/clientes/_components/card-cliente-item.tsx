@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { MoreHorizontal } from 'lucide-react'
 import {
   DropdownMenu,
@@ -85,6 +86,16 @@ export function CardClienteItem({ client }: { client: Client }) {
               {client.has_employees ? 'Sim' : 'Não'}
             </span>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-border/40 flex justify-end">
+          <Link
+            href={`/clientes/${client.id}/prazos`}
+            className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Ver prazos →
+          </Link>
         </div>
       </div>
 

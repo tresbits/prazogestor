@@ -5,9 +5,7 @@ import { Dialog } from '@base-ui/react/dialog'
 import { X, Pencil } from 'lucide-react'
 import { updateClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
-import type { Client } from '@/types'
-// Client type extended locally for email field
-type ClientWithEmail = Client & { email?: string | null }
+import type { ClientWithEmail } from '@/types'
 import { FormError } from '@/components/ui/form-error'
 import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 
