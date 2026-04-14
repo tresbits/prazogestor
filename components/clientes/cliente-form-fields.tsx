@@ -89,7 +89,9 @@ export function ClienteFormFields({
             </Label>
             <Select name="tax_regime" value={taxRegime} onValueChange={handleTaxRegime} required>
               <SelectTrigger className="bg-muted/60">
-                <SelectValue placeholder="Regime" />
+                <SelectValue placeholder="Regime">
+                  {REGIME_OPTIONS.find(o => o.value === taxRegime)?.label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {REGIME_OPTIONS.map(o => (
@@ -105,7 +107,9 @@ export function ClienteFormFields({
             </Label>
             <Select name="has_employees" value={hasEmployees} onValueChange={handleHasEmployees} required>
               <SelectTrigger className="bg-muted/60">
-                <SelectValue placeholder="Selecione" />
+                <SelectValue placeholder="Selecione">
+                  {EMPLOYEES_OPTIONS.find(o => o.value === hasEmployees)?.label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {EMPLOYEES_OPTIONS.map(o => (
