@@ -86,7 +86,6 @@ export function ModalEditarCliente({
                   tax_regime: client.tax_regime,
                   has_employees: client.has_employees ? 'true' : 'false',
                 }}
-                showRegimeHint
               />
               {state?.error && (
                 <div className="mt-4">

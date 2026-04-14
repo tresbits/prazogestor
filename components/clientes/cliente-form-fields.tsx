@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -35,6 +36,17 @@ export function ClienteFormFields({
   defaultValues?: DefaultValues
   showRegimeHint?: boolean
 }) {
+  const [taxRegime, setTaxRegime] = useState(defaultValues?.tax_regime ?? '')
+  const [hasEmployees, setHasEmployees] = useState(defaultValues?.has_employees ?? '')
+
+  const handleTaxRegime = (v: string | null) => setTaxRegime(v ?? '')
+  const handleHasEmployees = (v: string | null) => setHasEmployees(v ?? '')
+
+  useEffect(() => {
+    setTaxRegime(defaultValues?.tax_regime ?? '')
+    setHasEmployees(defaultValues?.has_employees ?? '')
+  }, [defaultValues?.tax_regime, defaultValues?.has_employees])
+
   return (
     <div className="space-y-4">
       {cnpj && (
@@ -75,7 +87,7 @@ export function ClienteFormFields({
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Regime tributário
             </Label>
-            <Select name="tax_regime" defaultValue={defaultValues?.tax_regime} required>
+            <Select name="tax_regime" value={taxRegime} onValueChange={handleTaxRegime} required>
               <SelectTrigger className="bg-muted/60">
                 <SelectValue placeholder="Regime" />
               </SelectTrigger>
@@ -91,7 +103,7 @@ export function ClienteFormFields({
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Funcionários
             </Label>
-            <Select name="has_employees" defaultValue={defaultValues?.has_employees} required>
+            <Select name="has_employees" value={hasEmployees} onValueChange={handleHasEmployees} required>
               <SelectTrigger className="bg-muted/60">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
