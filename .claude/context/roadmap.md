@@ -66,7 +66,7 @@
 - [x] Checklist de onboarding no painel (dismissível)
 - [x] Empty state no painel com ModalNovoCliente
 - [x] Loading states (skeletons) no painel e clientes
-- [ ] Mensagens de erro claras — sem "something went wrong"
+- [x] Mensagens de erro claras — sem "something went wrong"
 - [ ] Convidar 10 escritórios para o beta
 - [ ] Onboarding manual: cadastrar clientes deles por videochamada
 
@@ -74,22 +74,15 @@
 
 - [x] **Migração PT→EN no código e schema** — tabelas, colunas e variáveis em inglês; pastas de rotas mantidas em PT (URLs visíveis); UI permanece em PT
 - [x] **Responsividade mobile** — bottom nav, sidebar oculta, modais e cards ajustados
-- [ ] **Mensagens de erro claras** — tratar casos concretos nos formulários e actions
+- [x] **Mensagens de erro claras** — tratar casos concretos nos formulários e actions
 - [x] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
 - [x] **Link de descadastro de e-mail** no template de alerta (LGPD)
 
 ### Semanas 8–9 · Expansão de regimes + envio ao cliente
 
-- [ ] **Lucro Presumido / Lucro Real** — seed de obrigações + suporte em `gerarVencimentos`
-- [ ] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
-- [ ] **Envio manual de e-mail ao cliente** — contador seleciona obrigações e envia com mensagem customizada
-  - Migration: `clients.email`, `offices.client_email_template`, tabela `client_email_log`
-  - `ModalEnviarEmail` — destinatário + checkboxes de obrigações (pré-selecionados urgentes) + mensagem editável
-  - Acionado no card do painel e na página do cliente (`/clientes/[id]`)
-  - Template react-email: nome do escritório + mensagem + lista de obrigações com datas
-  - Campo e-mail adicionado em `ClienteFormFields` (opcional)
-  - Campo template padrão em `/configuracoes`
-  - Envio via Resend, auditoria em `client_email_log`
+- [x] **Lucro Presumido / Lucro Real** — seed de obrigações + suporte em `gerarVencimentos` + constraint do banco atualizado
+- [x] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
+- [x] **Envio manual de e-mail ao cliente** — contador seleciona obrigações e envia com mensagem customizada
 
 ### Semanas 9–10 · Iteração com betas
 

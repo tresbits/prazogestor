@@ -54,15 +54,15 @@ envia alertas antecipados e mantém histórico de entregas.
 
 - [x] Cadastro de escritório (multi-tenant, 1 conta por escritório)
 - [x] Cadastro de clientes: CNPJ, nome, regime tributário, tem empregados
-- [ ] Enriquecimento automático de razão social via BrasilAPI no save do formulário (ver regras de uso abaixo)
-- [ ] Geração automática de calendário por regime do cliente
+- [x] Enriquecimento de razão social via BrasilAPI — botão manual na tela de cadastro/edição (sem override silencioso)
+- [x] Geração automática de calendário por regime do cliente
 - [x] Painel de vencimentos: lista dos próximos 30 dias de todos os clientes
 - [x] Filtros por cliente — busca global Spotlight (⌘K), filtra painel, clientes e calendário
 - [x] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
-- [ ] Estado vazio no painel com CTA para cadastrar primeiro cliente
+- [x] Estado vazio no painel com CTA para cadastrar primeiro cliente
 - [x] Marcar como concluído: checklist + responsável + data/hora
-- [ ] Alertas por e-mail: 7 dias, 3 dias e 1 dia antes do vencimento (com link de descadastro — LGPD)
-- [ ] Ajuste automático de datas por feriados nacionais (tabela `feriados` sincronizada via BrasilAPI)
+- [x] Alertas por e-mail: 7 dias, 3 dias e 1 dia antes do vencimento (com link de descadastro — LGPD)
+- [x] Ajuste automático de datas por feriados nacionais (tabela `holidays` sincronizada via BrasilAPI)
 - [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
 
 ### Implementado além do MVP original
@@ -76,7 +76,7 @@ envia alertas antecipados e mantém histórico de entregas.
 - [x] Telas de auth redesenhadas: layout split, esqueci-senha
 - [x] Componente ClienteFormFields compartilhado entre onboarding, modal novo e modal editar
 
-### Funcionalidade planejada — Envio manual de e-mail ao cliente
+### Funcionalidade implementada — Envio manual de e-mail ao cliente
 
 Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista selecionada de obrigações vencidas e a vencer.
 
@@ -123,14 +123,15 @@ Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista sel
 
 ### Consulta de CNPJ
 
-**Quando acontece**: apenas no momento de salvar o formulário de cadastro ou edição de cliente. Nunca em tempo real enquanto o usuário digita.
+**Quando acontece**: apenas quando o usuário clica no botão lupa (cadastro) ou "Atualizar dados do CNPJ" (edição). Nunca automático — sem override silencioso ao salvar.
 
 **Comportamento**:
-- Se encontrar: enriquece a razão social automaticamente (sem notificação ao usuário)
-- Se não encontrar (404) ou API indisponível: salva normalmente com o nome digitado pelo contador. Silencioso — não é um erro do ponto de vista do usuário
-- Na tela de edição: botão explícito "Atualizar dados do CNPJ" dispara nova consulta
+- Se encontrar: preenche o campo Razão Social na tela
+- Se não encontrar (404): exibe mensagem inline "CNPJ não encontrado na Receita. Digite o nome manualmente."
+- Se rate limit atingido: exibe mensagem inline "Limite de consultas atingido."
+- O campo nome continua obrigatório e editável independentemente
 
-**Rate limit por escritório**: 30 consultas de CNPJ por dia por `escritorio_id`. Controlado via tabela `cnpj_rate_limit`. Se exceder, o cadastro salva sem enriquecimento (sem mensagem de erro para o usuário).
+**Rate limit por escritório**: 30 consultas de CNPJ por dia por `office_id`. Controlado via tabela `cnpj_rate_limit`.
 
 **Casos onde o CNPJ pode não ser encontrado**:
 - CNPJ muito novo (demora para aparecer na base)
@@ -196,7 +197,7 @@ cnpj_rate_limit
 ```
 
 ### Notas do modelo
-- `clientes.regime` aceita apenas `simples` e `mei` no MVP — lucro_presumido/real na fase 2
+- `clientes.regime` aceita `simples`, `mei`, `lucro_presumido` e `lucro_real`
 - `alertas_log.email_enviado_em` é null até o webhook confirmar envio pelo Resend
 - `escritorios.alertas_email_ativo` controla descadastro de e-mails (LGPD)
 - `escritorios.onboarding_concluido` é o guard central do `(app)/layout.tsx` — sem ele, todas as rotas do app redirecionam para `/onboarding/cliente`
