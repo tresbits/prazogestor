@@ -34,9 +34,9 @@
 - [x] Tela de cadastro de escritório (nome, estado)
 - [x] Formulário de cadastro de cliente: CNPJ, nome, regime, tem empregados
 - [x] Componente `ClienteFormFields` compartilhado — onboarding, modal novo e editar
-- [ ] **Consulta BrasilAPI no save do formulário** — enriquece razão social se encontrar, silencioso se não
-- [ ] **Rate limit de CNPJ** — 30 consultas/dia por escritório via `cnpj_rate_limit`
-- [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
+- [x] **Consulta BrasilAPI via botão lupa** — busca manual no cadastro; campo nome preenchido pelo usuário sem override silencioso
+- [x] **Rate limit de CNPJ** — 30 consultas/dia por escritório via `cnpj_rate_limit`
+- [x] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
 
 ### Semana 4 · Geração de obrigações + painel
 
@@ -56,7 +56,7 @@
 - [x] pg_cron diário — marca obrigações com data passada como `overdue`
 - [x] Template de e-mail com react-email + Resend
 - [x] Webhook de confirmação de envio (Resend → `alerts_log.email_sent_at`)
-- [ ] **Link de descadastro de e-mail obrigatório no template** (LGPD — obrigatório antes do beta)
+- [x] **Link de descadastro de e-mail obrigatório no template** (LGPD — obrigatório antes do beta)
 - [ ] Teste end-to-end com CNPJs fictícios
 
 ### Semana 6 · Onboarding + polish
@@ -75,8 +75,8 @@
 - [x] **Migração PT→EN no código e schema** — tabelas, colunas e variáveis em inglês; pastas de rotas mantidas em PT (URLs visíveis); UI permanece em PT
 - [x] **Responsividade mobile** — bottom nav, sidebar oculta, modais e cards ajustados
 - [ ] **Mensagens de erro claras** — tratar casos concretos nos formulários e actions
-- [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
-- [ ] **Link de descadastro de e-mail** no template de alerta (LGPD)
+- [x] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
+- [x] **Link de descadastro de e-mail** no template de alerta (LGPD)
 
 ### Semanas 8–9 · Expansão de regimes + envio ao cliente
 
