@@ -6,6 +6,8 @@ import { X, Pencil } from 'lucide-react'
 import { updateClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 import type { Client } from '@/types'
+// Client type extended locally for email field
+type ClientWithEmail = Client & { email?: string | null }
 import { FormError } from '@/components/ui/form-error'
 import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 
@@ -14,7 +16,7 @@ export function ModalEditarCliente({
   open: externalOpen,
   onOpenChange: externalOnOpenChange,
 }: {
-  client: Client
+  client: ClientWithEmail
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
@@ -85,7 +87,9 @@ export function ModalEditarCliente({
                   name: client.name,
                   tax_regime: client.tax_regime,
                   has_employees: client.has_employees ? 'true' : 'false',
+                  email: client.email ?? undefined,
                 }}
+                showEmailField
               />
               {state?.error && (
                 <div className="mt-4">

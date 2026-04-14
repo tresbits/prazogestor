@@ -64,7 +64,7 @@ export default async function PainelPage({
 
   const { data: office } = await supabase
     .from('offices')
-    .select('id, name, email_alerts_enabled, onboarding_dismissed')
+    .select('id, name, email_alerts_enabled, onboarding_dismissed, client_email_template')
     .eq('user_id', user.id)
     .single()
 
@@ -100,7 +100,7 @@ export default async function PainelPage({
   // Todos os clientes
   const { data: clients, count: totalClients } = await supabase
     .from('clients')
-    .select('id, name, cnpj, tax_regime', { count: 'exact' })
+    .select('id, name, cnpj, tax_regime, email', { count: 'exact' })
     .eq('office_id', office.id)
     .order('name')
 
@@ -255,11 +255,13 @@ export default async function PainelPage({
       {!!(clients?.length) && (
         <CardsGrid
           key={filter ?? ''}
+          officeTemplate={office.client_email_template ?? null}
           clients={clientsWithObsFiltered.map(c => ({
             id: c.id,
             name: c.name,
             cnpj: c.cnpj,
             tax_regime: c.tax_regime,
+            email: c.email ?? null,
             obs: c.obs.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
             overdues: c.overdues.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
           }))}

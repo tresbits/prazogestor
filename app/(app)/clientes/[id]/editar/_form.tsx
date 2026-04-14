@@ -15,6 +15,7 @@ type Client = {
   cnpj: string
   tax_regime: string
   has_employees: boolean
+  email?: string | null
 }
 
 export function EditarClienteForm({ client }: { client: Client }) {
@@ -46,8 +47,10 @@ export function EditarClienteForm({ client }: { client: Client }) {
                 name: client.name,
                 tax_regime: client.tax_regime,
                 has_employees: String(client.has_employees),
+                email: client.email ?? undefined,
               }}
               showRegimeHint
+              showEmailField
             />
 
             {state?.error && <FormError message={state.error} />}

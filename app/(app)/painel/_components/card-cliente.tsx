@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { ModalConcluir } from './modal-concluir'
 import { ModalAtrasados } from './modal-atrasados'
 import { ModalProximos } from './modal-proximos'
+import { ModalEnviarEmail } from '@/components/clientes/modal-enviar-email'
 
 type ObligationItem = {
   id: string
@@ -18,6 +19,8 @@ type CardClienteProps = {
   clientName: string
   cnpj: string
   taxRegime: string
+  clientEmail?: string | null
+  officeTemplate?: string | null
   obligations: ObligationItem[]
   totalPending: number
   overdueObligations: ObligationItem[]
@@ -98,7 +101,8 @@ function ObligationRow({
 }
 
 export function CardCliente({
-  clientId, clientName, cnpj, taxRegime, obligations, totalPending, overdueObligations,
+  clientId, clientName, cnpj, taxRegime, clientEmail, officeTemplate,
+  obligations, totalPending, overdueObligations,
 }: CardClienteProps) {
   const hasOverdue      = overdueObligations.length > 0
   const previewOverdue  = overdueObligations.slice(0, 1)
@@ -123,6 +127,13 @@ export function CardCliente({
         <span className="text-[10px] bg-background px-2.5 py-1 rounded-full text-foreground font-bold shrink-0">
           {REGIME_LABEL[taxRegime] ?? taxRegime.toUpperCase()}
         </span>
+        <ModalEnviarEmail
+          clientId={clientId}
+          clientName={clientName}
+          clientEmail={clientEmail}
+          officeTemplate={officeTemplate}
+          obligations={[...overdueObligations, ...obligations]}
+        />
       </div>
 
       {/* Conteúdo */}

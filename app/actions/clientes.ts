@@ -36,6 +36,7 @@ export async function createClient(_: unknown, formData: FormData) {
   const nameTyped = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as string
   const hasEmployees = formData.get('has_employees') === 'true'
+  const email = (formData.get('email') as string | null)?.trim() || null
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
@@ -56,6 +57,7 @@ export async function createClient(_: unknown, formData: FormData) {
     name: finalName,
     tax_regime: taxRegime,
     has_employees: hasEmployees,
+    email,
   })
 
   if (error) {
@@ -132,6 +134,7 @@ export async function updateClient(_: unknown, formData: FormData) {
   const name = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as TaxRegime
   const hasEmployees = formData.get('has_employees') === 'true'
+  const email = (formData.get('email') as string | null)?.trim() || null
 
   // Confirma que o cliente pertence a este escritório
   const { data: currentClient } = await supabase
@@ -145,7 +148,7 @@ export async function updateClient(_: unknown, formData: FormData) {
 
   const { error } = await supabase
     .from('clients')
-    .update({ name, tax_regime: taxRegime, has_employees: hasEmployees })
+    .update({ name, tax_regime: taxRegime, has_employees: hasEmployees, email })
     .eq('id', clientId)
     .eq('office_id', office.id)
 

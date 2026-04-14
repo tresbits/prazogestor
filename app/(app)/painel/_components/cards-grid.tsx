@@ -16,6 +16,7 @@ type ClientCard = {
   name: string
   cnpj: string
   tax_regime: string
+  email: string | null
   obs: ObItem[]
   overdues: ObItem[]
 }
@@ -35,9 +36,11 @@ function formatCNPJ(cnpj: string): string {
 export function CardsGrid({
   clients,
   dimmedClients,
+  officeTemplate,
 }: {
   clients: ClientCard[]
   dimmedClients: DimmedClient[]
+  officeTemplate?: string | null
 }) {
   const [visible, setVisible] = useState(PAGE_SIZE)
 
@@ -58,6 +61,8 @@ export function CardsGrid({
           clientName={c.name}
           cnpj={c.cnpj}
           taxRegime={c.tax_regime}
+          clientEmail={c.email}
+          officeTemplate={officeTemplate}
           obligations={c.obs}
           totalPending={c.obs.length}
           overdueObligations={c.overdues}

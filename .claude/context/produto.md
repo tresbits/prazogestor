@@ -71,6 +71,35 @@ envia alertas antecipados e mantém histórico de entregas.
 - [x] Tela de configurações: escritório, conta, aparência (dark/light/sistema), notificações (LGPD), plano, exclusão de conta
 - [x] Loading skeletons (painel e clientes)
 - [x] Busca global tipo Spotlight com debounce, navegação por teclado e SearchBanner contextual
+- [x] Painel redesenhado: ZonaNumeros + cards simplificados + paginação + modais globais por cliente
+- [x] Responsividade mobile: bottom nav, sidebar oculta, modais e cards ajustados
+- [x] Telas de auth redesenhadas: layout split, esqueci-senha
+- [x] Componente ClienteFormFields compartilhado entre onboarding, modal novo e modal editar
+
+### Funcionalidade planejada — Envio manual de e-mail ao cliente
+
+Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista selecionada de obrigações vencidas e a vencer.
+
+**Fluxo:**
+1. Contador aciona `ModalEnviarEmail` — disponível no card do painel e na página do cliente (`/clientes/[id]`)
+2. Modal em 3 seções:
+   - **Destinatário** — e-mail pré-preenchido do cadastro (se houver), editável; opção de salvar no cadastro do cliente
+   - **Obrigações** — lista com checkboxes; pré-selecionados vencidos + vencendo em ≤ 7 dias
+   - **Mensagem** — textarea pré-preenchida com template do escritório (configurável em `/configuracoes`), editável por envio
+3. Envio via Resend, registro em `client_email_log`
+
+**Schema — adições:**
+- `clients.email` — text, opcional
+- `offices.client_email_template` — text, mensagem padrão editável
+- Tabela `client_email_log`: `id, client_id, office_id, sent_to, obligations_count, sent_at`
+
+**Arquivos:**
+- Migration SQL
+- `app/actions/email-cliente.ts`
+- `components/clientes/modal-enviar-email.tsx`
+- `emails/client-obligations.tsx` (react-email)
+- Campo e-mail em `ClienteFormFields`
+- Campo template em `/configuracoes`
 
 ### Fica fora do MVP
 
@@ -136,13 +165,14 @@ envia alertas antecipados e mantém histórico de entregas.
 ```
 escritorios
   id, user_id, nome, estado, plano, alertas_email_ativo,
-  onboarding_dispensado,    ← oculta checklist permanentemente
-  onboarding_pulou_cliente, ← métrica: pulou cadastro do 1º cliente
-  onboarding_concluido,     ← controle de fluxo (flow A ou B)
+  onboarding_dispensado,      ← oculta checklist permanentemente
+  onboarding_pulou_cliente,   ← métrica: pulou cadastro do 1º cliente
+  onboarding_concluido,       ← controle de fluxo (flow A ou B)
+  client_email_template,      ← mensagem padrão para envio manual ao cliente
   created_at
 
 clientes
-  id, escritorio_id, cnpj, nome, regime [simples|mei], tem_empregados
+  id, escritorio_id, cnpj, nome, regime [simples|mei], tem_empregados, email (opcional)
 
 obrigacoes_template
   id, nome, sigla, regimes[], frequencia, requer_empregados,
@@ -154,6 +184,9 @@ obrigacoes_cliente
 
 alertas_log
   id, obrigacao_id, tipo [7d|3d|1d], enviado_em, email_enviado_em
+
+client_email_log
+  id, client_id, office_id, sent_to, obligations_count, sent_at
 
 feriados
   id, data, descricao, tipo [nacional|estadual|municipal], estado, municipio_ibge

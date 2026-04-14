@@ -16,65 +16,80 @@
 
 ### Semanas 1–2 · Fundação
 
-- [ ] Repositório Next.js 14 criado, Supabase configurado
-- [ ] Subdomínio configurado no Vercel: `prazogestor.tresbits.com` (DNS via tresbits.com existente — sem custo)
-- [ ] Domínio `prazogestor.com.br` registrar apenas ao atingir os primeiros pagantes (~R$40/ano)
-- [ ] Schema SQL completo: `escritorios`, `clientes`, `obrigacoes_template`, `obrigacoes_cliente`, `alertas_log`
-- [ ] RLS habilitado em todas as tabelas com políticas de isolamento por escritório
-- [ ] Seed das obrigações do Simples Nacional na `obrigacoes_template`
-- [ ] **Tabela `feriados` no schema** — `data, descricao, tipo` (nacional/estadual)
-- [ ] **Sincronização de feriados nacionais via BrasilAPI** — script manual, rodar 1x agora + início de cada ano
-- [ ] **Tabela `cnpj_rate_limit` no schema** — `escritorio_id, data, contagem` — suporta rate limit de CNPJ
-- [ ] Landing page com lista de espera (Carrd.co — 2h)
+- [x] Repositório Next.js 14 criado, Supabase configurado
+- [x] Subdomínio configurado no Vercel: `prazogestor.tresbits.com`
+- [ ] Domínio `prazogestor.com.br` — registrar ao atingir primeiros pagantes (~R$40/ano)
+- [x] Schema SQL completo (tabelas em inglês: `offices`, `clients`, `obligation_templates`, `client_obligations`, `alerts_log`)
+- [x] RLS habilitado em todas as tabelas com políticas de isolamento por escritório
+- [x] Seed das obrigações do Simples Nacional e MEI em `obligation_templates`
+- [x] **Tabela `holidays`** — feriados nacionais 2026/2027 populados via BrasilAPI
+- [x] **Tabela `cnpj_rate_limit`** — suporte a rate limit por escritório
+- [ ] Landing page com lista de espera
 - [ ] Entrevistar 5 contadores conhecidos (ver `@commands/entrevista-beta.md`)
 
 ### Semana 3 · Auth + cadastro
 
 - [x] Auth com Supabase: criar conta, confirmar e-mail, login, recuperar senha
-- [x] Tela de cadastro de escritório (nome, estado — campos mínimos)
+- [x] Telas de auth redesenhadas — layout split com painel escuro, tela esqueci-senha
+- [x] Tela de cadastro de escritório (nome, estado)
 - [x] Formulário de cadastro de cliente: CNPJ, nome, regime, tem empregados
-- [ ] **Consulta BrasilAPI no save do formulário** — enriquece razão social se encontrar, silencioso se não encontrar (ver `@skills/saas-br.md`)
-- [ ] **Rate limit de CNPJ** — 30 consultas/dia por escritório via `cnpj_rate_limit`; retorna 429 silencioso se exceder
-- [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente — única ação explícita que dispara nova consulta à BrasilAPI
+- [x] Componente `ClienteFormFields` compartilhado — onboarding, modal novo e editar
+- [ ] **Consulta BrasilAPI no save do formulário** — enriquece razão social se encontrar, silencioso se não
+- [ ] **Rate limit de CNPJ** — 30 consultas/dia por escritório via `cnpj_rate_limit`
+- [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
 
 ### Semana 4 · Geração de obrigações + painel
 
-- [ ] Função `gerarVencimentos(clienteId, regime, temEmpregados, ano)` — gera `obrigacoes_cliente` ao cadastrar cliente (ver `@commands/gerar-vencimentos.md`)
-- [ ] Ajuste automático de datas por feriados nacionais usando tabela `feriados` já populada
-- [x] Painel: lista de vencimentos ordenada por data, próximos 30 dias de todos os clientes
+- [x] Função `gerarVencimentos` — gera `client_obligations` ao cadastrar/editar cliente
+- [x] Vercel Cron mensal — regenera vencimentos futuros
+- [x] Ajuste automático de datas por feriados nacionais usando tabela `holidays`
+- [x] Painel redesenhado: ZonaNumeros (vencidos/hoje/7dias) + grid de cards por cliente
+- [x] Paginação client-side no painel (12 cards, carregar mais)
+- [x] Atalho para calendário na ZonaNumeros
 - [x] **Filtro por cliente** — busca Spotlight global (⌘K) filtra painel, clientes e calendário
 - [x] Código de cor por urgência: vermelho (hoje/atrasado), amarelo (≤ 3 dias), neutro (demais)
 - [x] Botão "Concluir" — registra responsável, data/hora, muda status
 
 ### Semana 5 · Alertas por e-mail
 
-- [ ] pg_cron diário às 8h: verifica vencimentos em 7, 3 e 1 dia — exclui já alertados via `alertas_log`
-- [ ] Template de e-mail com react-email + Resend: cliente, obrigação, data, link pro painel
-- [ ] **Link de descadastro de e-mail obrigatório no template** (LGPD)
-- [ ] Teste end-to-end com CNPJs fictícios em regime Simples com e sem empregados
+- [x] pg_cron diário às 8h — verifica vencimentos em 7, 3 e 1 dia, exclui já alertados
+- [x] pg_cron diário — marca obrigações com data passada como `overdue`
+- [x] Template de e-mail com react-email + Resend
+- [x] Webhook de confirmação de envio (Resend → `alerts_log.email_sent_at`)
+- [ ] **Link de descadastro de e-mail obrigatório no template** (LGPD — obrigatório antes do beta)
+- [ ] Teste end-to-end com CNPJs fictícios
 
 ### Semana 6 · Onboarding + polish
 
-- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado (flows com/sem cliente)
-- [x] Guards de onboarding centralizados no layout — `onboarding_concluido` como gate de todas as rotas do app
+- [x] Onboarding guiado em 3 telas: escritório → primeiro cliente → calendário gerado
+- [x] Guards de onboarding centralizados no layout
+- [x] Checklist de onboarding no painel (dismissível)
 - [x] Empty state no painel com ModalNovoCliente
-- [x] Loading states em todas as ações assíncronas (painel e clientes com skeletons)
+- [x] Loading states (skeletons) no painel e clientes
 - [ ] Mensagens de erro claras — sem "something went wrong"
-- [ ] Convidar 10 escritórios da lista de espera
-- [ ] Onboarding manual: cadastrar os clientes deles por videochamada + tela compartilhada
+- [ ] Convidar 10 escritórios para o beta
+- [ ] Onboarding manual: cadastrar clientes deles por videochamada
 
-### Semana 7 · Qualidade e padronização (antes do beta)
+### Semana 7 · Qualidade e padronização
 
-- [ ] **Migração PT→EN no código e schema** — renomear tabelas, colunas e variáveis para inglês; UI permanece em português. Fazer agora, antes de betas com dados reais e antes de crescer o schema com Lucro Presumido/Real. Estimativa: 1 dia
-- [ ] **Mensagens de erro claras** — sem "something went wrong"; tratar casos concretos nos formulários e actions
+- [x] **Migração PT→EN no código e schema** — tabelas, colunas e variáveis em inglês; pastas de rotas mantidas em PT (URLs visíveis); UI permanece em PT
+- [x] **Responsividade mobile** — bottom nav, sidebar oculta, modais e cards ajustados
+- [ ] **Mensagens de erro claras** — tratar casos concretos nos formulários e actions
 - [ ] **Botão "Atualizar dados do CNPJ"** na tela de edição de cliente
-- [ ] **Link de descadastro de e-mail** no template de alerta (LGPD — obrigatório antes de beta)
-- [ ] **Responsividade mobile básica** — sidebar colapsável (drawer), modais e cards ajustados para telas < 430px. ICP é desktop mas acesso mobile a alertas é caso real. Estimativa: 3–5 dias
+- [ ] **Link de descadastro de e-mail** no template de alerta (LGPD)
 
-### Semanas 8–9 · Expansão de regimes + prazos
+### Semanas 8–9 · Expansão de regimes + envio ao cliente
 
-- [ ] **Lucro Presumido / Lucro Real** — seed de obrigações + suporte em `gerarVencimentos`. Sem isso, parcela relevante de escritórios não pode usar o produto
+- [ ] **Lucro Presumido / Lucro Real** — seed de obrigações + suporte em `gerarVencimentos`
 - [ ] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
+- [ ] **Envio manual de e-mail ao cliente** — contador seleciona obrigações e envia com mensagem customizada
+  - Migration: `clients.email`, `offices.client_email_template`, tabela `client_email_log`
+  - `ModalEnviarEmail` — destinatário + checkboxes de obrigações (pré-selecionados urgentes) + mensagem editável
+  - Acionado no card do painel e na página do cliente (`/clientes/[id]`)
+  - Template react-email: nome do escritório + mensagem + lista de obrigações com datas
+  - Campo e-mail adicionado em `ClienteFormFields` (opcional)
+  - Campo template padrão em `/configuracoes`
+  - Envio via Resend, auditoria em `client_email_log`
 
 ### Semanas 9–10 · Iteração com betas
 

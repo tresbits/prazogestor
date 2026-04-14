@@ -25,16 +25,19 @@ type DefaultValues = {
   name?: string
   tax_regime?: string
   has_employees?: string
+  email?: string
 }
 
 export function ClienteFormFields({
   cnpj,
   defaultValues,
   showRegimeHint = false,
+  showEmailField = false,
 }: {
   cnpj?: CnpjFieldProps
   defaultValues?: DefaultValues
   showRegimeHint?: boolean
+  showEmailField?: boolean
 }) {
   const [taxRegime, setTaxRegime] = useState(defaultValues?.tax_regime ?? '')
   const [hasEmployees, setHasEmployees] = useState(defaultValues?.has_employees ?? '')
@@ -126,6 +129,21 @@ export function ClienteFormFields({
           </p>
         )}
       </div>
+
+      {showEmailField && (
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            E-mail do cliente <span className="font-normal normal-case tracking-normal">(opcional)</span>
+          </Label>
+          <Input
+            name="email"
+            type="email"
+            placeholder="email@empresa.com.br"
+            defaultValue={defaultValues?.email}
+            className="bg-muted/60"
+          />
+        </div>
+      )}
     </div>
   )
 }

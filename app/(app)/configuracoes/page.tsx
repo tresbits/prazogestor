@@ -4,6 +4,7 @@ import { SecaoEscritorio } from './_components/secao-escritorio'
 import { SecaoConta } from './_components/secao-conta'
 import { SecaoAparencia } from './_components/secao-aparencia'
 import { SecaoNotificacoes } from './_components/secao-notificacoes'
+import { SecaoTemplateEmail } from './_components/secao-template-email'
 import { SecaoPlano } from './_components/secao-plano'
 import { SecaoZonaPerigo } from './_components/secao-zona-perigo'
 
@@ -14,7 +15,7 @@ export default async function ConfiguracoesPage() {
 
   const { data: office } = await supabase
     .from('offices')
-    .select('name, state, plan, email_alerts_enabled')
+    .select('name, state, plan, email_alerts_enabled, client_email_template')
     .eq('user_id', user.id)
     .single()
 
@@ -39,6 +40,7 @@ export default async function ConfiguracoesPage() {
           <SecaoEscritorio name={office.name} state={office.state} />
           <SecaoConta email={user.email!} />
           <SecaoNotificacoes alertsEnabled={office.email_alerts_enabled ?? true} />
+          <SecaoTemplateEmail template={office.client_email_template ?? null} />
         </div>
 
         {/* Coluna direita */}
