@@ -65,36 +65,38 @@ export function ClienteFormFields({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Regime tributário
-        </Label>
-        <Select name="tax_regime" defaultValue={defaultValues?.tax_regime} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o regime" />
-          </SelectTrigger>
-          <SelectContent>
-            {REGIME_OPTIONS.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Regime tributário
+          </Label>
+          <Select name="tax_regime" defaultValue={defaultValues?.tax_regime} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Regime" />
+            </SelectTrigger>
+            <SelectContent>
+              {REGIME_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Funcionários
-        </Label>
-        <Select name="has_employees" defaultValue={defaultValues?.has_employees} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione" />
-          </SelectTrigger>
-          <SelectContent>
-            {EMPLOYEES_OPTIONS.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Funcionários
+          </Label>
+          <Select name="has_employees" defaultValue={defaultValues?.has_employees} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              {EMPLOYEES_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   )
