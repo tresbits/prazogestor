@@ -6,16 +6,36 @@ import { revalidatePath } from 'next/cache'
 import { gerarVencimentos } from '@/lib/gerar-vencimentos'
 import type { TaxRegime } from '@/types'
 
-async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
+export async function lookupCnpj(cnpj: string): Promise<{ name: string } | { error: 'rate_limit' | 'not_found' }> {
+  const supabase = await createSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'not_found' }
+
+  const { data: office } = await supabase
+    .from('offices')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!office) return { error: 'not_found' }
+
+  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
+    p_office_id: office.id,
+  })
+
+  if (!allowed) return { error: 'rate_limit' }
+
   try {
     const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
       next: { revalidate: 0 },
     })
-    if (!res.ok) return null
+    if (!res.ok) return { error: 'not_found' }
     const data = await res.json()
-    return data.razao_social ?? null
+    const name = data.razao_social as string | undefined
+    if (!name) return { error: 'not_found' }
+    return { name }
   } catch {
-    return null
+    return { error: 'not_found' }
   }
 }
 
@@ -33,28 +53,17 @@ export async function createClient(_: unknown, formData: FormData) {
   if (!office) return { error: 'Escritório não encontrado.' }
 
   const cnpjRaw = (formData.get('cnpj') as string).replace(/\D/g, '')
-  const nameTyped = (formData.get('name') as string).trim()
+  const name    = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as string
   const hasEmployees = formData.get('has_employees') === 'true'
   const email = (formData.get('email') as string | null)?.trim() || null
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
-  // Verificar rate limit antes de consultar BrasilAPI
-  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
-    p_office_id: office.id,
-  })
-
-  let finalName = nameTyped
-  if (allowed) {
-    const businessName = await buscarRazaoSocial(cnpjRaw)
-    if (businessName) finalName = businessName
-  }
-
   const { error } = await supabase.from('clients').insert({
     office_id: office.id,
     cnpj: cnpjRaw,
-    name: finalName,
+    name,
     tax_regime: taxRegime,
     has_employees: hasEmployees,
     email,

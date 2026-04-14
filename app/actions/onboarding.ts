@@ -5,19 +5,6 @@ import { redirect } from 'next/navigation'
 import { gerarVencimentos } from '@/lib/gerar-vencimentos'
 import type { TaxRegime } from '@/types'
 
-async function buscarRazaoSocial(cnpj: string): Promise<string | null> {
-  try {
-    const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
-      next: { revalidate: 0 },
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.razao_social ?? null
-  } catch {
-    return null
-  }
-}
-
 export async function onboardingCreateOffice(_: unknown, formData: FormData) {
   const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -57,26 +44,16 @@ export async function onboardingCreateClient(_: unknown, formData: FormData) {
   if (!office) redirect('/onboarding/escritorio')
 
   const cnpjRaw = (formData.get('cnpj') as string).replace(/\D/g, '')
-  const nameTyped = (formData.get('name') as string).trim()
+  const name = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as TaxRegime
   const hasEmployees = formData.get('has_employees') === 'true'
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
 
-  const { data: allowed } = await supabase.rpc('check_cnpj_rate_limit', {
-    p_office_id: office.id,
-  })
-
-  let finalName = nameTyped
-  if (allowed) {
-    const businessName = await buscarRazaoSocial(cnpjRaw)
-    if (businessName) finalName = businessName
-  }
-
   const { error } = await supabase.from('clients').insert({
     office_id: office.id,
     cnpj: cnpjRaw,
-    name: finalName,
+    name,
     tax_regime: taxRegime,
     has_employees: hasEmployees,
   })

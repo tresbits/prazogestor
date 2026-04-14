@@ -2,12 +2,11 @@
 
 import { useActionState, useState } from 'react'
 import { createClient } from '@/app/actions/clientes'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { formatCNPJ } from '@/lib/format'
+import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
+import { FormError } from '@/components/ui/form-error'
+import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
 
 export default function NovoClientePage() {
   const [state, action, pending] = useActionState(createClient, null)
@@ -15,77 +14,47 @@ export default function NovoClientePage() {
 
   return (
     <div className="max-w-md mx-auto mt-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Novo cliente</CardTitle>
-          <CardDescription>
-            A razão social será buscada automaticamente pelo CNPJ
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={action} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
-              <Input
-                id="cnpj"
-                name="cnpj"
-                value={cnpj}
-                onChange={e => setCnpj(formatCNPJ(e.target.value))}
-                placeholder="00.000.000/0001-00"
-                required
-                inputMode="numeric"
-              />
-            </div>
+      <Link
+        href="/clientes"
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Clientes
+      </Link>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome / Razão Social</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Preenchido automaticamente ou digite"
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Se o CNPJ for encontrado na Receita, o nome será atualizado ao salvar.
-              </p>
-            </div>
+      <div className="bg-card rounded-2xl border border-border shadow-card p-6">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-5">
+          Novo cliente
+        </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="tax_regime">Regime tributário</Label>
-              <Select name="tax_regime" required>
-                <SelectTrigger id="tax_regime">
-                  <SelectValue placeholder="Selecione o regime" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="simples">Simples Nacional</SelectItem>
-                  <SelectItem value="mei">MEI</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <form action={action} className="space-y-4">
+          <ClienteFormFields
+            cnpj={{ value: cnpj, onChange: setCnpj }}
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="has_employees">Tem funcionários?</Label>
-              <Select name="has_employees" required>
-                <SelectTrigger id="has_employees">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">Não</SelectItem>
-                  <SelectItem value="true">Sim</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {state?.error && <FormError message={state.error} />}
 
-            {state?.error && (
-              <p className="text-sm text-destructive">{state.error}</p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? 'Salvando...' : 'Cadastrar cliente'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="submit"
+              disabled={pending}
+              className="flex-1 h-10 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-40"
+            >
+              {pending ? 'Salvando…' : 'Cadastrar cliente'}
+            </button>
+            <Link
+              href="/clientes"
+              className={cn(
+                'h-10 px-4 rounded-full border border-border text-sm font-medium',
+                'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+                'inline-flex items-center'
+              )}
+            >
+              Cancelar
+            </Link>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
+import { Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatCNPJ } from '@/lib/format'
+import { lookupCnpj } from '@/app/actions/clientes'
+import { cn } from '@/lib/utils'
 
 const REGIME_OPTIONS = [
   { value: 'simples', label: 'Simples Nacional' },
@@ -39,16 +42,45 @@ export function ClienteFormFields({
   showRegimeHint?: boolean
   showEmailField?: boolean
 }) {
+  const [name, setName] = useState(defaultValues?.name ?? '')
   const [taxRegime, setTaxRegime] = useState(defaultValues?.tax_regime ?? '')
   const [hasEmployees, setHasEmployees] = useState(defaultValues?.has_employees ?? '')
+
+  const [isPending, startTransition] = useTransition()
+  const [lookupStatus, setLookupStatus] = useState<'idle' | 'not_found' | 'rate_limit'>('idle')
+  const [lastLookedUp, setLastLookedUp] = useState('')
 
   const handleTaxRegime = (v: string | null) => setTaxRegime(v ?? '')
   const handleHasEmployees = (v: string | null) => setHasEmployees(v ?? '')
 
   useEffect(() => {
+    setName(defaultValues?.name ?? '')
     setTaxRegime(defaultValues?.tax_regime ?? '')
     setHasEmployees(defaultValues?.has_employees ?? '')
-  }, [defaultValues?.tax_regime, defaultValues?.has_employees])
+  }, [defaultValues?.name, defaultValues?.tax_regime, defaultValues?.has_employees])
+
+  // Reseta o status quando o CNPJ muda
+  useEffect(() => {
+    setLookupStatus('idle')
+  }, [cnpj?.value])
+
+  const cnpjRaw = cnpj?.value.replace(/\D/g, '') ?? ''
+  const canLookup = cnpjRaw.length === 14 && cnpjRaw !== lastLookedUp && !isPending
+
+  function handleLookup() {
+    if (!canLookup) return
+    setLookupStatus('idle')
+    startTransition(async () => {
+      const result = await lookupCnpj(cnpjRaw)
+      if ('name' in result) {
+        setName(result.name)
+        setLastLookedUp(cnpjRaw)
+        setLookupStatus('idle')
+      } else {
+        setLookupStatus(result.error)
+      }
+    })
+  }
 
   return (
     <div className="space-y-4">
@@ -57,17 +89,47 @@ export function ClienteFormFields({
           <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             CNPJ
           </Label>
-          <Input
-            name="cnpj"
-            value={cnpj.value}
-            onChange={e => cnpj.onChange(formatCNPJ(e.target.value))}
-            placeholder="00.000.000/0001-00"
-            required
-            inputMode="numeric"
-            minLength={18}
-            maxLength={18}
-            className="bg-muted/60"
-          />
+          <div className="flex gap-2">
+            <Input
+              name="cnpj"
+              value={cnpj.value}
+              onChange={e => cnpj.onChange(formatCNPJ(e.target.value))}
+              placeholder="00.000.000/0001-00"
+              required
+              inputMode="numeric"
+              minLength={18}
+              maxLength={18}
+              className="bg-muted/60"
+            />
+            <button
+              type="button"
+              onClick={handleLookup}
+              disabled={!canLookup}
+              title="Buscar razão social pelo CNPJ"
+              className={cn(
+                'shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-colors',
+                'border border-border bg-muted/60',
+                canLookup
+                  ? 'hover:bg-muted hover:border-foreground/20 text-muted-foreground hover:text-foreground'
+                  : 'opacity-40 cursor-not-allowed text-muted-foreground'
+              )}
+            >
+              {isPending
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Search className="h-4 w-4" />
+              }
+            </button>
+          </div>
+          {lookupStatus === 'not_found' && (
+            <p className="text-[11px] text-muted-foreground">
+              CNPJ não encontrado na Receita. Digite o nome manualmente.
+            </p>
+          )}
+          {lookupStatus === 'rate_limit' && (
+            <p className="text-[11px] text-amber-500">
+              Limite de consultas atingido. Digite o nome manualmente.
+            </p>
+          )}
         </div>
       )}
 
@@ -77,8 +139,9 @@ export function ClienteFormFields({
         </Label>
         <Input
           name="name"
-          placeholder="Razão social ou nome fantasia"
-          defaultValue={defaultValues?.name}
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Busque pelo CNPJ ou digite"
           required
           className="bg-muted/60"
         />
