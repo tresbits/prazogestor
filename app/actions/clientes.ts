@@ -27,14 +27,16 @@ export async function lookupCnpj(cnpj: string): Promise<{ name: string } | { err
 
   try {
     const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
-      next: { revalidate: 0 },
+      cache: 'no-store',
+      headers: { 'User-Agent': 'PrazoGestor/1.0 (prazogestor.tresbits.com)' },
     })
     if (!res.ok) return { error: 'not_found' }
     const data = await res.json()
     const name = data.razao_social as string | undefined
     if (!name) return { error: 'not_found' }
     return { name }
-  } catch {
+  } catch (e) {
+    console.error('[lookupCnpj] fetch error:', e)
     return { error: 'not_found' }
   }
 }
