@@ -6,8 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCNPJ } from '@/lib/format'
 
 const REGIME_OPTIONS = [
-  { value: 'simples',          label: 'Simples Nacional' },
-  { value: 'mei',              label: 'MEI' },
+  { value: 'simples', label: 'Simples Nacional' },
+  { value: 'mei',     label: 'MEI' },
 ]
 
 const EMPLOYEES_OPTIONS = [
@@ -29,9 +29,11 @@ type DefaultValues = {
 export function ClienteFormFields({
   cnpj,
   defaultValues,
+  showRegimeHint = false,
 }: {
   cnpj?: CnpjFieldProps
   defaultValues?: DefaultValues
+  showRegimeHint?: boolean
 }) {
   return (
     <div className="space-y-4">
@@ -49,6 +51,7 @@ export function ClienteFormFields({
             inputMode="numeric"
             minLength={18}
             maxLength={18}
+            className="bg-muted/60"
           />
         </div>
       )}
@@ -62,41 +65,50 @@ export function ClienteFormFields({
           placeholder="Razão social ou nome fantasia"
           defaultValue={defaultValues?.name}
           required
+          className="bg-muted/60"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Regime tributário
-          </Label>
-          <Select name="tax_regime" defaultValue={defaultValues?.tax_regime} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Regime" />
-            </SelectTrigger>
-            <SelectContent>
-              {REGIME_OPTIONS.map(o => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Regime tributário
+            </Label>
+            <Select name="tax_regime" defaultValue={defaultValues?.tax_regime} required>
+              <SelectTrigger className="bg-muted/60">
+                <SelectValue placeholder="Regime" />
+              </SelectTrigger>
+              <SelectContent>
+                {REGIME_OPTIONS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Funcionários
+            </Label>
+            <Select name="has_employees" defaultValue={defaultValues?.has_employees} required>
+              <SelectTrigger className="bg-muted/60">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {EMPLOYEES_OPTIONS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Funcionários
-          </Label>
-          <Select name="has_employees" defaultValue={defaultValues?.has_employees} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione" />
-            </SelectTrigger>
-            <SelectContent>
-              {EMPLOYEES_OPTIONS.map(o => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {showRegimeHint && (
+          <p className="text-xs text-muted-foreground">
+            Alterar o regime regenera os vencimentos futuros.
+          </p>
+        )}
       </div>
     </div>
   )

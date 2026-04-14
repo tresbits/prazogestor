@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 import { FormError } from '@/components/ui/form-error'
 import { cn } from '@/lib/utils'
-import { buttonVariants } from '@/components/ui/button'
 
 type Client = {
   id: string
@@ -48,11 +47,8 @@ export function EditarClienteForm({ client }: { client: Client }) {
                 tax_regime: client.tax_regime,
                 has_employees: String(client.has_employees),
               }}
+              showRegimeHint
             />
-
-            <p className="text-xs text-muted-foreground -mt-2">
-              Alterar o regime regenera os vencimentos futuros.
-            </p>
 
             {state?.error && <FormError message={state.error} />}
 
@@ -60,14 +56,18 @@ export function EditarClienteForm({ client }: { client: Client }) {
               <button
                 type="submit"
                 disabled={pending}
-                className={cn(
-                  buttonVariants(),
-                  'flex-1 disabled:opacity-40'
-                )}
+                className="flex-1 h-10 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-40"
               >
                 {pending ? 'Salvando…' : 'Salvar alterações'}
               </button>
-              <Link href="/clientes" className={cn(buttonVariants({ variant: 'outline' }))}>
+              <Link
+                href="/clientes"
+                className={cn(
+                  'h-10 px-4 rounded-full border border-border text-sm font-medium',
+                  'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+                  'inline-flex items-center'
+                )}
+              >
                 Cancelar
               </Link>
             </div>

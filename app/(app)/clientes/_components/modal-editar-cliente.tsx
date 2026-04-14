@@ -7,11 +7,7 @@ import { updateClient } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 import type { Client } from '@/types'
 import { FormError } from '@/components/ui/form-error'
-
-const REGIME_OPTIONS = [
-  { value: 'simples', label: 'Simples Nacional' },
-  { value: 'mei', label: 'MEI' },
-]
+import { ClienteFormFields } from '@/components/clientes/cliente-form-fields'
 
 export function ModalEditarCliente({
   client,
@@ -66,7 +62,6 @@ export function ModalEditarCliente({
             'transition-all duration-200'
           )}
         >
-          {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-4">
             <div>
               <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
@@ -81,80 +76,25 @@ export function ModalEditarCliente({
             </Dialog.Close>
           </div>
 
-          {/* Form */}
           <form action={action}>
             <input type="hidden" name="client_id" value={client.id} />
 
-            <div className="px-6 space-y-4 pb-4">
-              {/* Nome */}
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                  Nome / Razão Social
-                </label>
-                <input
-                  name="name"
-                  defaultValue={client.name}
-                  required
-                  className={cn(
-                    'w-full px-3 py-2 rounded-xl text-sm',
-                    'bg-muted/60 border border-border/60',
-                    'text-foreground placeholder:text-muted-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                    'transition-colors'
-                  )}
-                />
-              </div>
-
-              {/* Regime + Funcionários */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                    Regime
-                  </label>
-                  <select
-                    name="tax_regime"
-                    defaultValue={client.tax_regime}
-                    required
-                    className={cn(
-                      'w-full px-3 py-2 rounded-xl text-sm',
-                      'bg-muted/60 border border-border/60',
-                      'text-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                      'transition-colors appearance-none cursor-pointer'
-                    )}
-                  >
-                    {REGIME_OPTIONS.map(o => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+            <div className="px-6 pb-4">
+              <ClienteFormFields
+                defaultValues={{
+                  name: client.name,
+                  tax_regime: client.tax_regime,
+                  has_employees: client.has_employees ? 'true' : 'false',
+                }}
+                showRegimeHint
+              />
+              {state?.error && (
+                <div className="mt-4">
+                  <FormError message={state.error} />
                 </div>
-
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1.5">
-                    Funcionários
-                  </label>
-                  <select
-                    name="has_employees"
-                    defaultValue={client.has_employees ? 'true' : 'false'}
-                    required
-                    className={cn(
-                      'w-full px-3 py-2 rounded-xl text-sm',
-                      'bg-muted/60 border border-border/60',
-                      'text-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring/40',
-                      'transition-colors appearance-none cursor-pointer'
-                    )}
-                  >
-                    <option value="false">Sem funcionários</option>
-                    <option value="true">Com funcionários</option>
-                  </select>
-                </div>
-              </div>
-
-              {state?.error && <FormError message={state.error} />}
+              )}
             </div>
 
-            {/* Footer */}
             <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
               <Dialog.Close
                 className={cn(
