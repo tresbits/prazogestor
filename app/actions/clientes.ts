@@ -57,10 +57,14 @@ export async function createClient(_: unknown, formData: FormData) {
   const cnpjRaw = (formData.get('cnpj') as string).replace(/\D/g, '')
   const name    = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as string
-  const hasEmployees = formData.get('has_employees') === 'true'
+  const hasEmployeesRaw = formData.get('has_employees') as string
+  const hasEmployees = hasEmployeesRaw === 'true'
   const email = (formData.get('email') as string | null)?.trim() || null
 
   if (cnpjRaw.length !== 14) return { error: 'CNPJ inválido.' }
+  if (!name) return { error: 'Informe o nome ou razão social do cliente.' }
+  if (!taxRegime) return { error: 'Selecione o regime tributário.' }
+  if (!hasEmployeesRaw) return { error: 'Informe a situação de funcionários.' }
 
   const { error } = await supabase.from('clients').insert({
     office_id: office.id,
@@ -144,8 +148,13 @@ export async function updateClient(_: unknown, formData: FormData) {
   const clientId = formData.get('client_id') as string
   const name = (formData.get('name') as string).trim()
   const taxRegime = formData.get('tax_regime') as TaxRegime
-  const hasEmployees = formData.get('has_employees') === 'true'
+  const hasEmployeesRaw = formData.get('has_employees') as string
+  const hasEmployees = hasEmployeesRaw === 'true'
   const email = (formData.get('email') as string | null)?.trim() || null
+
+  if (!name) return { error: 'Informe o nome ou razão social do cliente.' }
+  if (!taxRegime) return { error: 'Selecione o regime tributário.' }
+  if (!hasEmployeesRaw) return { error: 'Informe a situação de funcionários.' }
 
   // Confirma que o cliente pertence a este escritório
   const { data: currentClient } = await supabase
