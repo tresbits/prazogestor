@@ -83,6 +83,7 @@ export function ModalEditarCliente({
 
             <div className="px-6 pb-4">
               <ClienteFormFields
+                cnpjForLookup={client.cnpj}
                 defaultValues={{
                   name: client.name,
                   tax_regime: client.tax_regime,

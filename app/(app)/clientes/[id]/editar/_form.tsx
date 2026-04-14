@@ -43,6 +43,7 @@ export function EditarClienteForm({ client }: { client: Client }) {
             <input type="hidden" name="client_id" value={client.id} />
 
             <ClienteFormFields
+              cnpjForLookup={client.cnpj}
               defaultValues={{
                 name: client.name,
                 tax_regime: client.tax_regime,

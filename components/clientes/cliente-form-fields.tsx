@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, RefreshCw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -33,11 +33,13 @@ type DefaultValues = {
 
 export function ClienteFormFields({
   cnpj,
+  cnpjForLookup,
   defaultValues,
   showRegimeHint = false,
   showEmailField = false,
 }: {
   cnpj?: CnpjFieldProps
+  cnpjForLookup?: string
   defaultValues?: DefaultValues
   showRegimeHint?: boolean
   showEmailField?: boolean
@@ -66,15 +68,15 @@ export function ClienteFormFields({
 
   const cnpjRaw = cnpj?.value.replace(/\D/g, '') ?? ''
   const canLookup = cnpjRaw.length === 14 && cnpjRaw !== lastLookedUp && !isPending
+  const canRefresh = !!cnpjForLookup && !isPending
 
-  function handleLookup() {
-    if (!canLookup) return
+  function handleLookup(rawCnpj: string) {
     setLookupStatus('idle')
     startTransition(async () => {
-      const result = await lookupCnpj(cnpjRaw)
+      const result = await lookupCnpj(rawCnpj)
       if ('name' in result) {
         setName(result.name)
-        setLastLookedUp(cnpjRaw)
+        setLastLookedUp(rawCnpj)
         setLookupStatus('idle')
       } else {
         setLookupStatus(result.error)
@@ -103,7 +105,7 @@ export function ClienteFormFields({
             />
             <button
               type="button"
-              onClick={handleLookup}
+              onClick={() => handleLookup(cnpjRaw)}
               disabled={!canLookup}
               title="Buscar razão social pelo CNPJ"
               className={cn(
@@ -145,6 +147,39 @@ export function ClienteFormFields({
           required
           className="bg-muted/60"
         />
+        {cnpjForLookup && (
+          <div className="flex items-center justify-between">
+            <div>
+              {lookupStatus === 'not_found' && (
+                <p className="text-[11px] text-muted-foreground">
+                  CNPJ não encontrado na Receita.
+                </p>
+              )}
+              {lookupStatus === 'rate_limit' && (
+                <p className="text-[11px] text-amber-500">
+                  Limite de consultas atingido.
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => handleLookup(cnpjForLookup.replace(/\D/g, ''))}
+              disabled={!canRefresh}
+              className={cn(
+                'flex items-center gap-1 text-[11px] font-medium transition-colors',
+                canRefresh
+                  ? 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground/40 cursor-not-allowed'
+              )}
+            >
+              {isPending
+                ? <Loader2 className="h-3 w-3 animate-spin" />
+                : <RefreshCw className="h-3 w-3" />
+              }
+              Atualizar dados do CNPJ
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-1.5">
