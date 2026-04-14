@@ -92,7 +92,8 @@ export async function gerarVencimentos(
         // Vencimento é no mês SEGUINTE à competência
         const dueMonth = month === 12 ? 1 : month + 1
         const dueYear  = month === 12 ? year + 1 : year
-        const raw = new Date(dueYear, dueMonth - 1, day)
+        const lastDay  = new Date(dueYear, dueMonth, 0).getDate()
+        const raw = new Date(dueYear, dueMonth - 1, Math.min(day, lastDay))
         const adjusted = adjustDate(raw, t.adjustment_rule, holidays)
         if (!withinWindow(adjusted)) continue
         obligations.push({
@@ -103,7 +104,8 @@ export async function gerarVencimentos(
         })
       }
     } else if (t.frequency === 'annual' && t.due_month && t.due_day) {
-      const raw = new Date(year, t.due_month - 1, t.due_day)
+      const lastDay = new Date(year, t.due_month, 0).getDate()
+      const raw = new Date(year, t.due_month - 1, Math.min(t.due_day, lastDay))
       const adjusted = adjustDate(raw, t.adjustment_rule, holidays)
       if (!withinWindow(adjusted)) continue
       obligations.push({

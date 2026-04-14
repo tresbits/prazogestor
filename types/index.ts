@@ -1,5 +1,5 @@
 export type Plan = 'trial' | 'essencial' | 'profissional' | 'agencia' | 'beta'
-export type TaxRegime = 'simples' | 'mei' // lucro_presumido e lucro_real: fase 2 (sem seed de obrigações no DB)
+export type TaxRegime = 'simples' | 'mei' | 'lucro_presumido' | 'lucro_real'
 export type Frequency = 'monthly' | 'quarterly' | 'annual'
 export type AdjustmentRule = 'postpone' | 'advance'
 export type ObligationStatus = 'pending' | 'completed' | 'overdue'

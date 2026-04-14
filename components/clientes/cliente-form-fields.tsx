@@ -10,8 +10,10 @@ import { lookupCnpj } from '@/app/actions/clientes'
 import { cn } from '@/lib/utils'
 
 const REGIME_OPTIONS = [
-  { value: 'simples', label: 'Simples Nacional' },
-  { value: 'mei',     label: 'MEI' },
+  { value: 'simples',          label: 'Simples Nacional' },
+  { value: 'mei',              label: 'MEI' },
+  { value: 'lucro_presumido',  label: 'Lucro Presumido' },
+  { value: 'lucro_real',       label: 'Lucro Real' },
 ]
 
 const EMPLOYEES_OPTIONS = [
