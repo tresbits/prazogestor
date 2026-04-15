@@ -179,7 +179,12 @@ export async function updateClient(_: unknown, formData: FormData) {
   const employeesChanged = currentClient.has_employees !== hasEmployees
 
   if (regimeChanged || employeesChanged) {
-    const today = new Date().toISOString().split('T')[0]
+    const todayDate = new Date()
+    todayDate.setHours(0, 0, 0, 0)
+    const today = todayDate.toISOString().split('T')[0]
+    const oneYearLater = new Date(todayDate)
+    oneYearLater.setFullYear(todayDate.getFullYear() + 1)
+
     await supabase
       .from('client_obligations')
       .delete()
@@ -187,9 +192,9 @@ export async function updateClient(_: unknown, formData: FormData) {
       .gte('due_date', today)
       .eq('status', 'pending')
 
-    const year = new Date().getFullYear()
-    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year)
-    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year + 1)
+    const year = todayDate.getFullYear()
+    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year, todayDate, oneYearLater)
+    await gerarVencimentos(supabase, clientId, taxRegime, hasEmployees, year + 1, todayDate, oneYearLater)
   }
 
   revalidatePath('/clientes')
