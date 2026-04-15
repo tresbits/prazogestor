@@ -6,14 +6,14 @@ Referência técnica para operar, testar e depurar a infraestrutura de jobs e e-
 
 ## Jobs agendados
 
-| Job | Frequência | O que faz |
-|---|---|---|
-| `marcar-atrasados` | pg_cron — diário 00:01 | Atualiza `obrigacoes_cliente.status = 'atrasado'` onde data_vencimento < hoje e status != 'concluido' |
-| `inserir-alertas` | pg_cron — diário 07:00 | Insere linhas em `alertas_log` para vencimentos em 1, 3 e 7 dias; ignora obrigações já alertadas no mesmo tipo |
-| `digest-email` | pg_cron — diário 07:05 | Chama `POST /api/alertas/digest` via pg_net; agrupa alertas por escritório e envia um e-mail por escritório |
-| `gerar-vencimentos-mes` | pg_cron — dia 1 de cada mês 03:00 | Gera `obrigacoes_cliente` do mês seguinte para todos os clientes ativos |
+| Job | Onde | Schedule | O que faz |
+|---|---|---|---|
+| `prazogestor-marcar-atrasados` | pg_cron | diário 11:05 UTC | `UPDATE client_obligations SET status = 'overdue' WHERE status = 'pending' AND due_date < CURRENT_DATE` |
+| `prazogestor-alertas-diarios` | pg_cron | diário 11:00 UTC | Insere `alert_logs` para vencimentos em 1, 3 e 7 dias; em seguida chama `POST /api/alertas/digest` via pg_net |
+| `prazogestor-purge-cnpj-rate-limit` | pg_cron | segunda-feira 03:00 UTC | Limpa registros antigos da tabela `cnpj_rate_limit` via `purge_cnpj_rate_limit()` |
+| `gerar-vencimentos` | Vercel Cron | dia 1 de cada mês 09:00 UTC | GET `/api/cron/gerar-vencimentos` — gera obrigações do mês 12 meses à frente para todos os clientes |
 
-> Os jobs de alertas são escalonados: inserir às 07:00, digest às 07:05 — garante que os registros já existem quando o digest roda.
+> **Ordem crítica:** `alertas-diarios` (11:00) roda antes de `marcar-atrasados` (11:05) — garante que vencimentos do dia ainda são alertados como `pending` antes de virarem `overdue`.
 
 ---
 
@@ -24,21 +24,19 @@ Referência técnica para operar, testar e depurar a infraestrutura de jobs e e-
 **Auth:** header `x-cron-secret: <CRON_SECRET>`
 
 **O que faz:**
-1. Busca todos os `alertas_log WHERE email_enviado_em IS NULL` com joins completos (escritório → cliente → template)
-2. Agrupa por `escritorio_id`
-3. Para cada escritório com `alertas_email_ativo = true`: busca e-mail do usuário, renderiza template, envia via Resend
-4. Atualiza `email_enviado_em = now()` nos logs processados
+1. Busca todos os `alert_logs WHERE email_sent_at IS NULL` com joins completos (office → client → template)
+2. Agrupa por `office_id`
+3. Para cada escritório com `email_alerts_enabled = true`: busca e-mail do usuário, renderiza template, envia via Resend
+4. Atualiza `email_sent_at = now()` nos logs processados
 
 **Resposta de sucesso:**
 ```json
-{ "ok": true, "enviados": 5, "escritorios": 2 }
+{ "ok": true, "sent": 5, "offices": 2 }
 ```
 
 ---
 
 ## Testar o digest manualmente
-
-Útil para processar registros pendentes sem esperar o cron.
 
 ```bash
 # Produção
@@ -50,37 +48,35 @@ curl -X POST http://localhost:3000/api/alertas/digest \
   -H "x-cron-secret: SEU_CRON_SECRET"
 ```
 
-O valor de `CRON_SECRET` está nas variáveis de ambiente do Vercel.
-
 ---
 
-## Checklist de troubleshooting — digest retorna `enviados: 0`
+## Checklist de troubleshooting — digest retorna `sent: 0`
 
 1. **Verificar registros pendentes no banco**
    ```sql
-   SELECT id, tipo, email_enviado_em
-   FROM alertas_log
-   WHERE email_enviado_em IS NULL;
+   SELECT id, type, email_sent_at
+   FROM alert_logs
+   WHERE email_sent_at IS NULL;
    ```
 
 2. **Verificar se o escritório tem alertas ativos**
    ```sql
-   SELECT id, nome, alertas_email_ativo
-   FROM escritorios
-   WHERE alertas_email_ativo = true;
+   SELECT id, name, email_alerts_enabled
+   FROM offices
+   WHERE email_alerts_enabled = true;
    ```
 
 3. **Verificar se o usuário tem e-mail cadastrado**
-   No Supabase Dashboard → Authentication → Users — confirmar que o `user_id` do escritório tem e-mail válido.
+   Supabase Dashboard → Authentication → Users — confirmar `user_id` do escritório tem e-mail válido.
 
 4. **Verificar variável `CRON_SECRET`**
-   No Vercel Dashboard → Settings → Environment Variables — confirmar que `CRON_SECRET` existe e está igual ao valor usado no header.
+   Vercel Dashboard → Settings → Environment Variables.
 
 5. **Verificar chave do Resend**
-   Confirmar que `RESEND_API_KEY` está configurada nas env vars e que o domínio `alertas@prazogestor.tresbits.com` está verificado no painel do Resend.
+   Confirmar `RESEND_API_KEY` nas env vars e domínio `alertas@prazogestor.tresbits.com` verificado no Resend.
 
 6. **Ver logs de erro**
-   Vercel Dashboard → Deployments → Functions → `api/alertas/digest` — logs em tempo real ou histórico.
+   Vercel Dashboard → Deployments → Functions → `api/alertas/digest`.
 
 ---
 
@@ -88,8 +84,9 @@ O valor de `CRON_SECRET` está nas variáveis de ambiente do Vercel.
 
 1. **Listar jobs agendados**
    ```sql
-   SELECT jobid, schedule, command, active
-   FROM cron.job;
+   SELECT jobname, schedule, command, active
+   FROM cron.job
+   ORDER BY jobname;
    ```
 
 2. **Ver histórico de execuções**
@@ -104,7 +101,10 @@ O valor de `CRON_SECRET` está nas variáveis de ambiente do Vercel.
    ```sql
    SELECT net.http_post(
      url := 'https://prazogestor.tresbits.com/api/alertas/digest',
-     headers := '{"x-cron-secret": "SEU_CRON_SECRET"}'::jsonb,
+     headers := jsonb_build_object(
+       'Content-Type', 'application/json',
+       'x-cron-secret', current_setting('app.cron_secret')
+     ),
      body := '{}'::jsonb
    );
    ```
@@ -123,29 +123,49 @@ O valor de `CRON_SECRET` está nas variáveis de ambiente do Vercel.
 
 ```sql
 -- Ver todos os jobs
-SELECT * FROM cron.job;
+SELECT jobname, schedule, active FROM cron.job ORDER BY jobname;
 
--- Desativar um job temporariamente
-UPDATE cron.job SET active = false WHERE jobname = 'digest-email';
+-- Desativar temporariamente
+UPDATE cron.job SET active = false WHERE jobname = 'prazogestor-alertas-diarios';
 
 -- Reativar
-UPDATE cron.job SET active = true WHERE jobname = 'digest-email';
+UPDATE cron.job SET active = true WHERE jobname = 'prazogestor-alertas-diarios';
 
--- Remover um job
-SELECT cron.unschedule('digest-email');
+-- Remover
+SELECT cron.unschedule('prazogestor-alertas-diarios');
+```
 
--- Recriar o job de digest
-SELECT cron.schedule(
-  'digest-email',
-  '5 7 * * *',
-  $$
-  SELECT net.http_post(
-    url := 'https://prazogestor.tresbits.com/api/alertas/digest',
-    headers := '{"x-cron-secret": "' || current_setting('app.cron_secret') || '"}'::jsonb,
-    body := '{}'::jsonb
-  )
-  $$
-);
+Para recriar os jobs do zero, usar o arquivo `supabase/fix_cron_jobs.sql`.
+
+---
+
+## Troca de regime tributário — comportamento
+
+Ao editar um cliente e alterar `tax_regime` ou `has_employees`:
+1. Deleta todas as `client_obligations` com `status = 'pending'` e `due_date >= hoje`
+2. Regenera obrigações de hoje até hoje+1 ano com os templates do novo regime
+3. Obrigações `completed` e `overdue` **não são tocadas** (preservadas no histórico)
+
+**Nota:** requer política RLS de DELETE em `client_obligations` — ver `supabase/rls_client_obligations_delete.sql`.
+
+---
+
+## Fluxo completo de alertas (referência)
+
+```
+11:00 UTC — pg_cron: prazogestor-alertas-diarios
+  └── INSERT INTO alert_logs (obligation_id, type)
+        WHERE due_date IN (hoje+1, hoje+3, hoje+7)
+        AND NOT já alertado com esse type
+  └── pg_net: POST /api/alertas/digest
+        └── SELECT alert_logs WHERE email_sent_at IS NULL
+              └── Agrupa por office
+                    └── Envia 1 e-mail por escritório (Resend)
+                          └── UPDATE alert_logs SET email_sent_at = now()
+
+11:05 UTC — pg_cron: prazogestor-marcar-atrasados
+  └── UPDATE client_obligations SET status = 'overdue'
+        WHERE status = 'pending' AND due_date < CURRENT_DATE
 ```
 
 ---
@@ -160,21 +180,3 @@ SELECT cron.schedule(
 | `SUPABASE_URL` | Vercel | URL do projeto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Vercel | Chave service role (acesso admin ao Supabase) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel | Chave anon (acesso público do cliente) |
-
----
-
-## Fluxo completo de alertas (referência)
-
-```
-07:00 — pg_cron: inserir-alertas
-  └── INSERT INTO alertas_log (obrigacao_id, tipo)
-      WHERE data_vencimento IN (hoje+1, hoje+3, hoje+7)
-      AND NOT já alertado com esse tipo
-
-07:05 — pg_cron: digest-email
-  └── pg_net: POST /api/alertas/digest
-        └── SELECT alertas_log WHERE email_enviado_em IS NULL
-              └── Agrupa por escritório
-                    └── Envia 1 e-mail por escritório (Resend)
-                          └── UPDATE alertas_log SET email_enviado_em = now()
-```
