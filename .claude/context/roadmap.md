@@ -107,6 +107,49 @@
 
 ---
 
+## Evolução para plataforma de módulos
+
+### Visão
+
+PrazoGestor evolui de ferramenta de escritório para **plataforma de comunicação office↔empresário**, onde o Módulo 1 (Gestão de Obrigações) é o ponto de entrada e novos módulos agregam valor progressivamente.
+
+```
+Módulo 1 (atual)     Módulo 2              Módulo 3 (fiscal)
+Gestão de prazos  →  Portal do cliente  →  Visibilidade fiscal
+para o contador       office↔empresário     para o empresário
+                      (obrigações,          (valores, guias,
+                       documentos,           DARFs, DAS,
+                       comunicação)          planejamento de caixa)
+```
+
+### Próximos passos validados com betas
+
+Feedback recebido: empresários querem ver **valores das obrigações** ("quanto tenho a pagar esse mês"). Isso define o Módulo 2+3 como a evolução natural.
+
+**Módulo 2 — Portal do Cliente (fase 2)**
+
+Schema (adições em `clients`):
+- `portal_enabled` boolean default false
+- `portal_user_id` uuid nullable → `auth.users`
+- `portal_invite_token` text nullable
+
+Schema (adições em `client_obligations`):
+- `value` numeric(12,2) nullable — valor do tributo (entrada manual pelo contador)
+- `value_source` text nullable — `'manual'` | `'auto'` (reservado para cálculo automático)
+
+Fluxo: office convida cliente → e-mail com token → empresário define senha → acessa `/portal`
+
+Portal do empresário: lista de obrigações com prazo + valor + status. Somente leitura.
+
+**Módulo 3 — Fiscal (fase 3)**
+
+- Cálculo automático de valores por regime/faturamento (`value_source = 'auto'`)
+- Upload de documentos (DAS, DARF, guias)
+- Dashboard de caixa tributário mensal
+- Comunicação office↔empresário no sistema
+
+---
+
 ## Funcionalidades fora do MVP (fase 2+)
 
 Decisão registrada — não construir antes de ter os primeiros pagantes:
@@ -115,10 +158,8 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 - Notas por obrigação (campo livre)
 - Histórico de entregas como tela separada (coberto pelo filtro "concluídas" no painel)
 - Alertas por WhatsApp
-- Portal do cliente
 - Integração com e-CAC
 - Download de guias (DARF)
-- Cálculo de impostos
 
 ---
 
@@ -127,16 +168,28 @@ Decisão registrada — não construir antes de ter os primeiros pagantes:
 ### App Admin (interno)
 
 App separado (`admin.prazogestor.com.br`) para operação interna da Tresbits:
+
+**Operação e suporte:**
 - Visão geral de escritórios, planos e MRR
 - Gerenciamento de assinaturas e trial
-- Impersonation de conta para suporte
-- Métricas de uso (onboarding_concluido, onboarding_pulou_cliente, retenção)
-- Controle de feature flags por plano
+- **Impersonation de conta** — acessar qualquer escritório ou portal de cliente sem login/senha, via contexto admin (service role + session override). Essencial para suporte e debug sem pedir credenciais ao usuário
 - Log de alertas enviados e erros
 
-**Quando construir:** a partir de ~20 escritórios pagantes, quando o suporte manual por Supabase Dashboard virar gargalo. Antes disso, queries diretas no Supabase são suficientes.
+**Manutenção do sistema:**
+- CRUD de `obligation_templates` — adicionar/editar obrigações, regimes, prazos, regras de ajuste
+- CRUD de `obligation_template_regimes` (após migração do array — ver débito técnico)
+- Gerenciamento de feriados (`holidays`) — adicionar feriados extras sem rodar SQL manual
+- Feature flags por plano
+- Configurações globais do sistema
 
-**Stack:** app Next.js separado, mesmo Supabase, service role key protegida por auth própria (não compartilha auth com o produto principal).
+**Usuários e acessos:**
+- Listagem de usuários (offices + portal users)
+- Resetar senha, bloquear conta, forçar onboarding
+- Métricas de uso (onboarding_concluido, onboarding_pulou_cliente, retenção)
+
+**Quando construir:** a partir de ~20 escritórios pagantes, quando o suporte e manutenção via Supabase Dashboard virarem gargalo. A migração do `tax` array → tabela de relacionamento deve acontecer junto com o Admin para aproveitar a interface de manutenção.
+
+**Stack:** app Next.js separado, mesmo Supabase, service role key protegida por auth própria (não compartilha auth com o produto principal). Impersonation via `supabase.auth.admin.getUserById()` + geração de session token temporário.
 
 ---
 

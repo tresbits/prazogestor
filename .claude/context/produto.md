@@ -203,6 +203,17 @@ cnpj_rate_limit
 - `escritorios.onboarding_concluido` é o guard central do `(app)/layout.tsx` — sem ele, todas as rotas do app redirecionam para `/onboarding/cliente`
 - `escritorios.onboarding_pulou_cliente` é exclusivamente métrica — não usar para controle de fluxo
 
+### Débito técnico — campo `tax` como array
+
+`obligation_templates.tax` é um `text[]` (ex: `ARRAY['simples','mei']`). Funciona para o MVP mas limita a evolução:
+
+- Não suporta metadados por regime (ex: `due_day` diferente por regime no mesmo template)
+- Não permite FK nem constraints de integridade no relacionamento
+- Dificulta edição via Admin (interface de manutenção de templates e regimes)
+- Index GIN em array é menos eficiente que index em coluna de tabela de relacionamento
+
+**Solução planejada (antes da fase de cálculo automático e Admin):** migrar para tabela de relacionamento `obligation_template_regimes (template_id, tax_regime, [metadados por regime])`. A query atual `.contains('tax', [taxRegime])` vira um JOIN simples. Fazer junto com a migração do Admin para não quebrar o sistema duas vezes.
+
 ---
 
 ## Stack técnica definida
