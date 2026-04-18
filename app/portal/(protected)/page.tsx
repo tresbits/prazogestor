@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { cn } from '@/lib/utils'
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -49,7 +50,9 @@ export default async function PortalPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/portal/login')
 
-  const { data: client } = await supabase
+  const service = createServiceClient()
+
+  const { data: client } = await service
     .from('clients')
     .select('id, name, cnpj, tax_regime')
     .eq('portal_user_id', user.id)
@@ -61,7 +64,7 @@ export default async function PortalPage() {
   const anoAtual = new Date().getFullYear()
 
   // Obrigações do ano atual
-  const { data: obRaw } = await supabase
+  const { data: obRaw } = await service
     .from('client_obligations')
     .select('id, due_date, status, completed_at, value, obligation_templates ( acronym, name )')
     .eq('client_id', client.id)
@@ -70,7 +73,7 @@ export default async function PortalPage() {
     .limit(500)
 
   // Obrigações atrasadas de anos anteriores
-  const { data: atrasadasAntRaw } = await supabase
+  const { data: atrasadasAntRaw } = await service
     .from('client_obligations')
     .select('id, due_date, status, completed_at, value, obligation_templates ( acronym, name )')
     .eq('client_id', client.id)
