@@ -71,13 +71,13 @@ Layout `app/(portal)/layout.tsx` separado do `app/(app)/layout.tsx` — sem side
 
 ## Sequência de implementação
 
-- [ ] **Step 1** — Migration SQL + RLS policies
-- [ ] **Step 2** — Campo `value` no `ModalConcluir` + exibição na tela de prazos e painel
-- [ ] **Step 3** — Botão "Convidar para portal" no cliente + server action + e-mail `portal-invite.tsx`
-- [ ] **Step 4** — Página `/portal/aceitar-convite`
-- [ ] **Step 5** — Layout do portal + guard de auth (`app/(portal)/layout.tsx`)
-- [ ] **Step 6** — Página `/portal` (lista de obrigações do empresário)
-- [ ] **Step 7** — Página `/portal/login`
+- [x] **Step 1** — Migration SQL + RLS policies
+- [x] **Step 2** — Campo `value` no `ModalConcluir` + exibição na tela de prazos e painel
+- [x] **Step 3** — Botão "Convidar para portal" no cliente + server action + e-mail `portal-invite.tsx`
+- [x] **Step 4** — Página `/portal/aceitar-convite`
+- [x] **Step 5** — Layout do portal + guard de auth (`app/portal/(protected)/layout.tsx`)
+- [x] **Step 6** — Página `/portal` (lista de obrigações do empresário)
+- [x] **Step 7** — Página `/portal/login`
 
 ---
 

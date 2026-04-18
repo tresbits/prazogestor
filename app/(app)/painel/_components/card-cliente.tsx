@@ -12,6 +12,7 @@ type ObligationItem = {
   status: string
   acronym: string
   name: string
+  value?: number | null
 }
 
 type CardClienteProps = {
@@ -85,6 +86,11 @@ function ObligationRow({
           {o.acronym || '—'}
         </span>
         <p className="text-sm font-semibold text-foreground truncate">{o.name}</p>
+        {o.value != null && (
+          <p className="text-[11px] text-muted-foreground font-mono">
+            {o.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col items-end gap-1 shrink-0 ml-4">

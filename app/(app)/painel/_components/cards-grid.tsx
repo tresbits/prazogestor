@@ -9,6 +9,7 @@ type ObItem = {
   status: string
   acronym: string
   name: string
+  value?: number | null
 }
 
 type ClientCard = {

@@ -49,6 +49,7 @@ export function ClienteFormFields({
   const [name, setName] = useState(defaultValues?.name ?? '')
   const [taxRegime, setTaxRegime] = useState(defaultValues?.tax_regime ?? '')
   const [hasEmployees, setHasEmployees] = useState(defaultValues?.has_employees ?? '')
+  const [email, setEmail] = useState(defaultValues?.email ?? '')
 
   const [isPending, startTransition] = useTransition()
   const [lookupStatus, setLookupStatus] = useState<'idle' | 'not_found' | 'rate_limit'>('idle')
@@ -61,7 +62,8 @@ export function ClienteFormFields({
     setName(defaultValues?.name ?? '')
     setTaxRegime(defaultValues?.tax_regime ?? '')
     setHasEmployees(defaultValues?.has_employees ?? '')
-  }, [defaultValues?.name, defaultValues?.tax_regime, defaultValues?.has_employees])
+    setEmail(defaultValues?.email ?? '')
+  }, [defaultValues?.name, defaultValues?.tax_regime, defaultValues?.has_employees, defaultValues?.email])
 
   // Reseta o status quando o CNPJ muda
   useEffect(() => {
@@ -239,7 +241,8 @@ export function ClienteFormFields({
             name="email"
             type="email"
             placeholder="email@empresa.com.br"
-            defaultValue={defaultValues?.email}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             className="bg-muted/60"
           />
         </div>

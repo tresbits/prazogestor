@@ -76,6 +76,50 @@ envia alertas antecipados e mantém histórico de entregas.
 - [x] Telas de auth redesenhadas: layout split, esqueci-senha
 - [x] Componente ClienteFormFields compartilhado entre onboarding, modal novo e modal editar
 
+### Módulo 2 — Portal do Cliente
+
+Empresários (clientes do escritório) acessam portal próprio para visualizar obrigações, prazos e valores.
+
+**Fluxo de convite:**
+1. Contador acessa `/clientes/[id]/prazos` → botão "Convidar para portal" (visível se cliente tem e-mail e `portal_enabled = false`)
+2. Sistema gera UUID token, salva em `clients.portal_invite_token` + `portal_invite_sent_at`, envia e-mail via Resend
+3. Empresário clica no link `/portal/aceitar-convite?token=xxx` → define senha → conta criada via `auth.admin.createUser` + login automático
+4. Acessa `/portal` com suas obrigações. Nas próximas visitas: `/portal/login`
+
+**Campo de valor nas obrigações:**
+- `ModalConcluir` tem campo opcional "Valor (R$)" — ao concluir, salva `value` + `value_source = 'manual'`
+- Painel: valor exibido abaixo do nome da obrigação nos cards
+- `/clientes/[id]/prazos`: valor exibido nas linhas concluídas
+- `/portal`: valor exibido em destaque (`font-mono`) ao lado do status
+
+**Schema — adições:**
+- `client_obligations.value numeric(12,2)` — valor do tributo (entrada manual)
+- `client_obligations.value_source text` — `'manual'` | `'auto'` (auto reservado para fase 3)
+- `clients.portal_enabled boolean` default false
+- `clients.portal_user_id uuid` nullable → `auth.users`
+- `clients.portal_invite_token text` nullable
+- `clients.portal_invite_sent_at timestamptz` nullable
+
+**RLS — portal user:**
+- `clients`: SELECT onde `portal_user_id = auth.uid() AND portal_enabled = true`
+- `client_obligations`: SELECT onde `client_id` pertence ao próprio cliente
+
+**Rotas do portal:**
+- `/portal` → lista de obrigações do empresário (guard de auth em `app/portal/(protected)/layout.tsx`)
+- `/portal/login` → login exclusivo do empresário (verifica que a conta é portal user)
+- `/portal/aceitar-convite` → aceitar convite + definir senha (público)
+
+**Arquivos:**
+- `supabase/portal_module.sql` — migration + RLS
+- `app/actions/portal.ts` — `inviteToPortal`, `acceptPortalInvite`, `portalLogin`
+- `emails/portal-invite.tsx` — template de convite (react-email)
+- `app/portal/(protected)/layout.tsx` — guard de auth + header do portal
+- `app/portal/(protected)/page.tsx` — lista de obrigações
+- `app/portal/aceitar-convite/page.tsx` — página de aceite
+- `app/portal/login/page.tsx` — login do empresário
+
+---
+
 ### Funcionalidade implementada — Envio manual de e-mail ao cliente
 
 Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista selecionada de obrigações vencidas e a vencer.
@@ -111,7 +155,7 @@ Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista sel
 - Integração com e-CAC — fase 2
 - Download de guias (DARF) — fase 2
 - Cálculo de impostos — fora do escopo
-- Portal do cliente — fase 2
+- Portal do cliente — ~~fase 2~~ **implementado (Módulo 2)**
 - API pública — fase 3
 - Relatórios avançados — fase 3
 - IA/automação — fase 3
@@ -173,7 +217,8 @@ escritorios
   created_at
 
 clientes
-  id, escritorio_id, cnpj, nome, regime [simples|mei], tem_empregados, email (opcional)
+  id, escritorio_id, cnpj, nome, regime [simples|mei|lucro_presumido|lucro_real], tem_empregados, email (opcional),
+  portal_enabled bool, portal_user_id uuid, portal_invite_token text, portal_invite_sent_at timestamptz
 
 obrigacoes_template
   id, nome, sigla, regimes[], frequencia, requer_empregados,
@@ -181,7 +226,8 @@ obrigacoes_template
 
 obrigacoes_cliente
   id, cliente_id, template_id, data_vencimento, status [pendente|concluido|atrasado],
-  concluido_por, concluido_em, nota
+  concluido_por, concluido_em, nota,
+  value numeric(12,2), value_source text ['manual'|'auto']
 
 alertas_log
   id, obrigacao_id, tipo [7d|3d|1d], enviado_em, email_enviado_em

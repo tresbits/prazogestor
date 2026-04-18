@@ -23,17 +23,20 @@ export function ModalConcluir({
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [value, setValue] = useState('')
 
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
       const formData = new FormData()
       formData.set('obligation_id', obligationId)
+      if (value.trim()) formData.set('value', value.trim())
       const result = await completeObligation(formData)
       if (result?.error) {
         setError(result.error)
       } else {
         setOpen(false)
+        setValue('')
       }
     })
   }
@@ -93,7 +96,7 @@ export function ModalConcluir({
           </div>
 
           {/* Details */}
-          <div className="px-6 pb-4 space-y-2">
+          <div className="px-6 pb-4 space-y-3">
             <div className="bg-muted/60 rounded-xl p-4 space-y-2">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Obrigação</p>
@@ -109,6 +112,26 @@ export function ModalConcluir({
                   <p className="text-sm text-foreground mt-0.5">{dueFormatted}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Valor opcional */}
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1.5">
+                Valor (R$) <span className="normal-case tracking-normal font-normal">— opcional</span>
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={value}
+                onChange={e => setValue(e.target.value)}
+                className={cn(
+                  'w-full px-3 py-2 rounded-xl text-sm bg-muted/60 border border-border/60',
+                  'text-foreground placeholder:text-muted-foreground/50',
+                  'focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/30',
+                  'transition-colors'
+                )}
+              />
             </div>
           </div>
 

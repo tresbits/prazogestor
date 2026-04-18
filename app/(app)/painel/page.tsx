@@ -21,6 +21,7 @@ type ObRow = {
   id: string
   due_date: string
   status: string
+  value: number | null
   obligation_templates: { acronym: string; name: string }[] | { acronym: string; name: string } | null
   clients: { id: string; name: string; cnpj: string; tax_regime: string; office_id: string }[] | { id: string; name: string; cnpj: string; tax_regime: string; office_id: string } | null
 }
@@ -37,6 +38,7 @@ function mapObRow(o: ObRow) {
     id: o.id,
     due_date: o.due_date,
     status: o.status,
+    value: o.value ?? null,
     acronym: t?.acronym ?? '',
     name: t?.name ?? '',
     clientId: c?.id ?? '',
@@ -47,7 +49,7 @@ function mapObRow(o: ObRow) {
 }
 
 const OB_SELECT = `
-  id, due_date, status,
+  id, due_date, status, value,
   obligation_templates ( acronym, name ),
   clients!inner ( id, name, cnpj, tax_regime, office_id )
 `
@@ -262,8 +264,8 @@ export default async function PainelPage({
             cnpj: c.cnpj,
             tax_regime: c.tax_regime,
             email: c.email ?? null,
-            obs: c.obs.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
-            overdues: c.overdues.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name })),
+            obs: c.obs.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name, value: o.value })),
+            overdues: c.overdues.map(o => ({ id: o.id, due_date: o.due_date, status: o.status, acronym: o.acronym, name: o.name, value: o.value })),
           }))}
           dimmedClients={clientsWithoutObsFiltered.map(c => ({ id: c.id, name: c.name, cnpj: c.cnpj }))}
         />

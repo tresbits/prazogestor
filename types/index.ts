@@ -27,6 +27,8 @@ export interface Client {
 
 export type ClientWithEmail = Pick<Client, 'id' | 'name' | 'cnpj' | 'tax_regime' | 'has_employees'> & {
   email?: string | null
+  portal_enabled?: boolean
+  portal_invite_sent_at?: string | null
 }
 
 export interface ObligationTemplate {

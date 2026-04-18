@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Pencil, Mail } from 'lucide-react'
+import { ChevronLeft, Pencil, Mail, UserPlus, Check, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ModalConcluir } from '@/app/(app)/painel/_components/modal-concluir'
 import { ModalEditarCliente } from '@/app/(app)/clientes/_components/modal-editar-cliente'
 import { ModalEnviarEmail } from '@/components/clientes/modal-enviar-email'
+import { inviteToPortal } from '@/app/actions/portal'
 import type { ClientWithEmail } from '@/types'
 
 type Obrigacao = {
@@ -15,6 +16,7 @@ type Obrigacao = {
   status: 'pending' | 'completed' | 'overdue'
   completed_at: string | null
   completed_by: string | null
+  value: number | null
   acronym: string
   name: string
   dias: number
@@ -83,6 +85,23 @@ export function PrazosCliente({
   allObligations: Obrigacao[]
 }) {
   const [editOpen, setEditOpen] = useState(false)
+  const [invitePending, startInviteTransition] = useTransition()
+  const [inviteResult, setInviteResult] = useState<{ success?: boolean; error?: string } | null>(null)
+
+  function handleInvite() {
+    setInviteResult(null)
+    startInviteTransition(async () => {
+      const result = await inviteToPortal(client.id)
+      setInviteResult(result)
+    })
+  }
+
+  const inviteSentAt = client.portal_invite_sent_at
+    ? new Date(client.portal_invite_sent_at)
+    : null
+  const inviteSentRecently = inviteSentAt
+    ? (Date.now() - inviteSentAt.getTime()) < 7 * 24 * 60 * 60 * 1000
+    : false
 
   const cnpjFormatado = client.cnpj.replace(
     /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
@@ -145,7 +164,7 @@ export function PrazosCliente({
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats + Portal */}
         <div className="px-6 py-3 flex items-center gap-3 flex-wrap border-t border-border/40">
           {atrasados > 0 && (
             <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold">
@@ -158,6 +177,50 @@ export function PrazosCliente({
           <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px]">
             {concluidos} concluído{concluidos !== 1 ? 's' : ''}
           </span>
+
+          {/* Portal */}
+          <div className="ml-auto flex items-center gap-2">
+            {client.portal_enabled ? (
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+                <Check className="h-3 w-3" />
+                Portal ativo
+              </span>
+            ) : client.email ? (
+              <>
+                {inviteResult?.error && (
+                  <span className="text-[11px] text-destructive">{inviteResult.error}</span>
+                )}
+                {(inviteResult?.success || inviteSentRecently) && !inviteResult?.error ? (
+                  <span className="text-[11px] text-muted-foreground">
+                    Convite enviado
+                    <button
+                      onClick={handleInvite}
+                      disabled={invitePending}
+                      className="ml-2 underline underline-offset-2 hover:text-foreground transition-colors disabled:opacity-40"
+                    >
+                      {invitePending ? 'Reenviando…' : 'Reenviar'}
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleInvite}
+                    disabled={invitePending}
+                    className={cn(
+                      'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium',
+                      'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                      'transition-colors disabled:opacity-40'
+                    )}
+                  >
+                    {invitePending
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <UserPlus className="h-3 w-3" />
+                    }
+                    {invitePending ? 'Enviando…' : 'Convidar para portal'}
+                  </button>
+                )}
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -211,7 +274,7 @@ export function PrazosCliente({
                         </span>
                       </div>
 
-                      <div className="shrink-0 ml-4 relative flex items-center min-w-[58px] justify-end">
+                      <div className="shrink-0 ml-4 relative flex flex-col items-end gap-0.5 min-w-[80px] justify-end">
                         {o.status !== 'completed' ? (
                           <>
                             <span className="whitespace-nowrap transition-opacity group-hover:opacity-0">
@@ -227,7 +290,14 @@ export function PrazosCliente({
                             </div>
                           </>
                         ) : (
-                          <UrgencyLabel o={o} />
+                          <>
+                            <UrgencyLabel o={o} />
+                            {o.value != null && (
+                              <span className="text-[10px] font-mono text-muted-foreground">
+                                {o.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

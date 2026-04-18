@@ -120,7 +120,7 @@ export function ModalEnviarEmail({
           initialFocus={popupRef}
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-[calc(100%-2rem)] max-w-md max-h-[90vh] flex flex-col',
+            'w-[calc(100%-2rem)] max-w-4xl max-h-[90vh] flex flex-col',
             'bg-background/90 backdrop-blur-3xl',
             'border-[0.5px] border-white/20 dark:border-white/10',
             'rounded-[20px]',

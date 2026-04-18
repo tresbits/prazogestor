@@ -17,6 +17,7 @@ type ObRow = {
   status: string
   completed_by: string | null
   completed_at: string | null
+  value: number | null
   obligation_templates: { acronym: string; name: string }[] | { acronym: string; name: string } | null
 }
 
@@ -47,7 +48,7 @@ export default async function PrazosClientePage({
   // Busca o cliente verificando ownership via office_id
   const { data: client } = await supabase
     .from('clients')
-    .select('id, name, cnpj, tax_regime, has_employees, email')
+    .select('id, name, cnpj, tax_regime, has_employees, email, portal_enabled, portal_invite_sent_at')
     .eq('id', id)
     .eq('office_id', office.id)
     .single()
@@ -57,7 +58,7 @@ export default async function PrazosClientePage({
   const anoAtual = new Date().getFullYear()
   const { data: obrigacoesRaw } = await supabase
     .from('client_obligations')
-    .select('id, due_date, status, completed_by, completed_at, obligation_templates ( acronym, name )')
+    .select('id, due_date, status, completed_by, completed_at, value, obligation_templates ( acronym, name )')
     .eq('client_id', id)
     .gte('due_date', `${anoAtual}-01-01`)
     .order('due_date', { ascending: true })
@@ -71,6 +72,7 @@ export default async function PrazosClientePage({
       status: o.status as 'pending' | 'completed' | 'overdue',
       completed_at: o.completed_at,
       completed_by: o.completed_by,
+      value: o.value ?? null,
       acronym: t?.acronym ?? '',
       name: t?.name ?? '',
       dias: getDiasRestantes(o.due_date),

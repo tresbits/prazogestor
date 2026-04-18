@@ -84,7 +84,18 @@
 - [x] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
 - [x] **Envio manual de e-mail ao cliente** — contador seleciona obrigações e envia com mensagem customizada
 
-### Semanas 9–10 · Iteração com betas
+### Semanas 9–10 · Módulo 2 — Portal do Cliente
+
+- [x] **Migration SQL** — colunas `value`, `value_source` em `client_obligations`; `portal_enabled`, `portal_user_id`, `portal_invite_token`, `portal_invite_sent_at` em `clients`; RLS policies para portal user
+- [x] **Campo de valor** — `ModalConcluir` com input "Valor (R$)" opcional; exibição no painel e em `/clientes/[id]/prazos`
+- [x] **Convite para portal** — botão em `/clientes/[id]/prazos`; server action `inviteToPortal`; e-mail via Resend (`emails/portal-invite.tsx`)
+- [x] **`/portal/aceitar-convite`** — valida token (7 dias); cria `auth.users` via service role; login automático; redireciona para `/portal`
+- [x] **Layout do portal** — `app/portal/(protected)/layout.tsx` com guard de auth + `PortalHeader` (logo, nome da empresa, sair)
+- [x] **`/portal`** — lista de obrigações do ano agrupada por mês; read-only; valor em destaque; obrigações atrasadas de anos anteriores incluídas
+- [x] **`/portal/login`** — login exclusivo do empresário; verifica que a conta é portal user (não escritório)
+- [x] **Fix** — campo e-mail em `ClienteFormFields` migrado de `defaultValue` (não-controlado) para `value` + `useState` (controlado)
+
+### Semanas 10–11 · Iteração com betas
 
 - [ ] Ligação semanal de 30 min com cada beta: "o que usou? o que travou?"
 - [ ] Implementar top 3 melhorias pedidas
@@ -126,16 +137,12 @@ para o contador       office↔empresário     para o empresário
 
 Feedback recebido: empresários querem ver **valores das obrigações** ("quanto tenho a pagar esse mês"). Isso define o Módulo 2+3 como a evolução natural.
 
-**Módulo 2 — Portal do Cliente (fase 2)**
+**Módulo 2 — Portal do Cliente** ✅ implementado
 
-Schema (adições em `clients`):
-- `portal_enabled` boolean default false
-- `portal_user_id` uuid nullable → `auth.users`
-- `portal_invite_token` text nullable
-
-Schema (adições em `client_obligations`):
-- `value` numeric(12,2) nullable — valor do tributo (entrada manual pelo contador)
-- `value_source` text nullable — `'manual'` | `'auto'` (reservado para cálculo automático)
+- Convite por e-mail → empresário define senha → cria conta via `auth.admin.createUser`
+- Portal em `/portal` com guard de auth, lista de obrigações por mês, valores exibidos
+- Campo `value` nas obrigações — contador preenche ao concluir; empresário visualiza no portal
+- Consultar `@context/portal-plan.md` para detalhes completos
 
 Fluxo: office convida cliente → e-mail com token → empresário define senha → acessa `/portal`
 
