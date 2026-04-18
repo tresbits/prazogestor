@@ -4,6 +4,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { AuthShell } from '@/app/(auth)/_components/auth-shell'
 import { LoginForm } from './_components/login-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PortalLoginPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
