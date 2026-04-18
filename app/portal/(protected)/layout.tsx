@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { PortalHeader } from './_components/portal-header'
 
 export default async function PortalProtectedLayout({
@@ -12,15 +13,15 @@ export default async function PortalProtectedLayout({
 
   if (!user) redirect('/portal/login')
 
-  // Busca o cliente vinculado ao portal user — RLS já garante portal_enabled = true
-  const { data: client } = await supabase
+  // Service role — bypass RLS para garantir que funciona independente das policies
+  const service = createServiceClient()
+  const { data: client } = await service
     .from('clients')
     .select('id, name, cnpj, tax_regime')
     .eq('portal_user_id', user.id)
     .eq('portal_enabled', true)
     .single()
 
-  // Se não é um portal user (ex: tentou entrar com conta de escritório)
   if (!client) redirect('/portal/login')
 
   return (

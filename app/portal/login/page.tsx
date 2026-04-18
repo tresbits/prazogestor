@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { AuthShell } from '@/app/(auth)/_components/auth-shell'
 import { LoginForm } from './_components/login-form'
 
@@ -8,7 +9,8 @@ export default async function PortalLoginPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    const { data: client } = await supabase
+    const service = createServiceClient()
+    const { data: client } = await service
       .from('clients')
       .select('id')
       .eq('portal_user_id', user.id)
