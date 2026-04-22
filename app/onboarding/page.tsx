@@ -21,5 +21,5 @@ export default async function OnboardingPage() {
 
   if (!count || count === 0) redirect('/onboarding/cliente')
 
-  redirect('/painel')
+  redirect('/overview')
 }

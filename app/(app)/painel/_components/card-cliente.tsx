@@ -1,10 +1,10 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ModalConcluir } from './modal-concluir'
 import { ModalAtrasados } from './modal-atrasados'
 import { ModalProximos } from './modal-proximos'
 import { ModalEnviarEmail } from '@/components/clientes/modal-enviar-email'
+import { ObligationRow } from '@/components/obligation-row'
 
 type ObligationItem = {
   id: string
@@ -34,76 +34,9 @@ const REGIME_LABEL: Record<string, string> = {
   lucro_real: 'Lucro Real',
 }
 
-function getDaysRemaining(dueDate: string): number {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const due = new Date(dueDate + 'T00:00:00')
-  return Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-}
-
 function formatCNPJ(cnpj: string | null | undefined): string {
   if (!cnpj) return '—'
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
-}
-
-
-function UrgencyLabel({ days, status }: { days: number; status: string }) {
-  const isOverdue = status === 'overdue' || days < 0
-  const isToday   = days === 0
-  const isUrgent  = !isOverdue && !isToday && days <= 3
-  const isClose   = !isOverdue && !isToday && !isUrgent && days <= 7
-
-  if (isOverdue) return <span className="text-[11px] font-bold text-destructive tracking-wide">VENCIDO</span>
-  if (isToday)   return <span className="text-[11px] font-bold text-destructive tracking-wide">HOJE</span>
-  if (isUrgent)  return <span className="text-[11px] font-bold text-amber-500 tracking-wide">EM {days} {days === 1 ? 'DIA' : 'DIAS'}</span>
-  if (isClose)   return <span className="text-[11px] font-bold text-yellow-500 dark:text-yellow-400 tracking-wide">EM {days} DIAS</span>
-  return <span className="text-[11px] font-bold text-muted-foreground tracking-wide">EM {days} DIAS</span>
-}
-
-function ObligationRow({
-  obligation: o,
-  clientName,
-}: {
-  obligation: ObligationItem
-  clientName: string
-}) {
-  const days = getDaysRemaining(o.due_date)
-  const isOverdue = o.status === 'overdue' || days < 0
-  const isToday   = days === 0
-  const isUrgent  = !isOverdue && !isToday && days <= 3
-  const isClose   = !isOverdue && !isToday && !isUrgent && days <= 7
-
-  return (
-    <div className="group flex items-center justify-between py-3 border-t border-border/40 first:border-t-0">
-      <div className="min-w-0">
-        <span className={cn(
-          'inline-block px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide mb-1',
-          isOverdue || isToday ? 'bg-destructive/10 text-destructive'
-            : isUrgent          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-            : isClose           ? 'bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
-            :                     'bg-muted text-muted-foreground'
-        )}>
-          {o.acronym || '—'}
-        </span>
-        <p className="text-sm font-semibold text-foreground truncate">{o.name}</p>
-        {o.value != null && (
-          <p className="text-[11px] text-muted-foreground font-mono">
-            {o.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-        )}
-      </div>
-
-      <div className="flex flex-col items-end gap-1 shrink-0 ml-4">
-        <UrgencyLabel days={days} status={o.status} />
-        <ModalConcluir
-          obligationId={o.id}
-          obligationName={o.name}
-          clientName={clientName}
-          dueDate={o.due_date}
-        />
-      </div>
-    </div>
-  )
 }
 
 export function CardCliente({
@@ -148,7 +81,13 @@ export function CardCliente({
         {hasOverdue && (
           <div className="bg-destructive/5 border border-destructive/15 rounded-xl px-3 py-2 [&>div:first-child]:pt-0">
             {previewOverdue.map(o => (
-              <ObligationRow key={o.id} obligation={o} clientName={clientName} />
+              <ObligationRow
+                key={o.id}
+                id={o.id} acronym={o.acronym} name={o.name}
+                due_date={o.due_date} status={o.status} clientName={clientName}
+                value={o.value}
+                className="py-3 border-t border-border/40 first:border-t-0"
+              />
             ))}
             {extrasOverdue > 0 && (
               <ModalAtrasados
@@ -164,7 +103,13 @@ export function CardCliente({
         {/* Lista de próximos */}
         <div className={cn('flex-1 rounded-xl px-3 py-2 [&>div:first-child]:pt-0 [&>div]:border-t-0', hasOverdue && 'mt-3')}>
           {preview.map(o => (
-            <ObligationRow key={o.id} obligation={o} clientName={clientName} />
+            <ObligationRow
+              key={o.id}
+              id={o.id} acronym={o.acronym} name={o.name}
+              due_date={o.due_date} status={o.status} clientName={clientName}
+              value={o.value}
+              className="py-3 border-t border-border/40 first:border-t-0"
+            />
           ))}
         </div>
       </div>

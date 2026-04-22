@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { cn } from '@/lib/utils'
+import { chipColor } from '@/lib/obligation-color'
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
@@ -194,11 +195,7 @@ export default async function PortalPage() {
                         <div className="flex items-center gap-3 min-w-0">
                           <span className={cn(
                             'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
-                            isCompleted                  ? 'bg-muted text-muted-foreground'
-                              : isOverdue || isToday     ? 'bg-destructive/10 text-destructive'
-                              : isUrgent                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                              : isClose                  ? 'bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
-                              :                            'bg-muted text-muted-foreground'
+                            isCompleted ? 'bg-muted text-muted-foreground' : chipColor(o.acronym)
                           )}>
                             {o.acronym || '—'}
                           </span>

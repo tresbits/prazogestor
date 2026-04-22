@@ -28,5 +28,5 @@ export async function createOffice(_: unknown, formData: FormData) {
     return { error: 'Erro ao salvar. Tente novamente.' }
   }
 
-  redirect('/painel')
+  redirect('/overview')
 }

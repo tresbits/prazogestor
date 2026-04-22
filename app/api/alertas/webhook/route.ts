@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       obligationName: template.name,
       dueDate: formatDate(obligation.due_date),
       alertType: alert.type,
-      urlPainel: `${siteUrl}/painel`,
+      urlPainel: `${siteUrl}/overview`,
       urlDescadastrar: `${siteUrl}/api/alertas/descadastrar?id=${office.id}`,
     })
   )

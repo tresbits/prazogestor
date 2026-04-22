@@ -8,12 +8,12 @@ export function CalendarioNav({
   year,
   month,
   monthLabel,
-  filter,
+  buildHref,
 }: {
   year: number
   month: number
   monthLabel: string
-  filter?: string
+  buildHref: (year: number, month: number) => string
 }) {
   const router = useRouter()
 
@@ -21,10 +21,8 @@ export function CalendarioNav({
     let newMonth = month + delta
     let newYear = year
     if (newMonth > 12) { newMonth = 1; newYear++ }
-    if (newMonth < 1) { newMonth = 12; newYear-- }
-    const mesStr = `${newYear}-${String(newMonth).padStart(2, '0')}`
-    const q = filter ? `&q=${encodeURIComponent(filter)}` : ''
-    router.push(`/calendario?mes=${mesStr}${q}`)
+    if (newMonth < 1)  { newMonth = 12; newYear-- }
+    router.push(buildHref(newYear, newMonth))
   }
 
   const hoje = new Date()
@@ -54,7 +52,10 @@ export function CalendarioNav({
 
       {!eMesAtual && (
         <button
-          onClick={() => router.push(filter ? `/calendario?q=${encodeURIComponent(filter)}` : '/calendario')}
+          onClick={() => {
+            const h = hoje
+            router.push(buildHref(h.getFullYear(), h.getMonth() + 1))
+          }}
           className={cn(
             'ml-2 px-3 py-1.5 rounded-full text-xs font-medium',
             'text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'

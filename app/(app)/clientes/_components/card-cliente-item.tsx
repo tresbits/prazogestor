@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { MoreHorizontal } from 'lucide-react'
 import {
   DropdownMenu,
@@ -35,12 +35,16 @@ function formatCNPJ(cnpj: string): string {
 }
 
 export function CardClienteItem({ client }: { client: Client }) {
+  const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
     <>
-      <div className="bg-card rounded-[16px] shadow-card flex flex-col">
+      <div
+        className="bg-card rounded-[16px] shadow-card flex flex-col cursor-pointer transition-opacity hover:opacity-90 active:opacity-80"
+        onClick={() => router.push(`/clientes/${client.id}/detalhes`)}
+      >
         {/* Header tonal */}
         <div className="px-5 py-4 rounded-t-[16px] bg-muted/50 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-card flex items-center justify-center shrink-0">
@@ -55,21 +59,23 @@ export function CardClienteItem({ client }: { client: Client }) {
             </span>
           </div>
 
-          {/* Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="p-1.5 rounded-full text-muted-foreground hover:bg-background hover:text-foreground transition-colors shrink-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="bottom" sideOffset={6}>
-              <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Dropdown — stopPropagation prevents card navigation */}
+          <div onClick={e => e.stopPropagation()}>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="p-1.5 rounded-full text-muted-foreground hover:bg-background hover:text-foreground transition-colors shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="bottom" sideOffset={6}>
+                <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Body */}
@@ -86,16 +92,6 @@ export function CardClienteItem({ client }: { client: Client }) {
               {client.has_employees ? 'Sim' : 'Não'}
             </span>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-3 border-t border-border/40 flex justify-end">
-          <Link
-            href={`/clientes/${client.id}/prazos`}
-            className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Ver prazos →
-          </Link>
         </div>
       </div>
 

@@ -16,7 +16,7 @@ Execute @commands/schema-sql.md
 ### 1. Tabelas (com tipos corretos e constraints)
 
 - `escritorios` — dados do escritório contábil
-- `clientes` — CNPJs vinculados ao escritório
+- `clientes` — CNPJs vinculados ao escritório; inclui campos de contato (`contact_name`, `contact_phone`, `contact_email_is_contact`) e endereço (`has_address`, `address_street`, `address_number`, `address_complement`, `address_neighborhood`, `address_city`, `address_state char(2)`, `address_zip char(8)`)
 - `obrigacoes_template` — catálogo de obrigações por regime
 - `obrigacoes_cliente` — instâncias geradas por cliente e ano
 - `alertas_log` — registro de alertas enviados

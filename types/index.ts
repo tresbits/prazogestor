@@ -23,12 +23,38 @@ export interface Client {
   tax_regime: TaxRegime
   has_employees: boolean
   created_at: string
+  // Contact
+  contact_name?: string | null
+  contact_phone?: string | null
+  contact_email_is_contact?: boolean
+  // Address
+  has_address?: boolean
+  address_street?: string | null
+  address_number?: string | null
+  address_complement?: string | null
+  address_neighborhood?: string | null
+  address_city?: string | null
+  address_state?: string | null
+  address_zip?: string | null
 }
 
 export type ClientWithEmail = Pick<Client, 'id' | 'name' | 'cnpj' | 'tax_regime' | 'has_employees'> & {
   email?: string | null
   portal_enabled?: boolean
   portal_invite_sent_at?: string | null
+  // Contact
+  contact_name?: string | null
+  contact_phone?: string | null
+  contact_email_is_contact?: boolean
+  // Address
+  has_address?: boolean
+  address_street?: string | null
+  address_number?: string | null
+  address_complement?: string | null
+  address_neighborhood?: string | null
+  address_city?: string | null
+  address_state?: string | null
+  address_zip?: string | null
 }
 
 export interface ObligationTemplate {

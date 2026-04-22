@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { monthName } from '@/lib/format'
 import { CalendarioControls } from './_components/calendario-controls'
+import { PageTitle, MetricPill } from '../_components/page-header'
 
 type ObRow = {
   id: string
@@ -25,11 +27,6 @@ export type ObrigacaoCalendario = {
   clientName: string
   clientCnpj: string
 }
-
-const MONTHS_PT = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
 
 const OB_SELECT = `id, due_date, status, obligation_templates ( acronym, name ), clients!inner ( id, name, cnpj, office_id )`
 
@@ -98,12 +95,15 @@ export default async function CalendarioPage({
     daysMap[row.due_date].push(item)
   }
 
-  const monthLabel = `${MONTHS_PT[month - 1]} ${year}`
+  const monthLabel = `${monthName(month)} ${year}`
 
   return (
     <div className="space-y-5">
-      <div className='p-2'>
-        <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">Calendário</h1>
+      <div className="space-y-4">
+        <PageTitle>Calendário</PageTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <MetricPill>{monthLabel}</MetricPill>
+        </div>
       </div>
       <CalendarioControls daysMap={daysMap} year={year} month={month} monthLabel={monthLabel} filter={params.q?.trim()} />
     </div>

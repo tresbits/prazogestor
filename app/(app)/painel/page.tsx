@@ -5,6 +5,7 @@ import { ZonaNumeros } from './_components/zona-numeros'
 import { CardsGrid } from './_components/cards-grid'
 import { ChecklistOnboarding } from './_components/checklist-onboarding'
 import { ModalNovoCliente } from '@/components/clientes/modal-novo-cliente'
+import { PageTitle, MetricPill } from '../_components/page-header'
 
 function getDaysRemaining(dueDate: string): number {
   const today = new Date()
@@ -54,7 +55,10 @@ const OB_SELECT = `
   clients!inner ( id, name, cnpj, tax_regime, office_id )
 `
 
-export default async function PainelPage({
+// Route desativada — mantida para não perder o código
+export default async function PainelPage() { redirect('/overview') }
+
+async function _PainelPageImpl({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>
@@ -189,20 +193,13 @@ export default async function PainelPage({
       />
 
       {/* Header */}
-      <div className="flex items-end justify-between mb-10">
-        <div className='p-2'>
-          <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">
-            Próximos Vencimentos
-          </h1>
-          <p className="text-muted-foreground text-sm flex items-center gap-2 py-3">
-            Obrigações fiscais para os próximos 30 dias.
-          </p>
-        </div>
-        <div className="hidden md:block text-right shrink-0">
-          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-            Última Atualização
-          </p>
-          <p className="text-sm font-mono font-bold text-foreground">{lastUpdatedStr}</p>
+      <div className="space-y-4 mb-10">
+        <PageTitle>Próximos<br />Vencimentos</PageTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <MetricPill>próximos 30 dias</MetricPill>
+          <span className="font-mono text-[11px] text-muted-foreground/40 hidden md:inline">
+            · atualizado {lastUpdatedStr}
+          </span>
         </div>
       </div>
 

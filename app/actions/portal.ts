@@ -67,7 +67,7 @@ export async function inviteToPortal(clientId: string) {
     return { error: 'Erro ao enviar o e-mail. Tente novamente.' }
   }
 
-  revalidatePath(`/clientes/${clientId}/prazos`)
+  revalidatePath(`/clientes/${clientId}/detalhes`)
   return { success: true }
 }
 

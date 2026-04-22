@@ -53,8 +53,8 @@ export function ModalDeletarCliente({
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
             'w-[calc(100%-2rem)] max-w-sm',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -65,7 +65,8 @@ export function ModalDeletarCliente({
           {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-4">
             <div>
-              <AlertDialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· Cliente</p>
+              <AlertDialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Excluir Cliente
               </AlertDialog.Title>
               <AlertDialog.Description className="text-sm text-muted-foreground mt-1">

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ModalNovoCliente } from './_components/modal-novo-cliente'
 import { CardClienteItem } from './_components/card-cliente-item'
+import { PageTitle, MetricPill } from '../_components/page-header'
 import type { Client } from '@/types'
 
 export default async function ClientesPage({
@@ -34,11 +35,13 @@ export default async function ClientesPage({
 
   return (
     <div className="space-y-6">
-      <div className='p-2'>
-        <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-none">Clientes</h1>
-        <p className="text-sm text-muted-foreground flex items-center gap-2 py-3">
-          Gerencie sua base de clientes. {`${clients?.length ?? 0} ${q?.trim() ? `resultado(s)` : `cadastrado(s)`}`}
-        </p>
+      <div className="space-y-4">
+        <PageTitle>Clientes</PageTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <MetricPill>
+            {clients?.length ?? 0} {q?.trim() ? 'resultado(s)' : 'cadastrado(s)'}
+          </MetricPill>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

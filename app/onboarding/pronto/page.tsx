@@ -92,7 +92,7 @@ export default async function OnboardingProntoPage() {
         </p>
 
         <Link
-          href="/painel"
+          href="/overview"
           className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
         >
           Ir para o painel →
@@ -156,7 +156,7 @@ export default async function OnboardingProntoPage() {
       )}
 
       <Link
-        href="/painel"
+        href="/overview"
         className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
       >
         Ir para o painel →

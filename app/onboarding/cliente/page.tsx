@@ -14,7 +14,7 @@ export default async function OnboardingClientePage() {
     .single()
 
   if (!escritorio) redirect('/onboarding/escritorio')
-  if (escritorio.onboarding_completed) redirect('/painel')
+  if (escritorio.onboarding_completed) redirect('/overview')
 
   return <ClienteForm />
 }

@@ -2,14 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, CalendarDays, Settings } from 'lucide-react'
+import { BarChart3, Users, CalendarDays } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/painel',        label: 'Painel',      icon: LayoutDashboard },
-  { href: '/clientes',      label: 'Clientes',    icon: Users },
-  { href: '/calendario',    label: 'Calendário',  icon: CalendarDays },
-  { href: '/configuracoes', label: 'Config',      icon: Settings },
+  { href: '/overview',   label: 'Overview',   icon: BarChart3 },
+  { href: '/clientes',   label: 'Clientes',   icon: Users },
+  { href: '/calendario', label: 'Calendário', icon: CalendarDays },
 ]
 
 export function BottomNav() {

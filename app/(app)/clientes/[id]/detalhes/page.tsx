@@ -2,7 +2,10 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PrazosCliente } from './_components/prazos-cliente'
 
-const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const MESES_PT = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
 
 function getDiasRestantes(dueDate: string): number {
   const hoje = new Date()
@@ -26,12 +29,41 @@ function unwrap<T>(val: T[] | T | null): T | null {
   return Array.isArray(val) ? val[0] ?? null : val
 }
 
+export type PrazosOb = {
+  id: string
+  due_date: string
+  status: 'pending' | 'completed' | 'overdue'
+  completed_at: string | null
+  value: number | null
+  acronym: string
+  name: string
+}
+
 export default async function PrazosClientePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ mes?: string }>
 }) {
   const { id } = await params
+  const { mes } = await searchParams
+
+  let year: number
+  let month: number
+
+  if (mes && /^\d{4}-\d{2}$/.test(mes)) {
+    const [y, m] = mes.split('-').map(Number)
+    year = y
+    month = m
+  } else {
+    const today = new Date()
+    year = today.getFullYear()
+    month = today.getMonth() + 1
+  }
+
+  const monthLabel = `${MESES_PT[month - 1]} ${year}`
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -45,10 +77,9 @@ export default async function PrazosClientePage({
 
   if (!office) return null
 
-  // Busca o cliente verificando ownership via office_id
   const { data: client } = await supabase
     .from('clients')
-    .select('id, name, cnpj, tax_regime, has_employees, email, portal_enabled, portal_invite_sent_at')
+    .select('id, name, cnpj, tax_regime, has_employees, email, portal_enabled, portal_invite_sent_at, contact_name, contact_phone, contact_email_is_contact, has_address, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_zip')
     .eq('id', id)
     .eq('office_id', office.id)
     .single()
@@ -79,37 +110,44 @@ export default async function PrazosClientePage({
     }
   })
 
-  // Agrupa por mês
-  const porMes = new Map<string, typeof obrigacoes>()
+  // Build daysMap for the selected month
+  const daysMap: Record<string, PrazosOb[]> = {}
   for (const o of obrigacoes) {
-    const mes = parseInt(o.due_date.split('-')[1])
-    const ano = parseInt(o.due_date.split('-')[0])
-    const key = `${ano}-${String(mes).padStart(2, '0')}`
-    const lista = porMes.get(key) ?? []
-    lista.push(o)
-    porMes.set(key, lista)
+    const [oYear, oMonth] = o.due_date.split('-').map(Number)
+    if (oYear === year && oMonth === month) {
+      if (!daysMap[o.due_date]) daysMap[o.due_date] = []
+      daysMap[o.due_date].push({
+        id: o.id,
+        due_date: o.due_date,
+        status: o.status,
+        completed_at: o.completed_at,
+        value: o.value,
+        acronym: o.acronym,
+        name: o.name,
+      })
+    }
   }
 
-  const grupos = Array.from(porMes.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, obs]) => {
-      const [ano, mes] = key.split('-')
-      return { key, label: `${MESES[parseInt(mes) - 1]} ${ano}`, obrigacoes: obs }
-    })
+  const atrasados      = obrigacoes.filter(o => o.status !== 'completed' && (o.status === 'overdue' || o.dias < 0)).length
+  const proximaSemana  = obrigacoes.filter(o => o.status === 'pending' && o.dias >= 0 && o.dias <= 7).length
+  const pendentes      = obrigacoes.filter(o => o.status === 'pending' && o.dias > 7).length
+  const concluidos     = obrigacoes.filter(o => o.status === 'completed').length
 
-  const atrasados = obrigacoes.filter(o => o.status !== 'completed' && (o.status === 'overdue' || o.dias < 0)).length
-  const pendentes  = obrigacoes.filter(o => o.status === 'pending' && o.dias >= 0).length
-  const concluidos = obrigacoes.filter(o => o.status === 'completed').length
+  const obligationsForEmail = obrigacoes.filter(o => o.status !== 'completed')
 
   return (
     <PrazosCliente
       client={client}
-      grupos={grupos}
+      daysMap={daysMap}
+      year={year}
+      month={month}
+      monthLabel={monthLabel}
       atrasados={atrasados}
+      proximaSemana={proximaSemana}
       pendentes={pendentes}
       concluidos={concluidos}
       officeTemplate={office.client_email_template ?? null}
-      allObligations={obrigacoes}
+      allObligations={obligationsForEmail}
     />
   )
 }

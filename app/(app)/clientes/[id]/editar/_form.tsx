@@ -16,6 +16,17 @@ type Client = {
   tax_regime: string
   has_employees: boolean
   email?: string | null
+  contact_name?: string | null
+  contact_phone?: string | null
+  contact_email_is_contact?: boolean
+  has_address?: boolean
+  address_street?: string | null
+  address_number?: string | null
+  address_complement?: string | null
+  address_neighborhood?: string | null
+  address_city?: string | null
+  address_state?: string | null
+  address_zip?: string | null
 }
 
 export function EditarClienteForm({ client }: { client: Client }) {
@@ -49,12 +60,22 @@ export function EditarClienteForm({ client }: { client: Client }) {
                 tax_regime: client.tax_regime,
                 has_employees: String(client.has_employees),
                 email: client.email ?? undefined,
+                contact_name: client.contact_name ?? undefined,
+                contact_phone: client.contact_phone ?? undefined,
+                contact_email_is_contact: client.contact_email_is_contact ?? false,
+                has_address: client.has_address ?? false,
+                address_street: client.address_street ?? undefined,
+                address_number: client.address_number ?? undefined,
+                address_complement: client.address_complement ?? undefined,
+                address_neighborhood: client.address_neighborhood ?? undefined,
+                address_city: client.address_city ?? undefined,
+                address_state: client.address_state ?? undefined,
+                address_zip: client.address_zip ?? undefined,
               }}
               showRegimeHint
-              showEmailField
             />
 
-            {state?.error && <FormError message={state.error} />}
+            {'error' in (state ?? {}) && <FormError message={(state as { error: string }).error} />}
 
             <div className="flex gap-2">
               <button

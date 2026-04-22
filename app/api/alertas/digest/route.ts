@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       AlertaDigest({
         officeName: group.officeName,
         obligations: group.items,
-        urlPainel: `${siteUrl}/painel`,
+        urlPainel: `${siteUrl}/overview`,
         urlDescadastrar: `${siteUrl}/api/alertas/descadastrar?id=${group.officeId}`,
       })
     )

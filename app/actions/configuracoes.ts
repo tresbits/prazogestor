@@ -62,7 +62,7 @@ export async function dismissChecklist() {
     .update({ onboarding_dismissed: true })
     .eq('user_id', user.id)
 
-  revalidatePath('/painel')
+  revalidatePath('/overview')
 }
 
 export async function deleteAccount() {

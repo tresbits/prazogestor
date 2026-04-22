@@ -41,6 +41,78 @@ export async function lookupCnpj(cnpj: string): Promise<{ name: string } | { err
   }
 }
 
+export async function lookupCep(cep: string): Promise<{
+  street?: string; neighborhood?: string; city?: string; state?: string
+} | { error: 'not_found' }> {
+  try {
+    const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`, {
+      cache: 'no-store',
+      headers: { 'User-Agent': 'PrazoGestor/1.0 (prazogestor.tresbits.com)' },
+    })
+    if (!res.ok) return { error: 'not_found' }
+    const data = await res.json()
+    return {
+      street: (data.street as string | undefined) ?? undefined,
+      neighborhood: (data.neighborhood as string | undefined) ?? undefined,
+      city: (data.city as string | undefined) ?? undefined,
+      state: (data.state as string | undefined) ?? undefined,
+    }
+  } catch (e) {
+    console.error('[lookupCep] fetch error:', e)
+    return { error: 'not_found' }
+  }
+}
+
+type ContactAddressFields = {
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email_is_contact: boolean
+  has_address: boolean
+  address_street: string | null
+  address_number: string | null
+  address_complement: string | null
+  address_neighborhood: string | null
+  address_city: string | null
+  address_state: string | null
+  address_zip: string | null
+}
+
+function readContactAddress(formData: FormData): { error: string } | ContactAddressFields {
+  const contactName    = (formData.get('contact_name') as string | null)?.trim() || null
+  const contactPhone   = (formData.get('contact_phone') as string | null)?.trim() || null
+  const contactEmailIsContact = formData.get('contact_email_is_contact') === 'true'
+  const hasAddress     = formData.get('has_address') === 'true'
+  const addressZipRaw  = (formData.get('address_zip') as string | null)?.replace(/\D/g, '') || null
+  const addressStreet  = (formData.get('address_street') as string | null)?.trim() || null
+  const addressNumber  = (formData.get('address_number') as string | null)?.trim() || null
+  const addressComplement   = (formData.get('address_complement') as string | null)?.trim() || null
+  const addressNeighborhood = (formData.get('address_neighborhood') as string | null)?.trim() || null
+  const addressCity    = (formData.get('address_city') as string | null)?.trim() || null
+  const addressState   = (formData.get('address_state') as string | null)?.trim().toUpperCase().slice(0, 2) || null
+
+  if (hasAddress) {
+    if (!addressStreet)  return { error: 'Informe o logradouro.' }
+    if (!addressNumber)  return { error: 'Informe o número.' }
+    if (!addressCity)    return { error: 'Informe a cidade.' }
+    if (!addressState)   return { error: 'Informe o estado (UF).' }
+    if (!addressZipRaw || addressZipRaw.length !== 8) return { error: 'CEP inválido.' }
+  }
+
+  return {
+    contact_name: contactName,
+    contact_phone: contactPhone,
+    contact_email_is_contact: contactEmailIsContact,
+    has_address: hasAddress,
+    address_street: hasAddress ? addressStreet : null,
+    address_number: hasAddress ? addressNumber : null,
+    address_complement: hasAddress ? addressComplement : null,
+    address_neighborhood: hasAddress ? addressNeighborhood : null,
+    address_city: hasAddress ? addressCity : null,
+    address_state: hasAddress ? addressState : null,
+    address_zip: hasAddress ? addressZipRaw : null,
+  }
+}
+
 export async function createClient(_: unknown, formData: FormData) {
   const supabase = await createSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -66,6 +138,9 @@ export async function createClient(_: unknown, formData: FormData) {
   if (!taxRegime) return { error: 'Selecione o regime tributário.' }
   if (!hasEmployeesRaw) return { error: 'Informe a situação de funcionários.' }
 
+  const contactAddress = readContactAddress(formData)
+  if ('error' in contactAddress) return contactAddress
+
   const { error } = await supabase.from('clients').insert({
     office_id: office.id,
     cnpj: cnpjRaw,
@@ -73,6 +148,7 @@ export async function createClient(_: unknown, formData: FormData) {
     tax_regime: taxRegime,
     has_employees: hasEmployees,
     email,
+    ...contactAddress,
   })
 
   if (error) {
@@ -100,7 +176,7 @@ export async function createClient(_: unknown, formData: FormData) {
   }
 
   revalidatePath('/clientes')
-  revalidatePath('/painel')
+  revalidatePath('/overview')
   return { success: true }
 }
 
@@ -128,7 +204,7 @@ export async function deleteClient(_: unknown, formData: FormData) {
   if (error) return { error: 'Erro ao excluir. Tente novamente.' }
 
   revalidatePath('/clientes')
-  revalidatePath('/painel')
+  revalidatePath('/overview')
   return { success: true }
 }
 
@@ -156,6 +232,9 @@ export async function updateClient(_: unknown, formData: FormData) {
   if (!taxRegime) return { error: 'Selecione o regime tributário.' }
   if (!hasEmployeesRaw) return { error: 'Informe a situação de funcionários.' }
 
+  const contactAddress = readContactAddress(formData)
+  if ('error' in contactAddress) return contactAddress
+
   // Confirma que o cliente pertence a este escritório
   const { data: currentClient } = await supabase
     .from('clients')
@@ -168,7 +247,7 @@ export async function updateClient(_: unknown, formData: FormData) {
 
   const { error } = await supabase
     .from('clients')
-    .update({ name, tax_regime: taxRegime, has_employees: hasEmployees, email })
+    .update({ name, tax_regime: taxRegime, has_employees: hasEmployees, email, ...contactAddress })
     .eq('id', clientId)
     .eq('office_id', office.id)
 
@@ -198,6 +277,6 @@ export async function updateClient(_: unknown, formData: FormData) {
   }
 
   revalidatePath('/clientes')
-  revalidatePath('/painel')
+  revalidatePath('/overview')
   return { success: true }
 }

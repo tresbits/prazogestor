@@ -84,6 +84,22 @@
 - [x] **Revisão da página de prazos por cliente** (`/clientes/[id]/prazos`) — design e completude
 - [x] **Envio manual de e-mail ao cliente** — contador seleciona obrigações e envia com mensagem customizada
 
+### Semanas 8–9 (cont.) · Página de detalhes do cliente
+
+- [x] **Rota renomeada** `/clientes/[id]/prazos` → `/clientes/[id]/detalhes` — 6 referências atualizadas
+- [x] **Header redesenhado** — breadcrumb `CLIENTES / DETALHES`, CNPJ em pill mono, regime + empregados como MetricPill; actions (e-mail, editar, portal) agrupados à direita
+- [x] **Status blocks** — 4 cards glass em grid 2/4 colunas (Atrasadas, Esta semana, Pendentes, Concluídas) com `border-t-2` como sinal de urgência; zero-state com `opacity-40`
+- [x] **Lista view como default** — `defaultView='lista'` na página `/clientes/[id]/detalhes`; selection mode com floating action bar (concluir/adiar em lote)
+
+### Semanas 10–11 · Dados de Contato + Endereço
+
+- [x] **Migration SQL** — 11 colunas novas em `clients`: `contact_name`, `contact_phone`, `contact_email_is_contact`, `has_address`, `address_street`, `address_number`, `address_complement`, `address_neighborhood`, `address_city`, `address_state`, `address_zip`
+- [x] **ClienteFormFields** — seção Contato (nome, telefone, e-mail, checkbox flag) + seção Endereço (toggle → campos com required condicional + lookup de CEP via BrasilAPI)
+- [x] **lookupCep** — server action em `app/actions/clientes.ts`, chama BrasilAPI `/api/cep/v2/{cep}`
+- [x] **Validação server-side** — `readContactAddress` valida campos obrigatórios de endereço quando `has_address=true`
+- [x] **Página de detalhes** — bloco de contato/endereço inline abaixo das pills (nome, telefone, e-mail com badge "Contato", endereço com ícone MapPin)
+- [x] **Modais scrolláveis** — `ModalNovoCliente` e `ModalEditarCliente` com header/footer fixos e body com `overflow-y-auto`
+
 ### Semanas 9–10 · Módulo 2 — Portal do Cliente
 
 - [x] **Migration SQL** — colunas `value`, `value_source` em `client_obligations`; `portal_enabled`, `portal_user_id`, `portal_invite_token`, `portal_invite_sent_at` em `clients`; RLS policies para portal user

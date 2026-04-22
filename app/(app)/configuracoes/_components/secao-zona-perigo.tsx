@@ -45,8 +45,8 @@ export function SecaoZonaPerigo() {
             className={cn(
               'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
               'w-full max-w-sm',
-              'bg-background/90 backdrop-blur-3xl',
-              'border-[0.5px] border-white/20 dark:border-white/10',
+              'bg-glass backdrop-blur-xl',
+              'border-[0.5px] border-glass',
               'rounded-[20px]',
               'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
               'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',

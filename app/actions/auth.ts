@@ -15,7 +15,7 @@ export async function login(_: unknown, formData: FormData) {
     return { error: 'E-mail ou senha incorretos.' }
   }
 
-  redirect('/painel')
+  redirect('/overview')
 }
 
 export async function signup(_: unknown, formData: FormData) {

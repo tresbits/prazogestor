@@ -19,7 +19,7 @@ export function ModalNovoCliente({
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (state?.success) {
+    if (state && 'success' in state && state.success) {
       setOpen(false)
       setCnpj('')
       formRef.current?.reset()
@@ -52,9 +52,9 @@ export function ModalNovoCliente({
         <Dialog.Popup
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-[calc(100%-2rem)] max-w-md',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'w-[calc(100%-2rem)] max-w-xl max-h-[calc(100vh-2rem)] flex flex-col',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -62,9 +62,10 @@ export function ModalNovoCliente({
             'transition-all duration-200'
           )}
         >
-          <div className="flex items-start justify-between px-6 pt-6 pb-4">
+          <div className="flex items-start justify-between px-6 pt-6 pb-4 shrink-0">
             <div>
-              <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· Cliente</p>
+              <Dialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Novo Cliente
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground mt-1">
@@ -76,19 +77,19 @@ export function ModalNovoCliente({
             </Dialog.Close>
           </div>
 
-          <form ref={formRef} action={action}>
-            <div className="px-6 pb-4">
+          <form ref={formRef} action={action} className="flex flex-col flex-1 min-h-0">
+            <div className="px-6 pb-4 overflow-y-auto flex-1">
               <ClienteFormFields
                 cnpj={{ value: cnpj, onChange: setCnpj }}
               />
-              {state?.error && (
+              {state && 'error' in state && state.error && (
                 <div className="mt-4">
-                  <FormError message={state.error} />
+                  <FormError message={state.error as string} />
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40 shrink-0">
               <Dialog.Close
                 className={cn(
                   'px-4 py-2 rounded-full text-sm font-medium',

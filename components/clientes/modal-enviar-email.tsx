@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { Mail, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { chipColor } from '@/lib/obligation-color'
 import { sendClientEmail } from '@/app/actions/email-cliente'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -121,8 +122,8 @@ export function ModalEnviarEmail({
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
             'w-[calc(100%-2rem)] max-w-4xl max-h-[90vh] flex flex-col',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -133,10 +134,11 @@ export function ModalEnviarEmail({
           {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-4 shrink-0 border-b border-border/60">
             <div>
-              <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· E-mail</p>
+              <Dialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Enviar E-mail ao Cliente
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5">
+              <Dialog.Description className="text-sm text-muted-foreground mt-1">
                 {clientName}
               </Dialog.Description>
             </div>
@@ -227,10 +229,7 @@ export function ModalEnviarEmail({
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               'text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0',
-                              isOv ? 'bg-destructive/10 text-destructive'
-                                : isUg ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                : isCl ? 'bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
-                                :        'bg-muted-foreground/15 text-muted-foreground'
+                              chipColor(o.acronym)
                             )}>
                               {o.acronym}
                             </span>

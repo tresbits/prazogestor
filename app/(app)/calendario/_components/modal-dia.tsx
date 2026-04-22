@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { chipColor } from '@/lib/obligation-color'
 import { ModalConcluir } from '../../painel/_components/modal-concluir'
 import type { ObrigacaoCalendario } from '../page'
 
@@ -26,13 +27,6 @@ function urgenciaPrioridade(item: ObrigacaoCalendario): number {
   if (dias <= 3) return 2
   if (dias <= 7) return 3
   return 4
-}
-
-function siglaPillClass(prioridade: number) {
-  if (prioridade <= 1) return 'bg-destructive text-white'
-  if (prioridade === 2) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-  if (prioridade === 3) return 'bg-yellow-400/15 text-yellow-600 dark:text-yellow-400'
-  return 'bg-muted text-muted-foreground'
 }
 
 function UrgenciaLabel({ prioridade, dias }: { prioridade: number; dias: number }) {
@@ -100,9 +94,9 @@ export function ModalDia({
           initialFocus={popupRef}
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-[calc(100%-2rem)] max-w-lg max-h-[85vh] flex flex-col',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'w-[calc(100%-2rem)] max-w-xl max-h-[85vh] flex flex-col',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -113,10 +107,11 @@ export function ModalDia({
           {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-5 shrink-0 border-b border-border">
             <div>
-              <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· Calendário</p>
+              <Dialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Vencimentos
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <Dialog.Description className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                 {dateLabel}
                 {items.length > 0 && (
                   <>
@@ -178,7 +173,7 @@ export function ModalDia({
                           <div className="flex items-center gap-3 min-w-0">
                             <span className={cn(
                               'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide',
-                              siglaPillClass(prioridade)
+                              chipColor(item.acronym)
                             )}>
                               {item.acronym || '—'}
                             </span>

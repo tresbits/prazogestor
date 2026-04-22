@@ -75,6 +75,10 @@ envia alertas antecipados e mantém histórico de entregas.
 - [x] Responsividade mobile: bottom nav, sidebar oculta, modais e cards ajustados
 - [x] Telas de auth redesenhadas: layout split, esqueci-senha
 - [x] Componente ClienteFormFields compartilhado entre onboarding, modal novo e modal editar
+- [x] **Página `/clientes/[id]/detalhes`** (ex-`/prazos`) — rota renomeada; header com breadcrumb, CNPJ, regime, actions (e-mail, editar, portal); 4 status cards (Atrasadas, Esta semana, Pendentes, Concluídas) com estilo glass + `border-t-2` colorida; calendário grade/lista abaixo
+- [x] **Lista view com selection mode** — modo lista como default em `/clientes/[id]/detalhes`; linhas selecionáveis com floating action bar (Concluir / Adiar em lote)
+- [x] **Dados de Contato + Endereço no cadastro** — campos opcionais no cadastro/edição: nome do responsável, telefone, e-mail (flag "usar como contato direto"); toggle "Possui endereço?" com campos de endereço obrigatórios quando ativo; lookup de CEP via BrasilAPI preenchendo logradouro, bairro, cidade e UF automaticamente
+- [x] **Modal scrollável** — `ModalNovoCliente` e `ModalEditarCliente` com `max-h` + `overflow-y-auto` no body para suportar formulários longos
 
 ### Módulo 2 — Portal do Cliente
 
@@ -165,6 +169,18 @@ Contador envia manualmente um e-mail ao cliente (pessoa jurídica) com lista sel
 
 ## Regras de uso da BrasilAPI no MVP
 
+### Consulta de CEP
+
+**Quando acontece**: quando o usuário clica no botão `MapPin` no campo CEP do formulário de endereço (ativo quando o toggle "Possui endereço?" está ligado e o CEP tem 8 dígitos). Nunca automático.
+
+**Comportamento**:
+- Se encontrar: preenche logradouro, bairro, cidade e estado (UF) automaticamente
+- Se não encontrar (404): exibe mensagem inline "CEP não encontrado. Preencha o endereço manualmente."
+
+**Implementação**: server action `lookupCep` em `app/actions/clientes.ts`, chama `/api/cep/v2/{cep}` da BrasilAPI. Sem rate limit — API pública sem auth.
+
+---
+
 ### Consulta de CNPJ
 
 **Quando acontece**: apenas quando o usuário clica no botão lupa (cadastro) ou "Atualizar dados do CNPJ" (edição). Nunca automático — sem override silencioso ao salvar.
@@ -218,7 +234,11 @@ escritorios
 
 clientes
   id, escritorio_id, cnpj, nome, regime [simples|mei|lucro_presumido|lucro_real], tem_empregados, email (opcional),
-  portal_enabled bool, portal_user_id uuid, portal_invite_token text, portal_invite_sent_at timestamptz
+  portal_enabled bool, portal_user_id uuid, portal_invite_token text, portal_invite_sent_at timestamptz,
+  contact_name text, contact_phone text, contact_email_is_contact bool default false,
+  has_address bool default false,
+  address_street text, address_number text, address_complement text, address_neighborhood text,
+  address_city text, address_state char(2), address_zip char(8)
 
 obrigacoes_template
   id, nome, sigla, regimes[], frequencia, requer_empregados,

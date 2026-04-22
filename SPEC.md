@@ -65,7 +65,7 @@ Contador, 30–55 anos, escritório com 10–80 clientes. Usa o sistema no deskt
 | `/clientes` | Lista de clientes | Todos os clientes do escritório |
 | `/clientes/novo` | Novo cliente | Formulário de cadastro |
 | `/clientes/[id]/editar` | Editar cliente | Edição em modal sobreposto |
-| `/clientes/[id]/prazos` | Prazos do cliente | Timeline de obrigações por mês/ano |
+| `/clientes/[id]/detalhes` | Detalhes do cliente | Header com dados/actions; 4 status cards; calendário grade/lista |
 | `/configuracoes` | Configurações | Dados do escritório, preferências de alerta |
 
 ### Modais (sobrepostos a qualquer tela)
@@ -253,10 +253,13 @@ duration: 200ms; easing: ease-out;
 ### Modais previstos
 
 #### Modal: Editar cliente
-- **Disparo**: ícone ✏ na linha da lista `/clientes`
-- **Campos**: Nome/Razão Social (input), Regime (select), Tem empregados (select)
+- **Disparo**: ícone ✏ na linha da lista `/clientes` ou botão na página `/clientes/[id]/detalhes`
+- **Campos obrigatórios**: Nome/Razão Social (input), Regime (select), Tem empregados (select)
+- **Seção Contato** (todos opcionais): Nome do responsável, Telefone (`inputMode="tel"`), E-mail, checkbox "Usar como e-mail de contato direto"
+- **Seção Endereço**: toggle "Possui endereço?" — quando ativo, campos obrigatórios: CEP (com botão MapPin → lookup BrasilAPI), Logradouro, Número, Cidade, UF; opcionais: Complemento, Bairro
 - **Aviso**: se regime mudar, exibe inline `"Os vencimentos futuros serão regenerados."`
-- **Botões**: `Cancelar` (outline) · `Salvar alterações` (primário)
+- **Modal scrollável**: header e footer fixos, body com `overflow-y-auto` para suportar todos os campos
+- **Botões**: `Cancelar` (outline) · `Salvar` (primário)
 
 #### Modal: Concluir obrigação
 - **Disparo**: botão "Concluir" no card do painel

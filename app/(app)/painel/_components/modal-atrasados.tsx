@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ModalConcluir } from './modal-concluir'
+import { ObligationRow } from '@/components/obligation-row'
 
 type ObligationItem = {
   id: string
@@ -16,6 +16,12 @@ type ObligationItem = {
 
 function formatCNPJ(cnpj: string): string {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  })
 }
 
 export function ModalAtrasados({
@@ -52,9 +58,9 @@ export function ModalAtrasados({
           initialFocus={popupRef}
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-[calc(100%-2rem)] max-w-md max-h-[85vh] flex flex-col',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'w-[calc(100%-2rem)] max-w-xl max-h-[85vh] flex flex-col',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -65,10 +71,11 @@ export function ModalAtrasados({
           {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-5 shrink-0 border-b border-border">
             <div>
-              <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· Painel</p>
+              <Dialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Obrigações Vencidas
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-0.5">
+              <Dialog.Description className="text-sm text-muted-foreground mt-1">
                 {obligations.length} {obligations.length === 1 ? 'obrigação' : 'obrigações'}
               </Dialog.Description>
             </div>
@@ -86,45 +93,16 @@ export function ModalAtrasados({
                   <p className="text-[11px] font-mono text-muted-foreground mt-0.5">{formatCNPJ(clientCnpj)}</p>
                 )}
               </div>
-              <div className="rounded-xl overflow-hidden border border-border bg-muted">
-              {obligations.map((o, i) => {
-                const due = new Date(o.due_date + 'T00:00:00')
-                const dueFormatted = due.toLocaleDateString('pt-BR', {
-                  day: '2-digit', month: 'short', year: 'numeric',
-                })
-                return (
-                  <div
+              <div className="rounded-xl overflow-hidden border border-border bg-muted divide-y divide-border">
+                {obligations.map(o => (
+                  <ObligationRow
                     key={o.id}
-                    className={cn(
-                      'group flex items-start justify-between px-4 py-3',
-                      i > 0 && 'border-t border-border'
-                    )}
-                  >
-                    <div className="flex items-start gap-3 min-w-0">
-                      <span className="shrink-0 mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-destructive text-white">
-                        {o.acronym || '—'}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm text-foreground truncate">{o.name}</p>
-                        <p className="text-[11px] text-muted-foreground">{dueFormatted}</p>
-                      </div>
-                    </div>
-                    <div className="shrink-0 ml-4 relative flex items-center pt-0.5 min-w-[58px] justify-end">
-                      <span className="text-[10px] font-bold text-destructive tracking-wide whitespace-nowrap transition-opacity group-hover:opacity-0">
-                        VENCIDO
-                      </span>
-                      <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ModalConcluir
-                          obligationId={o.id}
-                          obligationName={o.name}
-                          clientName={clientName}
-                          dueDate={o.due_date}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+                    id={o.id} acronym={o.acronym} name={o.name}
+                    due_date={o.due_date} status={o.status} clientName={clientName}
+                    secondaryLabel={formatDate(o.due_date)}
+                    className="px-4 py-3"
+                  />
+                ))}
               </div>
             </div>
           </div>

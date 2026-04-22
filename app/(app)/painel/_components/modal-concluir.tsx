@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
-import { completeObligation } from '@/app/actions/obrigacoes'
+import { completeObligation, adiarObrigacoes } from '@/app/actions/obrigacoes'
 import { cn } from '@/lib/utils'
 import { FormError } from '@/components/ui/form-error'
 
@@ -24,6 +24,19 @@ export function ModalConcluir({
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [value, setValue] = useState('')
+
+  function handleAdiar() {
+    setError(null)
+    startTransition(async () => {
+      const result = await adiarObrigacoes([obligationId], 7)
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        setOpen(false)
+        setValue('')
+      }
+    })
+  }
 
   function handleSubmit() {
     setError(null)
@@ -71,8 +84,8 @@ export function ModalConcluir({
           className={cn(
             'fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
             'w-[calc(100%-2rem)] max-w-sm',
-            'bg-background/90 backdrop-blur-3xl',
-            'border-[0.5px] border-white/20 dark:border-white/10',
+            'bg-glass backdrop-blur-xl',
+            'border-[0.5px] border-glass',
             'rounded-[20px]',
             'shadow-[0_32px_80px_rgba(0,0,0,0.18)]',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97]',
@@ -83,7 +96,8 @@ export function ModalConcluir({
           {/* Header */}
           <div className="flex items-start justify-between px-6 pt-6 pb-4">
             <div>
-              <Dialog.Title className="font-heading text-[17px] font-semibold text-foreground leading-tight">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">· Obrigação</p>
+              <Dialog.Title className="font-heading text-xl font-bold text-foreground leading-tight">
                 Concluir Obrigação
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground mt-1">
@@ -141,7 +155,21 @@ export function ModalConcluir({
               <FormError message={error} />
             </div>
           )}
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40">
+          <div className="flex items-center gap-2 px-6 py-4 border-t border-border/40">
+            {/* Left action */}
+            <button
+              onClick={handleAdiar}
+              disabled={pending}
+              className={cn(
+                'px-4 py-2 rounded-full text-sm font-medium',
+                'text-muted-foreground hover:text-foreground hover:bg-muted',
+                'transition-colors disabled:opacity-40 mr-auto'
+              )}
+            >
+              Adiar 7 dias
+            </button>
+
+            {/* Right actions */}
             <Dialog.Close
               className={cn(
                 'px-4 py-2 rounded-full text-sm font-medium',
@@ -161,7 +189,7 @@ export function ModalConcluir({
                 'transition-all disabled:opacity-40'
               )}
             >
-              {pending ? 'Concluindo…' : 'Confirmar Conclusão'}
+              {pending ? 'Processando…' : 'Confirmar Conclusão'}
             </button>
           </div>
         </Dialog.Popup>
